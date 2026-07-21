@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { spawn } from 'child_process'
-import { createWriteStream, mkdirSync } from 'fs'
+import { closeSync, mkdirSync, openSync } from 'fs'
 import { join } from 'path'
 import { CONFIG, isForgeConfigured } from '../../shared/config'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../../shared/launch'
@@ -96,26 +96,31 @@ export async function launch(
   const gameDir = getGameDir()
   mkdirSync(gameDir, { recursive: true })
 
-  const child = spawn(java.path, args, { cwd: gameDir })
+  // stdout/stderr van a un archivo por descriptor (no por pipe del padre): así el juego no
+  // se bloquea aunque nadie lea, y queda un log. `detached` + `unref` = el juego es
+  // independiente y sobrevive aunque se cierre el launcher. `windowsHide` evita una consola.
+  const logFd = openSync(join(gameDir, 'launcher-game.log'), 'w')
+  const child = spawn(java.path, args, {
+    cwd: gameDir,
+    detached: true,
+    stdio: ['ignore', logFd, logFd],
+    windowsHide: true
+  })
+  child.unref()
 
-  // Volcar stdout/stderr a un log: si no se consumen, el buffer del pipe se llena
-  // y la JVM se bloquea a media carga. Además queda un log para depurar crashes.
-  const log = createWriteStream(join(gameDir, 'launcher-game.log'))
-  child.stdout.pipe(log)
-  child.stderr.pipe(log)
-
-  await new Promise<void>((resolve, reject) => {
-    child.once('spawn', () => {
-      onStatus({ state: 'running' })
-      resolve()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      child.once('spawn', () => {
+        onStatus({ state: 'running' })
+        resolve()
+      })
+      child.once('error', (e) => reject(new Error(`No se pudo iniciar java: ${e.message}`)))
     })
-    child.once('error', (e) => reject(new Error(`No se pudo iniciar java: ${e.message}`)))
-  })
+  } finally {
+    closeSync(logFd) // el proceso hijo mantiene su propio handle del archivo
+  }
 
-  child.on('exit', (code) => {
-    log.end()
-    onStatus({ state: 'exited', code: code ?? -1 })
-  })
+  child.on('exit', (code) => onStatus({ state: 'exited', code: code ?? -1 }))
 }
 
 /** Registra el handler IPC de lanzamiento. */

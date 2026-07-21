@@ -6,7 +6,7 @@ import Home from './screens/Home'
 import News from './screens/News'
 import Settings from './screens/Settings'
 import Login from './screens/Login'
-import UpdateBanner from './components/UpdateBanner'
+import UpdateOverlay from './components/UpdateOverlay'
 import { useStore } from './store'
 
 export default function App(): JSX.Element {
@@ -48,7 +48,7 @@ export default function App(): JSX.Element {
         </main>
         {ready && account && <NavBar />}
       </div>
-      <UpdateBanner />
+      <UpdateOverlay />
     </div>
   )
 }

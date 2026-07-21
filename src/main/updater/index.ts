@@ -22,9 +22,14 @@ export function registerUpdater(getWindow: () => BrowserWindow | null): void {
   autoUpdater.on('download-progress', (p) =>
     send({ state: 'downloading', percent: Math.round(p.percent) })
   )
-  autoUpdater.on('update-downloaded', (info) => send({ state: 'ready', version: info.version }))
-  // Un fallo al buscar/descargar updates NO debe alarmar al jugador (p.ej. 404 de repo
-  // privado, sin red): se registra en el log y no se muestra banner de error.
+  autoUpdater.on('update-downloaded', (info) => {
+    send({ state: 'ready', version: info.version })
+    // Opción B (forzado): instala y reinicia solo → el jugador siempre entra con la última
+    // versión. El breve margen deja ver "Reiniciando…" en la pantalla de actualización.
+    setTimeout(() => autoUpdater.quitAndInstall(), 2500)
+  })
+  // Un fallo al buscar/descargar updates NO debe alarmar al jugador (p.ej. sin red):
+  // se registra en el log y no se muestra nada.
   autoUpdater.on('error', (e) => console.error('[updater]', e.message))
 
   ipcMain.handle('update:check', async (): Promise<void> => {

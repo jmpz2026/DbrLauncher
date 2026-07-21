@@ -19,7 +19,7 @@ export default function NavBar(): JSX.Element {
         target="_blank"
         rel="noreferrer"
         title="Únete al Discord"
-        className="mc-btn absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center hover:!border-[#8ea1e1]"
+        className="mc-btn absolute left-3 inset-y-0 my-auto grid h-10 w-10 place-items-center hover:!border-[#8ea1e1]"
       >
         <img src={discordIcon} alt="Discord" className="h-6 w-6" />
       </a>
