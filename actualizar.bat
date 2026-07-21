@@ -11,7 +11,7 @@ echo  Actualizando DBR-ASSETS  (version %VERSION%)
 echo ============================================
 echo.
 echo [1/3] Generando manifest...
-node "..\DbrLauncher\scripts\gen-manifest.mjs" --dir "%~dp0." --base https://raw.githubusercontent.com/jmpz2026/DBR-ASSETS/main/ --version %VERSION% --forge 10.13.4.1614 --include mods,config,resourcepacks --out "%~dp0manifest.json"
+node "..\DbrLauncher\scripts\gen-manifest.mjs" --dir "%~dp0." --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/ --version %VERSION% --forge 10.13.4.1614 --include mods,config,resourcepacks --out "%~dp0manifest.json"
 if errorlevel 1 goto :error
 
 echo.
@@ -21,8 +21,8 @@ git diff --cached --quiet && echo   (sin cambios que subir) && goto :done
 git commit -m "Actualizar modpack v%VERSION%"
 
 echo.
-echo [3/3] Subiendo a GitHub...
-git push origin main
+echo [3/3] Subiendo a GitHub (rama assets)...
+git push
 if errorlevel 1 goto :error
 
 :done
