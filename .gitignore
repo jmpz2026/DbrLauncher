@@ -1,0 +1,12 @@
+node_modules
+out
+dist
+.npmcache
+.electroncache
+.tmp
+.claude/
+preview.png
+.DS_Store
+*.log
+.env
+.env.local

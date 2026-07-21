@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: 'Pixelify Sans', monospace;
+    color: #e8e2d4;
+    background: #191614;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Todo el arte se mantiene nítido, sin suavizado */
+  img,
+  canvas {
+    image-rendering: pixelated;
+  }
+}
+
+/* Regiones de arrastre para la barra de título propia */
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Sombra de texto clásica de Minecraft (offset duro, sin blur) */
+.mc-text {
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
+.mc-text-sm {
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Fondo de bloques (deepslate speckle, escalado y pixelado) ---------- */
+.bg-blocks {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%232b2723'/%3E%3Crect x='2' y='1' width='2' height='2' fill='%23191512'/%3E%3Crect x='5' y='3' width='2' height='1' fill='%233b352e'/%3E%3Crect x='9' y='2' width='1' height='2' fill='%23181410'/%3E%3Crect x='12' y='4' width='2' height='2' fill='%231d1915'/%3E%3Crect x='3' y='6' width='1' height='2' fill='%233b352e'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23181410'/%3E%3Crect x='11' y='8' width='1' height='1' fill='%233b352e'/%3E%3Crect x='14' y='9' width='2' height='2' fill='%23191512'/%3E%3Crect x='1' y='10' width='2' height='1' fill='%23342e28'/%3E%3Crect x='5' y='11' width='1' height='2' fill='%23181410'/%3E%3Crect x='9' y='12' width='2' height='2' fill='%23342e28'/%3E%3Crect x='13' y='13' width='2' height='1' fill='%23191512'/%3E%3Crect x='4' y='14' width='1' height='1' fill='%233b352e'/%3E%3Crect x='15' y='2' width='1' height='1' fill='%23342e28'/%3E%3C/svg%3E");
+  background-size: 64px 64px;
+  image-rendering: pixelated;
+}
+
+/* ---------- Panel de piedra con bisel pixelado ---------- */
+.mc-panel {
+  background: #2b2b2b;
+  border: 2px solid #000;
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.12),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.5);
+}
+/* Variante hundida (slots, campos, tracks) */
+.mc-inset {
+  background: #201d1b;
+  border: 2px solid #000;
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, 0.55),
+    inset -2px -2px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Botón de piedra ---------- */
+.mc-btn {
+  background: #4a4642;
+  color: #e8e2d4;
+  border: 2px solid #000;
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.22),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  image-rendering: pixelated;
+}
+.mc-btn:hover {
+  background: #5b5651;
+  border-color: #ffcf4a;
+  color: #ffe9a8;
+}
+.mc-btn:active {
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, 0.5),
+    inset -2px -2px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(2px);
+}
+/* Estado seleccionado persistente (tab activo): hundido + oro */
+.mc-btn-on,
+.mc-btn-on:hover {
+  background: #3a3632;
+  border-color: #ffcf4a;
+  color: #ffcf4a;
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, 0.5),
+    inset -2px -2px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- Botón oro (CTA) ---------- */
+.mc-btn-gold {
+  background: #e0951b;
+  color: #2a1600;
+  border: 2px solid #000;
+  box-shadow:
+    inset 3px 3px 0 rgba(255, 240, 180, 0.7),
+    inset -3px -3px 0 rgba(110, 55, 0, 0.6);
+  text-shadow: 1px 1px 0 rgba(255, 240, 180, 0.45);
+}
+.mc-btn-gold:hover {
+  background: #ffcf4a;
+}
+.mc-btn-gold:active {
+  box-shadow:
+    inset 2px 2px 0 rgba(120, 60, 0, 0.55),
+    inset -2px -2px 0 rgba(255, 240, 180, 0.65);
+  transform: translateY(2px);
+}
+
+/* ---------- Slider pixelado (RAM) ---------- */
+.mc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: #201d1b;
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+.mc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 22px;
+  background: #e0951b;
+  border: 2px solid #000;
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 240, 180, 0.7),
+    inset -2px -2px 0 rgba(120, 60, 0, 0.6);
+  border-radius: 0;
+}
+.mc-range::-webkit-slider-thumb:hover {
+  background: #ffcf4a;
+}
+
+/* ---------- Scrollbar en bloques ---------- */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #201d1b;
+}
+::-webkit-scrollbar-thumb {
+  background: #4a4642;
+  border: 2px solid #000;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5b5651;
+}
+
+/* Partícula de ki pixelada (cuadrado duro, sin blur) */
+.ki-pixel {
+  position: absolute;
+  bottom: -16px;
+  width: 6px;
+  height: 6px;
+  background: #ffcf4a;
+  box-shadow: 0 0 0 2px rgba(224, 149, 27, 0.35);
+  image-rendering: pixelated;
+  will-change: transform, opacity;
+}
