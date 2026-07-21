@@ -1,23 +1,10 @@
 {
   "items": [
     {
-      "title": "¡Bienvenido a Dbr Resurrection!",
+      "title": "¡Bienvenido a Dragon Block Resurrection!",
       "date": "2026-07-21",
       "tag": "Anuncio",
-      "body": "El launcher ya sincroniza los mods y lanza Forge 1.7.10 automáticamente. Pulsa Jugar y entrena tu Ki."
-    },
-    {
-      "title": "Servidor abierto",
-      "date": "2026-07-21",
-      "tag": "Servidor",
-      "body": "Conéctate a dragonblock.online:25625 y empieza tu aventura Saiyan con la comunidad."
-    },
-    {
-      "title": "Cómo empezar",
-      "date": "2026-07-20",
-      "tag": "Guía",
-      "body": "Elige cuenta Pirata o Premium, pulsa Jugar y el launcher descarga Java, mods y Forge por ti.",
-      "url": "https://github.com/jmpz2026/DBR-ASSETS"
+      "body": "Dsifruta del nuevo Launcher Dbr, los mods se actualizan automaticamente."
     }
   ]
 }
