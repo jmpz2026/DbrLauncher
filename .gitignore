@@ -10,3 +10,5 @@ preview.png
 *.log
 .env
 .env.local
+.ebcache
+.ebtmp
