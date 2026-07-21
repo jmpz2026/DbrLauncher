@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.0.0",
   "minecraft": "1.7.10",
   "forge": "10.13.4.1614",
   "files": [
@@ -418,10 +418,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-2.2.0.jar",
-      "sha1": "83f334a34784435ee82d3e58eee13f7b0402199f",
-      "size": 45351012,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-2.2.0.jar"
+      "path": "mods/DbrServerPack-2.3.0.jar",
+      "sha1": "aaba3ec0a6ce41621eb16c3dd357aed3331b5e67",
+      "size": 47576109,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-2.3.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
