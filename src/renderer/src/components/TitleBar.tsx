@@ -1,4 +1,5 @@
 import { useStore } from '../store'
+import logo from '../assets/logo.png'
 
 export default function TitleBar(): JSX.Element {
   const account = useStore((s) => s.account)
@@ -7,19 +8,13 @@ export default function TitleBar(): JSX.Element {
 
   return (
     <header className="drag flex h-14 items-center justify-between border-b-2 border-black bg-stone/80 px-4">
-      {/* Marca — icono de flecha (play) + RESURRECTION en grande */}
-      <div className="flex items-center gap-3">
-        <div className="mc-panel grid h-9 w-9 place-items-center text-gold">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 12 12"
-            shapeRendering="crispEdges"
-            fill="currentColor"
-          >
-            <path d="M2 1h2v10H2zM4 2h2v8H4zM6 3h2v6H6zM8 4h2v4H8z" />
-          </svg>
-        </div>
+      {/* Marca — logo Resurrection + RESURRECTION en grande */}
+      <div className="flex items-center gap-2.5">
+        <img
+          src={logo}
+          alt="Resurrection"
+          className="h-11 w-11 shrink-0 object-contain [image-rendering:auto]"
+        />
         <div className="mc-text text-2xl font-bold uppercase tracking-[0.14em] text-gold">
           Resurrection
         </div>
