@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "minecraft": "1.7.10",
   "forge": "10.13.4.1614",
   "files": [
@@ -494,6 +494,12 @@
       "sha1": "2130d7266224da6a7325051e37444f7e7c19277c",
       "size": 1774165,
       "url": "https://raw.githubusercontent.com/jmpz2026/DBR-ASSETS/main/mods/OptifinePrincipal.jar"
+    },
+    {
+      "path": "resourcepacks/DbrTexture v6.zip",
+      "sha1": "b1d17c7d22551756e6715ecb6a96b61b9e97fc0a",
+      "size": 4323579,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DBR-ASSETS/main/resourcepacks/DbrTexture%20v6.zip"
     }
   ]
 }
