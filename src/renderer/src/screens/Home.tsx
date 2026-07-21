@@ -201,7 +201,7 @@ function Chip({ children, online }: { children: ReactNode; online?: boolean }): 
 function BuildTag(): JSX.Element {
   return (
     <div className="pointer-events-none absolute bottom-6 right-8 text-right text-[10px] font-medium uppercase leading-relaxed tracking-[0.22em] text-muted mc-text-sm">
-      <div>Build v1.0.0</div>
+      <div>Build v1.0.1</div>
       <div className="text-gold-deep">Forge · Java 8</div>
     </div>
   )
