@@ -3,7 +3,7 @@ import type { Account } from '../../shared/account'
 import type { SyncProgress, SyncSummary } from '../../shared/sync'
 import type { JavaInfo, JavaProgress } from '../../shared/java'
 import type { LaunchProgress } from '../../shared/launch'
-import type { LauncherSettings } from '../../shared/settings'
+import { DEFAULT_JVM_ARGS, type LauncherSettings } from '../../shared/settings'
 import type { ServerStatus } from '../../shared/status'
 import type { UpdateStatus } from '../../shared/update'
 
@@ -168,11 +168,11 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  ramGb: 4,
+  ramGb: 3,
   width: 854,
   height: 480,
   fullscreen: false,
-  jvmArgs: '',
+  jvmArgs: DEFAULT_JVM_ARGS,
   loadSettings: async () => {
     if (!window.dbr?.settings) return
     const s = await window.dbr.settings.get()

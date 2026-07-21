@@ -9,6 +9,11 @@ import { registerStatus } from './status'
 import { registerNews } from './news'
 import { registerUpdater } from './updater'
 
+// UI estática de pixel-art: no necesita GPU. Desactivar la aceleración por hardware elimina
+// el proceso GPU de Chromium (~30-50MB menos de RAM) y va mejor en equipos viejos. Debe
+// llamarse antes de app.whenReady().
+app.disableHardwareAcceleration()
+
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {

@@ -1,30 +1,21 @@
 export interface JrePlatform {
   os: 'windows' | 'mac' | 'linux'
-  arch: 'x64' | 'x86' | 'aarch64'
+  arch: 'x64' | 'aarch64'
   ext: 'zip' | 'tar.gz'
 }
 
 /**
  * Plataforma para pedir el JRE 8 a Adoptium.
- * Nota 1.7.10: usa LWJGL 2. En Mac (incluido Apple Silicon) se usa el JRE **x64**
- * (corre vía Rosetta) porque no hay build aarch64 usable de Java 8 para este juego.
+ * Nota 1.7.10: usa LWJGL 2. El launcher se distribuye solo en 64-bit, así que se usa
+ * **x64 por defecto**. En Mac (incluido Apple Silicon) también x64 (corre vía Rosetta);
+ * no hay build aarch64 usable de Java 8 para este juego.
  */
 export function currentPlatform(): JrePlatform {
   const os: JrePlatform['os'] =
     process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'mac' : 'linux'
 
-  let arch: JrePlatform['arch']
-  if (os === 'mac') {
-    arch = 'x64'
-  } else if (process.arch === 'x64') {
-    arch = 'x64'
-  } else if (process.arch === 'ia32') {
-    arch = 'x86'
-  } else if (process.arch === 'arm64') {
-    arch = os === 'linux' ? 'aarch64' : 'x64'
-  } else {
-    arch = 'x64'
-  }
+  const arch: JrePlatform['arch'] =
+    os === 'linux' && process.arch === 'arm64' ? 'aarch64' : 'x64'
 
   return { os, arch, ext: os === 'windows' ? 'zip' : 'tar.gz' }
 }

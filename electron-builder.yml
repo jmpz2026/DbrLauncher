@@ -9,6 +9,10 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '!{.gitignore,README.md,tailwind.config.js,postcss.config.js}'
 asar: true
+compression: maximum
+electronLanguages:
+  - en-US
+  - es
 win:
   target: nsis
   artifactName: ${productName}-${version}-setup.${ext}

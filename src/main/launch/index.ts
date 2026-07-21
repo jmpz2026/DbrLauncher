@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import { spawn } from 'child_process'
 import { closeSync, mkdirSync, openSync } from 'fs'
 import { join } from 'path'
@@ -133,6 +133,10 @@ export function registerLaunch(): void {
         (p) => e.sender.send('launch:progress', p),
         (s) => e.sender.send('launch:status', s)
       )
+      // MC arrancó y es un proceso independiente (detached/unref): cerramos el launcher
+      // para liberar toda su RAM durante la partida. Pequeño margen para que el renderer
+      // muestre el estado "iniciado" antes de salir.
+      setTimeout(() => app.quit(), 2000)
       return { ok: true }
     } catch (err) {
       const error = (err as Error).message
