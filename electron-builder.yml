@@ -32,3 +32,4 @@ publish:
   provider: github
   owner: jmpz2026
   repo: DbrLauncher
+  releaseType: release # publica el release directo (no como borrador)
