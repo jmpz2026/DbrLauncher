@@ -96,15 +96,17 @@ export async function launch(
   const gameDir = getGameDir()
   mkdirSync(gameDir, { recursive: true })
 
-  // stdout/stderr van a un archivo por descriptor (no por pipe del padre): así el juego no
-  // se bloquea aunque nadie lea, y queda un log. `detached` + `unref` = el juego es
-  // independiente y sobrevive aunque se cierre el launcher. `windowsHide` evita una consola.
+  // En Windows lanzar con javaw.exe (sin consola) en vez de java.exe. NO usar windowsHide:
+  // con java.exe pondría SW_HIDE en el arranque y LWJGL2 crea la ventana del juego OCULTA
+  // (el proceso corre pero no se ve Minecraft). stdout/stderr van a un archivo por descriptor
+  // (no pipe del padre) y `detached` + `unref` hacen el juego independiente del launcher.
+  const exe =
+    process.platform === 'win32' ? java.path.replace(/java\.exe$/i, 'javaw.exe') : java.path
   const logFd = openSync(join(gameDir, 'launcher-game.log'), 'w')
-  const child = spawn(java.path, args, {
+  const child = spawn(exe, args, {
     cwd: gameDir,
     detached: true,
-    stdio: ['ignore', logFd, logFd],
-    windowsHide: true
+    stdio: ['ignore', logFd, logFd]
   })
   child.unref()
 

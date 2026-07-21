@@ -1,6 +1,6 @@
 {
   "name": "dbr-launcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Launcher de la comunidad Dbr — Minecraft Forge 1.7.10",
   "author": "Dbr",
   "main": "./out/main/index.js",
