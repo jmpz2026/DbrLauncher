@@ -1,4 +1,5 @@
 import { useStore, type Tab } from '../store'
+import discordIcon from '../assets/discord.png'
 
 const items: { id: Tab; label: string }[] = [
   { id: 'news', label: 'Noticias' },
@@ -11,7 +12,18 @@ export default function NavBar(): JSX.Element {
   const setTab = useStore((s) => s.setTab)
 
   return (
-    <nav className="flex h-16 items-center justify-center gap-2 border-t-2 border-black bg-stone/85 px-4">
+    <nav className="relative flex h-16 items-center justify-center gap-2 border-t-2 border-black bg-stone/85 px-4">
+      {/* Discord — abajo a la izquierda */}
+      <a
+        href="https://discord.gg/HaQh38sFbD"
+        target="_blank"
+        rel="noreferrer"
+        title="Únete al Discord"
+        className="mc-btn absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center hover:!border-[#8ea1e1]"
+      >
+        <img src={discordIcon} alt="Discord" className="h-6 w-6" />
+      </a>
+
       {items.map((it) => {
         const active = tab === it.id
         return (

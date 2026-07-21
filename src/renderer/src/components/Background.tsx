@@ -7,29 +7,32 @@ interface Spark {
 }
 
 export default function Background(): JSX.Element {
-  // Chispas de ki en formato pixel (cuadrados duros que suben a saltos)
+  // Pocas chispas de ki, tenues (minimalista, sin ruido de fondo)
   const sparks = useMemo<Spark[]>(
     () =>
-      Array.from({ length: 10 }, (_, i) => ({
-        left: `${(i * 9.7 + 5) % 100}%`,
-        duration: 6 + ((i * 3) % 6),
-        delay: (i * 0.9) % 6
+      Array.from({ length: 6 }, (_, i) => ({
+        left: `${(i * 15 + 8) % 100}%`,
+        duration: 8 + ((i * 3) % 6),
+        delay: (i * 1.4) % 7
       })),
     []
   )
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* Textura de bloques deepslate, escalada y pixelada */}
-      <div className="bg-blocks absolute inset-0" />
-      {/* Oscurecido plano estilo menú de Minecraft (sin degradado suave) */}
-      <div className="absolute inset-0 bg-black/40" />
+    <div className="bg-bg pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Viñeteado sutil para dar profundidad, sin textura ruidosa */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(115% 85% at 50% 32%, transparent 58%, rgba(0,0,0,0.5) 100%)'
+        }}
+      />
 
       {/* Chispas de ki pixeladas */}
       {sparks.map((s, i) => (
         <span
           key={i}
-          className="ki-pixel animate-ki-rise"
+          className="ki-pixel animate-ki-rise opacity-70"
           style={{
             left: s.left,
             animationDuration: `${s.duration}s`,
