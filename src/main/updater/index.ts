@@ -23,7 +23,9 @@ export function registerUpdater(getWindow: () => BrowserWindow | null): void {
     send({ state: 'downloading', percent: Math.round(p.percent) })
   )
   autoUpdater.on('update-downloaded', (info) => send({ state: 'ready', version: info.version }))
-  autoUpdater.on('error', (e) => send({ state: 'error', error: e.message }))
+  // Un fallo al buscar/descargar updates NO debe alarmar al jugador (p.ej. 404 de repo
+  // privado, sin red): se registra en el log y no se muestra banner de error.
+  autoUpdater.on('error', (e) => console.error('[updater]', e.message))
 
   ipcMain.handle('update:check', async (): Promise<void> => {
     if (!app.isPackaged) {
