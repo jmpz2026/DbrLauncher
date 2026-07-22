@@ -1,0 +1,89 @@
+name: Android Release
+
+# Publica el APK de DbrLauncherMobile al empujar un tag "android-vN" (N = número de build).
+# Ej: git tag android-v2 && git push origin android-v2
+# También se puede lanzar a mano (workflow_dispatch) indicando el número de build.
+
+on:
+  push:
+    tags:
+      - 'android-v*'
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Número de build DBR (entero, mayor que el anterior)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (rama android-zalith)
+        uses: actions/checkout@v4
+        with:
+          ref: android-zalith
+
+      - name: Derivar versión
+        id: ver
+        run: |
+          if [ -n "${{ github.event.inputs.build }}" ]; then
+            N="${{ github.event.inputs.build }}"
+            TAG="android-v${N}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+            N="${TAG#android-v}"
+          fi
+          echo "n=${N}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "vcode=$((200033 + N))" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar paquetes del Android SDK
+        run: |
+          SDKMAN="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMAN" --licenses >/dev/null 2>&1 || true
+          "$SDKMAN" "platforms;android-37.0" "build-tools;37.0.0" "ndk;25.2.9519653"
+
+      - name: Compilar APK (arm64)
+        working-directory: android/ZalithLauncher2
+        run: |
+          chmod +x gradlew
+          ./gradlew ZalithLauncher:assembleDebug -Darch=arm64 \
+            -Pdbr_build=${{ steps.ver.outputs.n }} \
+            -Plauncher_version_code=${{ steps.ver.outputs.vcode }} \
+            --no-daemon
+          cp ZalithLauncher/build/outputs/apk/debug/*arm64*.apk \
+            "$GITHUB_WORKSPACE/DbrLauncherMobile-arm64.apk"
+
+      - name: Crear/actualizar el Release y subir el APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.ver.outputs.tag }}"
+          gh release create "$TAG" DbrLauncherMobile-arm64.apk \
+            --title "DbrLauncherMobile $TAG" \
+            --notes "Build ${{ steps.ver.outputs.n }}" \
+          || gh release upload "$TAG" DbrLauncherMobile-arm64.apk --clobber
+
+      - name: Actualizar version.json (auto-updater)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N="${{ steps.ver.outputs.n }}"
+          TAG="${{ steps.ver.outputs.tag }}"
+          URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/DbrLauncherMobile-arm64.apk"
+          printf '{\n  "build": %s,\n  "versionName": "DbrLauncher Mobile %s",\n  "apkUrl": "%s",\n  "mandatory": false,\n  "changelog": "Build %s"\n}\n' \
+            "$N" "$TAG" "$URL" "$N" > android/version.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android/version.json
+          git commit -m "android: version.json -> build ${N} (${TAG})" && \
+            git push origin HEAD:android-zalith || echo "version.json sin cambios"
