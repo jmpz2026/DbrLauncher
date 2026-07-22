@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.ui.screens.content
 
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -101,6 +102,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.game.dbr.DbrInstall
 import com.movtery.zalithlauncher.game.dbr.DbrSync
+import com.movtery.zalithlauncher.game.renderer.Renderers
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
 import kotlinx.coroutines.launch
 
@@ -303,6 +306,7 @@ private fun RightMenuContent(
                 bottom.linkTo(launchButton.top)
             },
         ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -335,6 +339,12 @@ private fun RightMenuContent(
                         )
                     }
                 }
+            }
+            RendererPicker(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            )
             }
 
             val menuAnchor = versionManagerRow
@@ -691,5 +701,88 @@ private fun DbrInstallDialog(
             }
         }
         else -> {}
+    }
+}
+
+/** DBR: selector rápido de motor de render en la home (máxima compatibilidad de dispositivos). */
+@Composable
+private fun RendererPicker(modifier: Modifier = Modifier) {
+    val renderers = remember { Renderers.getRenderers() }
+    if (renderers.isEmpty()) return
+    var selectedId by remember { mutableStateOf(AllSettings.renderer.getValue()) }
+    var expanded by remember { mutableStateOf(false) }
+    val currentName = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
+        ?: renderers.first().getRendererName()
+
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
+                .clickable { expanded = true }
+                .padding(all = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier.alpha(0.7f),
+                    text = stringResource(R.string.dbr_renderer_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1
+                )
+                Text(
+                    text = currentName,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1
+                )
+            }
+            Icon(
+                painter = painterResource(R.drawable.ic_settings_filled),
+                contentDescription = stringResource(R.string.dbr_renderer_label),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.width(260.dp),
+            shape = MaterialTheme.shapes.large
+        ) {
+            renderers.forEach { r ->
+                val isSel = r.getUniqueIdentifier() == selectedId
+                DropdownMenuItem(
+                    text = {
+                        Column {
+                            Text(
+                                text = r.getRendererName(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            r.getRendererSummary()?.let { s ->
+                                Text(
+                                    modifier = Modifier.alpha(0.7f),
+                                    text = s,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                    },
+                    onClick = {
+                        selectedId = r.getUniqueIdentifier()
+                        AllSettings.renderer.save(selectedId)
+                        expanded = false
+                    }
+                )
+            }
+        }
+
+        Text(
+            modifier = Modifier
+                .alpha(0.6f)
+                .padding(start = 8.dp, top = 2.dp),
+            text = stringResource(R.string.dbr_renderer_hint),
+            style = MaterialTheme.typography.labelSmall
+        )
     }
 }

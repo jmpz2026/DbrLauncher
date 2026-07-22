@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_renderer_label">Motor de render</string>
+    <string name="dbr_renderer_hint">¿Pantalla negra o fallos gráficos? Prueba otro motor.</string>
     <string name="dbr_update_title">Actualización disponible</string>
     <string name="dbr_update_update">Actualizar</string>
     <string name="dbr_update_later">Después</string>
