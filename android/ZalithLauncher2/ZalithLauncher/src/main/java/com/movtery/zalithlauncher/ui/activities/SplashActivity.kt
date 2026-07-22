@@ -115,7 +115,8 @@ class SplashActivity : BaseAppCompatActivity() {
     }
 
     private fun initUnpackItems() {
-        Components.entries.forEach { component ->
+        // DBR: caciocavallo17 solo aplica a runtimes Java 17+; el server es Java 8, se omite.
+        Components.entries.filter { it != Components.CACIOCAVALLO17 }.forEach { component ->
             val task = UnpackComponentsTask(this@SplashActivity, component)
             if (!task.isCheckFailed()) {
                 unpackItems.add(
