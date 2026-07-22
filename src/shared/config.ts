@@ -5,7 +5,7 @@ export const CONFIG = {
 
   // Servidor de Minecraft (para el ping de estado)
   serverHost: 'dragonblock.online',
-  serverPort: 25625,
+  serverPort: 25575,
 
   // Versiones
   minecraft: '1.7.10',
