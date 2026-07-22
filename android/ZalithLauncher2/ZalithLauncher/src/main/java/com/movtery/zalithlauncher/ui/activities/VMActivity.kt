@@ -296,7 +296,14 @@ class VMViewModel : ViewModel() {
 
             KeyEvent.KEYCODE_TAB -> sender.sendTab()
 
-            else -> sender.sendOther(keyEvent)
+            else -> {
+                //DBR fix (doble input): en modo texto/IME, las teclas que producen carácter
+                //ya las envía el EditText por onTextChanged. Reenviarlas aquí también duplicaba
+                //números y algunos símbolos. Solo se reenvían teclas SIN carácter (F-keys, etc.).
+                if (keyEvent.unicodeChar == 0) {
+                    sender.sendOther(keyEvent)
+                }
+            }
         }
     }
 
