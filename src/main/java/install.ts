@@ -35,8 +35,13 @@ export async function downloadArchive(
  */
 function tarBinary(): string {
   if (process.platform === 'win32') {
-    const sys = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe')
-    if (existsSync(sys)) return sys
+    const root = process.env.SystemRoot ?? 'C:\\Windows'
+    // Sysnative primero: un proceso 32-bit ve System32 redirigido a SysWOW64 (sin tar.exe);
+    // Sysnative evita esa redirección WOW64 y apunta al System32 real de 64-bit.
+    for (const dir of ['Sysnative', 'System32']) {
+      const p = join(root, dir, 'tar.exe')
+      if (existsSync(p)) return p
+    }
   }
   return 'tar'
 }
