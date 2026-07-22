@@ -16,8 +16,11 @@ import com.movtery.zalithlauncher.utils.network.ServerAddress
 import kotlinx.coroutines.launch
 
 class DbrServerViewModel : ViewModel() {
-    /** Servidor DBR (mismo host/puerto que el launcher de escritorio). */
-    private val serverAddress = "dragonblock.online:25625"
+    /** Servidor DBR: dominio primero; si falla, IP directa (mismo puerto 25575). */
+    private val addresses = listOf(
+        "dragonblock.online:25575",
+        "163.227.179.245:25575"
+    )
 
     sealed interface State {
         data object Loading : State
@@ -35,13 +38,14 @@ class DbrServerViewModel : ViewModel() {
     fun refresh() {
         state = State.Loading
         viewModelScope.launch {
-            state = runCatching {
-                val resolved = ServerAddress.parse(serverAddress).resolve()
-                val result = pingServer(resolved, protocolVersion = 5, timeoutMillis = 8000)
-                State.Online(result.status.players.online, result.status.players.max)
-            }.getOrElse {
-                State.Offline
-            }
+            //Intenta el dominio y, si falla, la IP directa.
+            state = addresses.firstNotNullOfOrNull { tryPing(it) } ?: State.Offline
         }
     }
+
+    private suspend fun tryPing(address: String): State.Online? = runCatching {
+        val resolved = ServerAddress.parse(address).resolve()
+        val result = pingServer(resolved, protocolVersion = 5, timeoutMillis = 8000)
+        State.Online(result.status.players.online, result.status.players.max)
+    }.getOrNull()
 }
