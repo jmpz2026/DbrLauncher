@@ -18,9 +18,9 @@ import java.io.File
 import java.net.URL
 
 object DbrUpdater {
-    /** Info de versión del launcher (repo DBR-ASSETS). */
+    /** Info de versión del launcher Android (rama android del repo, NO la rama assets). */
     const val VERSION_URL =
-        "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/version.json"
+        "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/android-zalith/android/version.json"
 
     data class UpdateInfo(
         /** Número de build DBR; debe ser > BuildConfig.DBR_BUILD para actualizar. */

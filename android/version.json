@@ -1,0 +1,7 @@
+{
+  "build": 1,
+  "versionName": "DbrLauncher Mobile 1.0",
+  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v1/DbrLauncherMobile.apk",
+  "mandatory": false,
+  "changelog": "Primera versión del launcher para Android."
+}
