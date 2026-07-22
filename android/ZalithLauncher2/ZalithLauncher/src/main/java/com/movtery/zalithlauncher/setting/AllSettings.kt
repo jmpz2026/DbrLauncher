@@ -64,7 +64,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 分辨率
      */
-    val resolutionRatio = intSetting("resolutionRatio", 100, 25..300)
+    val resolutionRatio = intSetting("resolutionRatio", 75, 25..300) //DBR: 75% por defecto (rendimiento en móvil)
 
     /**
      * 游戏页面全屏化
@@ -382,7 +382,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 启动器页面切换动画类型
      */
-    val launcherSwapAnimateType = enumSetting("launcherSwapAnimateType", TransitionAnimationType.JELLY_BOUNCE)
+    val launcherSwapAnimateType = enumSetting("launcherSwapAnimateType", TransitionAnimationType.CLOSE) //DBR: sin animación de swap (evita el lag/jank al cambiar de pestaña)
 
     /**
      * 启动器背景元素不透明度
