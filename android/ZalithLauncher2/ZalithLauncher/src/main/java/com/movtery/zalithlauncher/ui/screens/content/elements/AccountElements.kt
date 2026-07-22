@@ -468,55 +468,38 @@ fun LoginMenuDialog(
                 contentColor = onCardColor(),
                 shadowElevation = 6.dp
             ) {
+                //DBR: menú de login simplificado — lista vertical clara (offline primero).
                 Column(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState())
-                                .padding(vertical = 12.dp)
-                                .padding(start = 12.dp, end = 6.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            //微软登录
-                            LoginItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                title = stringResource(R.string.account_type_microsoft),
-                                onClick = {
-                                    //DBR: inicio de sesión (Microsoft) aún no disponible
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.dbr_login_not_available),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    onDismissRequest()
-                                }
-                            )
-                            //离线登录
-                            LoginItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                title = stringResource(R.string.account_type_local),
-                                onClick = {
-                                    onLocalLogin()
-                                    onDismissRequest()
-                                }
-                            )
+                    //离线登录 (modo offline, funcional)
+                    LoginItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        title = stringResource(R.string.account_type_local),
+                        onClick = {
+                            onLocalLogin()
+                            onDismissRequest()
                         }
-
-                        //DBR: servidores de autenticación externos ocultos (solo offline + login).
-                    }
-
+                    )
+                    //微软登录 (aún no disponible)
+                    LoginItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        title = stringResource(R.string.account_type_microsoft),
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.dbr_login_not_available),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            onDismissRequest()
+                        }
+                    )
                     Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
-                            .padding(bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = onDismissRequest
                     ) {
                         Text(stringResource(R.string.generic_close))
