@@ -102,28 +102,40 @@ fun AboutInfoScreen(
                     title = stringResource(R.string.about_launcher_title)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        //DbrLauncher Mobile (este proyecto)
                         ButtonIconItem(
-                            icon = painterResource(R.drawable.img_launcher),
-                            title = BuildKeys.LAUNCHER_NAME,
-                            text = stringResource(R.string.about_launcher_version, BuildConfig.VERSION_NAME),
+                            icon = painterResource(R.drawable.dbr_logo),
+                            title = "DbrLauncher Mobile",
+                            text = "Launcher del server Dragon Block Resurrection para Android. " +
+                                    stringResource(R.string.about_launcher_version, BuildConfig.VERSION_NAME),
                             button = {
                                 Button(
-                                    onClick = checkUpdate
-                                ) {
-                                    Text(text = stringResource(R.string.upgrade_title))
-                                }
-                                Button(
-                                    onClick = { openLink(URL_PROJECT) }
+                                    onClick = { openLink("https://github.com/jmpz2026/DbrLauncher/tree/android-zalith") }
                                 ) {
                                     Text(text = stringResource(R.string.about_launcher_project_link))
                                 }
                             }
                         )
 
+                        //Fork original: ZalithLauncher (versión modificada no oficial)
+                        ButtonIconItem(
+                            icon = painterResource(R.drawable.img_launcher),
+                            title = "ZalithLauncher",
+                            text = "DbrLauncher Mobile es una versión modificada no oficial de ZalithLauncher.",
+                            button = {
+                                Button(
+                                    onClick = { openLink("https://github.com/ZalithLauncher/ZalithLauncher2") }
+                                ) {
+                                    Text(text = stringResource(R.string.about_launcher_project_link))
+                                }
+                            }
+                        )
+
+                        //Autor original
                         ButtonIconItem(
                             icon = painterResource(R.drawable.img_avatar_movtery),
                             title = stringResource(R.string.about_launcher_author_movtery_title),
-                            text = stringResource(R.string.about_launcher_author_movtery_text, BuildKeys.LAUNCHER_NAME),
+                            text = stringResource(R.string.about_launcher_author_movtery_text, "ZalithLauncher"),
                             button = {
                                 Button(
                                     onClick = { openLink(URL_SUPPORT) }
@@ -142,6 +154,13 @@ fun AboutInfoScreen(
                     title = stringResource(R.string.about_acknowledgements_title)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        //DBR: crédito al launcher base (ZalithLauncher)
+                        LinkIconItem(
+                            icon = painterResource(R.drawable.img_launcher),
+                            title = "ZalithLauncher",
+                            text = "Launcher base sobre el que se construye DbrLauncher Mobile (fork no oficial, GPL-3.0).",
+                            openLink = { openLink("https://github.com/ZalithLauncher/ZalithLauncher2") }
+                        )
                         ButtonIconItem(
                             icon = painterResource(R.drawable.img_avatar_bangbang93),
                             title = "bangbang93",
