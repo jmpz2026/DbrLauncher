@@ -10,11 +10,16 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -122,5 +127,67 @@ fun GoldButton(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CompositionLocalProvider(LocalContentColor provides DbrInk, content = { content() })
+    }
+}
+
+/** Botón de la barra de navegación (piedra; activo = oro). */
+@Composable
+fun StoneNavButton(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RectangleShape)
+            .pixelBevel(background = if (selected) DbrGoldDeep else DbrStone)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = if (selected) DbrInk else DbrCream,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 1
+        )
+    }
+}
+
+/** Barra de navegación inferior estilo desktop: Noticias · Jugar · Ajustes (+ Discord). */
+@Composable
+fun DbrBottomBar(
+    inLauncherScreen: Boolean,
+    inSettingsScreen: Boolean,
+    onNews: () -> Unit,
+    toMainScreen: () -> Unit,
+    toSettingsScreen: () -> Unit,
+    onDiscord: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .pixelBevel(background = DbrStone)
+    ) {
+        StoneNavButton(
+            text = "Discord",
+            selected = false,
+            onClick = onDiscord,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 10.dp)
+        )
+        Row(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StoneNavButton(text = "Noticias", selected = false, onClick = onNews)
+            StoneNavButton(text = "Jugar", selected = inLauncherScreen, onClick = toMainScreen)
+            StoneNavButton(text = "Ajustes", selected = inSettingsScreen, onClick = toSettingsScreen)
+        }
     }
 }

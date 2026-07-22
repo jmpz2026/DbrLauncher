@@ -115,6 +115,7 @@ import com.movtery.zalithlauncher.utils.festival.LocalFestivals
 import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.ui.dbr.DbrBottomBar
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
@@ -229,6 +230,23 @@ fun MainScreen(
                     changeTasksExpandedState()
                 }
             }
+
+            //DBR: barra de navegación inferior estilo desktop
+            DbrBottomBar(
+                inLauncherScreen = inLauncherScreen,
+                inSettingsScreen = mainScreenKey is NestedNavKey.Settings,
+                onNews = { eventViewModel.sendToast(androidText(R.string.dbr_news_soon)) },
+                toMainScreen = toMainScreen,
+                toSettingsScreen = {
+                    screenBackStackModel.mainScreen.removeAndNavigateTo(
+                        removes = screenBackStackModel.clearBeforeNavKeys,
+                        screenKey = screenBackStackModel.settingsScreen
+                    )
+                },
+                onDiscord = {
+                    eventViewModel.sendEvent(EventViewModel.Event.OpenLink("https://discord.gg/HaQh38sFbD"))
+                }
+            )
         }
     }
 }
@@ -394,26 +412,7 @@ private fun <E: TitledNavKey> TopBar(
                     }
                 }
 
-                TopBarRailItem(
-                    selected = inMultiplayerScreen,
-                    painter = painterResource(R.drawable.ic_group_filled),
-                    text = stringResource(R.string.terracotta),
-                    onClick = {
-                        if (!inMultiplayerScreen) toMultiplayerScreen()
-                    },
-                )
-
-                // DBR: sección "Descargar" (versiones/modpacks/mods) oculta — el launcher
-                // gestiona una única instancia DBR fija, no se descargan otras versiones.
-
-                TopBarRailItem(
-                    selected = inSettingsScreen,
-                    painter = painterResource(R.drawable.ic_settings_filled),
-                    text = stringResource(R.string.generic_setting),
-                    onClick = {
-                        if (!inSettingsScreen) toSettingsScreen()
-                    },
-                )
+                // DBR: navegación movida a la barra inferior (Noticias · Jugar · Ajustes).
             }
         }
     }
