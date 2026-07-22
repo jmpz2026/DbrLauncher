@@ -37,11 +37,6 @@ export default function Home(): JSX.Element {
         </h1>
 
         <div className="relative mt-2 grid place-items-center">
-          {!busy && (
-            <span className="pointer-events-none absolute -right-6 -top-5 z-10 origin-center animate-splash-pulse whitespace-nowrap text-xs font-bold uppercase tracking-wide text-gold mc-text-sm">
-              ¡Ki al máximo!
-            </span>
-          )}
           <button
             onClick={() => void play()}
             disabled={busy}
