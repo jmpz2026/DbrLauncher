@@ -107,6 +107,14 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.dbr.BlockBackground
 import com.movtery.zalithlauncher.ui.dbr.GoldButton
 import com.movtery.zalithlauncher.ui.dbr.stonePanel
+import com.movtery.zalithlauncher.ui.dbr.DbrGold
+import com.movtery.zalithlauncher.ui.dbr.DbrCream
+import com.movtery.zalithlauncher.ui.dbr.StoneNavButton
+import com.movtery.zalithlauncher.game.account.getAccountTypeName
+import android.app.Activity
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Color
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
 import kotlinx.coroutines.launch
 
@@ -118,58 +126,192 @@ fun LauncherScreen(
     onOpenLink: (String) -> Unit,
     onHomePageEvent: (MarkdownBlock.Button.Event) -> Unit,
 ) {
+    val context = LocalContext.current
     BaseScreen(
         screenKey = NormalNavKey.LauncherMain,
         currentKey = backStackViewModel.mainScreen.currentKey
-    ) { isVisible ->
-        Box(modifier = Modifier.fillMaxSize()) {
-        BlockBackground(modifier = Modifier.fillMaxSize())
-        Row(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CompositionLocalProvider(
-                LocalUriHandler provides object : UriHandler {
-                    override fun openUri(uri: String) {
-                        onOpenLink(uri)
-                    }
-                }
-            ) {
-                ContentMenu(
-                    modifier = Modifier.weight(7f),
-                    isVisible = isVisible,
-                    onHomePageEvent = onHomePageEvent
-                )
-            }
-
-            val toAccountManageScreen: () -> Unit = {
+    ) { _ ->
+        DbrHome(
+            onLaunchGame = onLaunchGame,
+            toAccountManageScreen = {
                 backStackViewModel.mainScreen.navigateTo(
                     screenKey = NormalNavKey.AccountManager(FirstLoginMenu.NONE)
                 )
-            }
-            val toVersionManageScreen: () -> Unit = {
-                backStackViewModel.mainScreen.removeAndNavigateTo(
-                    remove = NestedNavKey.VersionSettings::class,
-                    screenKey = NormalNavKey.VersionsManager
-                )
-            }
-            val toVersionSettingsScreen: () -> Unit = {
-                VersionsManager.currentVersion.value?.let { version ->
-                    navigateToVersions(version)
+            },
+            onExit = { (context as? Activity)?.finish() }
+        )
+    }
+}
+
+/** Home estilo desktop DBR: RESURRECTION, cuenta+salir, centro Jugar, versión abajo. */
+@Composable
+private fun DbrHome(
+    onLaunchGame: (Version?) -> Unit,
+    toAccountManageScreen: () -> Unit,
+    onExit: () -> Unit
+) {
+    val account by AccountsManager.currentAccountFlow.collectAsStateWithLifecycle()
+    val allVersions by VersionsManager.versions.collectAsStateWithLifecycle()
+    val hasDbr = allVersions.any { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
+    val dbrVm = rememberDbrInstallViewModel()
+    val context = LocalContext.current
+
+    val nick = account?.username ?: "—"
+    val typeName = account?.let { getAccountTypeName(it) } ?: ""
+
+    DbrInstallDialog(dbrVm)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        BlockBackground(modifier = Modifier.fillMaxSize())
+
+        // Arriba-izquierda: RESURRECTION
+        Text(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp),
+            text = "RESURRECTION",
+            color = DbrGold,
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        // Arriba-derecha: cuenta + Salir
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .clip(RectangleShape)
+                    .stonePanel()
+                    .clickable(onClick = toAccountManageScreen)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(text = nick, color = DbrCream, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                if (typeName.isNotEmpty()) {
+                    Text(text = typeName.uppercase(), color = DbrGold, style = MaterialTheme.typography.labelSmall, maxLines = 1)
                 }
             }
+            StoneNavButton(text = stringResource(R.string.dbr_exit), selected = false, onClick = onExit)
+        }
 
-            RightMenu(
-                isVisible = isVisible,
-                modifier = Modifier
-                    .weight(3f)
-                    .fillMaxHeight()
-                    .padding(top = 12.dp, end = 12.dp, bottom = 12.dp),
-                onLaunchGame = onLaunchGame,
-                toAccountManageScreen = toAccountManageScreen,
-                toVersionManageScreen = toVersionManageScreen,
-                toVersionSettingsScreen = toVersionSettingsScreen
+        // Centro: bienvenida + nick + JUGAR + chips
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.dbr_welcome_back),
+                color = DbrGold,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = nick.uppercase(),
+                color = DbrGold,
+                style = MaterialTheme.typography.displaySmall,
+                maxLines = 1
+            )
+            GoldButton(
+                onClick = {
+                    if (hasDbr) {
+                        val v = allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
+                        if (v != null) dbrVm.syncThenLaunch(v) { onLaunchGame(null) } else onLaunchGame(null)
+                    } else {
+                        dbrVm.install(context)
+                    }
+                },
+                modifier = Modifier.width(280.dp),
+                contentPadding = PaddingValues(vertical = 18.dp)
+            ) {
+                Text(
+                    text = if (hasDbr) stringResource(R.string.dbr_play) else stringResource(R.string.dbr_install_button),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                InfoChip(text = stringResource(R.string.dbr_mods_ok), dot = Color(0xFF5FA838))
+                RendererChip()
+                InfoChip(text = stringResource(R.string.dbr_server))
+            }
+        }
+
+        // Abajo-derecha: versión
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                text = "Build ${BuildConfig.DBR_BUILD}",
+                color = DbrCream.copy(alpha = 0.6f),
+                style = MaterialTheme.typography.labelSmall
+            )
+            Text(
+                text = "Forge ${DbrInstall.MINECRAFT} · Java 8",
+                color = DbrCream.copy(alpha = 0.6f),
+                style = MaterialTheme.typography.labelSmall
             )
         }
+    }
+}
+
+/** Chip de piedra con texto (y punto opcional de estado). */
+@Composable
+private fun InfoChip(
+    text: String,
+    dot: Color? = null,
+    onClick: (() -> Unit)? = null
+) {
+    Row(
+        modifier = Modifier
+            .clip(RectangleShape)
+            .stonePanel()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        if (dot != null) {
+            Box(modifier = Modifier.size(8.dp).background(dot))
+        }
+        Text(text = text, color = DbrCream, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+    }
+}
+
+/** Chip de motor de render con desplegable (máxima compatibilidad). */
+@Composable
+private fun RendererChip() {
+    val renderers = remember { Renderers.getRenderers() }
+    if (renderers.isEmpty()) return
+    var selectedId by remember { mutableStateOf(AllSettings.renderer.getValue()) }
+    var expanded by remember { mutableStateOf(false) }
+    val name = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
+        ?: renderers.first().getRendererName()
+    Box {
+        InfoChip(text = "Motor: $name", onClick = { expanded = true })
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            shape = MaterialTheme.shapes.large
+        ) {
+            renderers.forEach { r ->
+                DropdownMenuItem(
+                    text = { Text(text = r.getRendererName(), style = MaterialTheme.typography.labelMedium) },
+                    onClick = {
+                        selectedId = r.getUniqueIdentifier()
+                        AllSettings.renderer.save(selectedId)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

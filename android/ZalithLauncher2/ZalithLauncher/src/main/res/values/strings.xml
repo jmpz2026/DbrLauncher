@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_welcome_back">Bienvenido de vuelta</string>
+    <string name="dbr_play">▶ JUGAR</string>
+    <string name="dbr_mods_ok">Mods al día</string>
+    <string name="dbr_server">Servidor…</string>
+    <string name="dbr_exit">Salir</string>
     <string name="dbr_news_soon">Noticias: próximamente</string>
     <string name="dbr_renderer_label">Motor de render</string>
     <string name="dbr_renderer_hint">¿Pantalla negra o fallos gráficos? Prueba otro motor.</string>
