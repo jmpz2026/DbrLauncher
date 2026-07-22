@@ -164,15 +164,7 @@ private fun DbrHome(
     Box(modifier = Modifier.fillMaxSize()) {
         BlockBackground(modifier = Modifier.fillMaxSize())
 
-        // Arriba-izquierda: RESURRECTION
-        Text(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp),
-            text = "RESURRECTION",
-            color = DbrGold,
-            style = MaterialTheme.typography.headlineSmall
-        )
+        // (RESURRECTION va en el título superior del launcher)
 
         // Arriba-derecha: cuenta + Salir
         Row(

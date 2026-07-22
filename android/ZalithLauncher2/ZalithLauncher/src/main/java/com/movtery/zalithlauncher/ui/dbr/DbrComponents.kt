@@ -6,7 +6,6 @@
 
 package com.movtery.zalithlauncher.ui.dbr
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,14 +21,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -51,33 +58,36 @@ private val speckles = listOf(
     Speck(4, 14, 1, 1, 0xFF3B352E), Speck(15, 2, 1, 1, 0xFF342E28)
 )
 
-/** Fondo de bloques deepslate pixelado, tileado. */
+/**
+ * Fondo de bloques deepslate pixelado, tileado.
+ * El patrón se dibuja UNA vez en un [ImageBitmap] y se repite con un shader
+ * (barato por frame), para no penalizar las transiciones entre pantallas.
+ */
 @Composable
 fun BlockBackground(
     modifier: Modifier = Modifier,
     tileSize: Dp = 48.dp,
     baseColor: Color = Color(0xFF2B2723)
 ) {
-    Canvas(modifier = modifier) {
-        drawRect(baseColor)
-        val tilePx = tileSize.toPx()
+    val density = LocalDensity.current
+    val tilePx = with(density) { tileSize.roundToPx() }.coerceAtLeast(16)
+    val tile = remember(tilePx, baseColor) {
+        val bmp = ImageBitmap(tilePx, tilePx)
+        val canvas = Canvas(bmp)
+        val paint = Paint()
         val cell = tilePx / 16f
-        var oy = 0f
-        while (oy < size.height) {
-            var ox = 0f
-            while (ox < size.width) {
-                for (s in speckles) {
-                    drawRect(
-                        color = Color(s.color),
-                        topLeft = Offset(ox + s.x * cell, oy + s.y * cell),
-                        size = Size(s.w * cell, s.h * cell)
-                    )
-                }
-                ox += tilePx
-            }
-            oy += tilePx
+        paint.color = baseColor
+        canvas.drawRect(0f, 0f, tilePx.toFloat(), tilePx.toFloat(), paint)
+        for (s in speckles) {
+            paint.color = Color(s.color)
+            canvas.drawRect(s.x * cell, s.y * cell, (s.x + s.w) * cell, (s.y + s.h) * cell, paint)
         }
+        bmp
     }
+    val brush = remember(tile) {
+        ShaderBrush(ImageShader(tile, TileMode.Repeated, TileMode.Repeated))
+    }
+    Box(modifier = modifier.background(brush))
 }
 
 /** Bisel pixelado: fondo + borde negro 2px + realce claro (arriba/izq) y sombra (abajo/der). */

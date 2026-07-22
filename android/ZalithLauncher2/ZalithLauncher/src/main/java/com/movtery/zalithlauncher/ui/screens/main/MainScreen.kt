@@ -347,7 +347,8 @@ private fun <E: TitledNavKey> TopBar(
                 if (parent == null) {
                     if (festivals.isEmpty()) {
                         Text(
-                            text = BuildKeys.LAUNCHER_IDENTIFIER,
+                            text = "RESURRECTION",
+                            color = MaterialTheme.colorScheme.primary,
                             style = style,
                             softWrap = softWarp,
                             maxLines = maxLines
