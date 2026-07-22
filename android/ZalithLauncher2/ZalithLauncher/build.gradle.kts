@@ -47,10 +47,20 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
-            storeFile = file("zalith_launcher.jks")
-            storePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt")
-            keyAlias = "movtery_zalith"
-            keyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt")
+            //DBR: firma release con NUESTRA clave privada (desde env/Secrets del CI).
+            //Si no está disponible (build local sin la clave), cae al keystore debug commiteado.
+            val dbrKs = System.getenv("DBR_KEYSTORE_PATH")
+            if (!dbrKs.isNullOrBlank() && File(dbrKs).exists()) {
+                storeFile = File(dbrKs)
+                storePassword = System.getenv("DBR_STORE_PASSWORD")
+                keyAlias = System.getenv("DBR_KEY_ALIAS") ?: "dbr"
+                keyPassword = System.getenv("DBR_KEY_PASSWORD")
+            } else {
+                storeFile = file("zalith_launcher_debug.jks")
+                storePassword = defaultStorePassword
+                keyAlias = "movtery_zalith_debug"
+                keyPassword = defaultKeyPassword
+            }
         }
         create("debugBuild") {
             storeFile = file("zalith_launcher_debug.jks")
@@ -72,13 +82,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            //DBR: sin minify/shrink para no arriesgar romper Gson/reflexión (no testeable en release).
+            isMinifyEnabled = false
+            isShrinkResources = false
             signingConfig = signingConfigs.getByName("releaseBuild")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
         debug {
             isMinifyEnabled = false

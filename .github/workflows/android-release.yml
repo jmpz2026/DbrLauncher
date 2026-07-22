@@ -52,15 +52,24 @@ jobs:
           yes | "$SDKMAN" --licenses >/dev/null 2>&1 || true
           "$SDKMAN" "platforms;android-37.0" "build-tools;37.0.0" "ndk;25.2.9519653"
 
-      - name: Compilar APK (arm64)
+      - name: Preparar keystore de release
+        run: |
+          echo "${{ secrets.DBR_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/dbr-release.jks"
+
+      - name: Compilar APK (arm64, release firmado)
         working-directory: android/ZalithLauncher2
+        env:
+          DBR_KEYSTORE_PATH: ${{ runner.temp }}/dbr-release.jks
+          DBR_STORE_PASSWORD: ${{ secrets.DBR_STORE_PASSWORD }}
+          DBR_KEY_PASSWORD: ${{ secrets.DBR_KEY_PASSWORD }}
+          DBR_KEY_ALIAS: ${{ secrets.DBR_KEY_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew ZalithLauncher:assembleDebug -Darch=arm64 \
+          ./gradlew ZalithLauncher:assembleRelease -Darch=arm64 \
             -Pdbr_build=${{ steps.ver.outputs.n }} \
             -Plauncher_version_code=${{ steps.ver.outputs.vcode }} \
             --no-daemon
-          cp ZalithLauncher/build/outputs/apk/debug/*arm64*.apk \
+          cp ZalithLauncher/build/outputs/apk/release/*arm64*.apk \
             "$GITHUB_WORKSPACE/DbrLauncherMobile-arm64.apk"
 
       - name: Crear/actualizar el Release y subir el APK
