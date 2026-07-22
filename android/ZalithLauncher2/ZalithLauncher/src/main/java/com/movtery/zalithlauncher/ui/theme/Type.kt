@@ -19,31 +19,38 @@
 package com.movtery.zalithlauncher.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import com.movtery.zalithlauncher.R
 
 /**
- * DBR: fuente pixel (Pixelify Sans) para dar identidad estilo Minecraft/desktop.
- * Se usa en títulos, encabezados y etiquetas/botones; el cuerpo se deja en la
- * fuente legible del sistema para no perder legibilidad en pantallas densas.
+ * DBR: fuente pixel (Pixelify Sans) para identidad estilo Minecraft/desktop.
+ * Se usa una instancia ESTÁTICA (Regular). Las variable fonts hacían "instancing"
+ * por cada peso distinto → causaba ~2s de lag al componer pantallas con mucho texto
+ * (ej. Ajustes). Además se fuerza FontWeight.Normal para evitar bold sintético.
+ * El cuerpo se deja en la fuente legible del sistema.
  */
-val PixelFontFamily = FontFamily(Font(R.font.pixelify_sans))
+val PixelFontFamily = FontFamily(Font(R.font.pixelify_sans, FontWeight.Normal))
+
+private fun TextStyle.pixel(): TextStyle =
+    copy(fontFamily = PixelFontFamily, fontWeight = FontWeight.Normal)
 
 private val base = Typography()
 
 val AppTypography = base.copy(
-    displayLarge = base.displayLarge.copy(fontFamily = PixelFontFamily),
-    displayMedium = base.displayMedium.copy(fontFamily = PixelFontFamily),
-    displaySmall = base.displaySmall.copy(fontFamily = PixelFontFamily),
-    headlineLarge = base.headlineLarge.copy(fontFamily = PixelFontFamily),
-    headlineMedium = base.headlineMedium.copy(fontFamily = PixelFontFamily),
-    headlineSmall = base.headlineSmall.copy(fontFamily = PixelFontFamily),
-    titleLarge = base.titleLarge.copy(fontFamily = PixelFontFamily),
-    titleMedium = base.titleMedium.copy(fontFamily = PixelFontFamily),
-    titleSmall = base.titleSmall.copy(fontFamily = PixelFontFamily),
-    labelLarge = base.labelLarge.copy(fontFamily = PixelFontFamily),
-    labelMedium = base.labelMedium.copy(fontFamily = PixelFontFamily),
-    labelSmall = base.labelSmall.copy(fontFamily = PixelFontFamily)
+    displayLarge = base.displayLarge.pixel(),
+    displayMedium = base.displayMedium.pixel(),
+    displaySmall = base.displaySmall.pixel(),
+    headlineLarge = base.headlineLarge.pixel(),
+    headlineMedium = base.headlineMedium.pixel(),
+    headlineSmall = base.headlineSmall.pixel(),
+    titleLarge = base.titleLarge.pixel(),
+    titleMedium = base.titleMedium.pixel(),
+    titleSmall = base.titleSmall.pixel(),
+    labelLarge = base.labelLarge.pixel(),
+    labelMedium = base.labelMedium.pixel(),
+    labelSmall = base.labelSmall.pixel()
     // body* se mantienen en la fuente por defecto (legible).
 )
