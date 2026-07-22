@@ -26,6 +26,11 @@ import com.movtery.zalithlauncher.utils.string.splitPreservingQuotes
 
 private const val LWJGL_LIB_NAME_ARG = "-Dorg.lwjgl.opengl.libname="
 
+/** DBR: args JVM por defecto (G1GC, como el launcher de escritorio) para FPS más suave en Java 8. */
+private const val DBR_DEFAULT_JVM_ARGS =
+    "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 " +
+    "-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M"
+
 /**
  * 初始化处理所有设置项
  * @param reloadAll 是否重新加载全部设置项
@@ -35,6 +40,10 @@ fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     if (AllSettings.ramAllocation.getValue() == null) {
         val ram = findBestRAMAllocation(context)
         AllSettings.ramAllocation.save(ram)
+    }
+    //DBR: si no hay args JVM configurados, aplicar los de G1GC por defecto.
+    if (AllSettings.jvmArgs.getValue().isBlank()) {
+        AllSettings.jvmArgs.save(DBR_DEFAULT_JVM_ARGS)
     }
     val jvmArgs = AllSettings.jvmArgs.getValue()
     jvmArgs.splitPreservingQuotes().find { it.startsWith(LWJGL_LIB_NAME_ARG) }?.let { arg ->
