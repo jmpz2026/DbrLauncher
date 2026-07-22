@@ -599,6 +599,41 @@ private fun customDark(
     )
 }
 
+/**
+ * DBR: esquema de color propio (estilo desktop) — oro sobre piedra, dark-only.
+ * Paleta tomada del launcher de escritorio (tailwind): oro #FFCF4A/#E0951B,
+ * piedra #2B2B2B, fondo #191614, texto crema #E8E2D4, verde online #5FA838.
+ */
+private val dbrDark = darkColorScheme(
+    primary = Color(0xFFFFCF4A),
+    onPrimary = Color(0xFF2A1600),
+    primaryContainer = Color(0xFFE0951B),
+    onPrimaryContainer = Color(0xFF2A1600),
+    secondary = Color(0xFFFFE9A8),
+    onSecondary = Color(0xFF2A1600),
+    secondaryContainer = Color(0xFF4A4642),
+    onSecondaryContainer = Color(0xFFE8E2D4),
+    tertiary = Color(0xFF5FA838),
+    onTertiary = Color(0xFF0E1A06),
+    background = Color(0xFF191614),
+    onBackground = Color(0xFFE8E2D4),
+    surface = Color(0xFF2B2B2B),
+    onSurface = Color(0xFFE8E2D4),
+    surfaceVariant = Color(0xFF3A3A3A),
+    onSurfaceVariant = Color(0xFF9B968C),
+    surfaceContainerLowest = Color(0xFF141210),
+    surfaceContainerLow = Color(0xFF1A1A1A),
+    surfaceContainer = Color(0xFF201D1B),
+    surfaceContainerHigh = Color(0xFF2B2B2B),
+    surfaceContainerHighest = Color(0xFF3A3A3A),
+    inverseSurface = Color(0xFFE8E2D4),
+    inverseOnSurface = Color(0xFF191614),
+    outline = Color(0xFF000000),
+    outlineVariant = Color(0xFF565656),
+    error = Color(0xFFE0603A),
+    onError = Color(0xFF2A0A00)
+)
+
 @Composable
 fun ZalithLauncherTheme(
     darkTheme: Boolean = isLauncherInDarkTheme(),
@@ -615,43 +650,8 @@ fun ZalithLauncherTheme(
 
     val context = LocalContext.current
 
-    val targetColorScheme = remember(darkTheme, dynamicColor, colorTheme, customColor, customPaletteStyle) {
-        when {
-            dynamicColor && colorTheme == ColorThemeType.DYNAMIC && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> when (colorTheme) {
-                ColorThemeType.EMBERMIRE -> embermireDark
-                ColorThemeType.VELVET_ROSE -> velvetRoseDark
-                ColorThemeType.MISTWAVE -> mistwaveDark
-                ColorThemeType.GLACIER -> glacierDark
-                ColorThemeType.VERDANTFIELD -> verdantFieldDark
-                ColorThemeType.URBAN_ASH -> urbanAshDark
-                ColorThemeType.VERDANT_DAWN -> verdantDawnDark
-                ColorThemeType.CUSTOM -> customDark(
-                    color = customColor,
-                    style = customPaletteStyle
-                )
-                else -> embermireDark
-            }
-
-            else -> when (colorTheme) {
-                ColorThemeType.EMBERMIRE -> embermireLight
-                ColorThemeType.VELVET_ROSE -> velvetRoseLight
-                ColorThemeType.MISTWAVE -> mistwaveLight
-                ColorThemeType.GLACIER -> glacierLight
-                ColorThemeType.VERDANTFIELD -> verdantFieldLight
-                ColorThemeType.URBAN_ASH -> urbanAshLight
-                ColorThemeType.VERDANT_DAWN -> verdantDawnLight
-                ColorThemeType.CUSTOM -> customLight(
-                    color = customColor,
-                    style = customPaletteStyle
-                )
-                else -> embermireLight
-            }
-        }
-    }
+    //DBR: theme forzado (oro/piedra, dark-only), independiente del selector de temas de ZL2.
+    val targetColorScheme = dbrDark
 
     var currentDarkTheme by remember { mutableStateOf(darkTheme) }
     var currentDisplayScheme by remember { mutableStateOf(targetColorScheme) }
