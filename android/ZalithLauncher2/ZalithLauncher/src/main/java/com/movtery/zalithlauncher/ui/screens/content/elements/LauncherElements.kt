@@ -168,11 +168,8 @@ fun LaunchGameOperation(
         is LaunchGameOperation.NoAccount -> {
             LaunchedEffect(Unit) {
                 eventViewModel.sendToast(androidText(R.string.game_launch_no_account))
-                val isOffline = AccountsManager.isOffline.value
-                toAccountManageScreen(
-                    if (isOffline) FirstLoginMenu.MICROSOFT
-                    else FirstLoginMenu.NORMAL
-                )
+                //DBR: abrir el menú normal (offline + iniciar sesión) en vez de forzar Microsoft
+                toAccountManageScreen(FirstLoginMenu.NORMAL)
                 updateOperation(LaunchGameOperation.None)
             }
         }

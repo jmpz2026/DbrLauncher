@@ -354,12 +354,10 @@ private fun ActionsLayout(
             modifier = Modifier
                 .fillMaxWidth(),
             onClick = {
-                if (isOffline) {
-                    //非正版状态下，只允许创建微软账号
-                    actions.onIntent(AccountManageIntent.UpdateMicrosoftLoginOp(MicrosoftLoginOperation.Tip))
-                } else {
-                    actions.onIntent(AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.Login))
-                }
+                //DBR: abrir SIEMPRE el menú de login (offline + iniciar sesión).
+                //ZL2 aquí forzaba solo Microsoft en estado offline, lo que impedía
+                //crear una cuenta offline en un dispositivo sin cuenta previa.
+                actions.onIntent(AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.Login))
             }
         ) {
             MarqueeText(text = stringResource(R.string.account_add_new_account))
