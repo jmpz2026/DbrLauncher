@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,10 +34,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.movtery.zalithlauncher.BuildKeys
+import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
@@ -60,7 +63,7 @@ fun SplashScreen(
         TopBar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp),
+                .height(56.dp),
             contentColor = onBackgroundColor()
         )
 
@@ -83,13 +86,15 @@ private fun TopBar(
     CompositionLocalProvider(
         LocalContentColor provides contentColor
     ) {
-        Row(
+        Column(
             modifier = modifier,
-            horizontalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            Text(text = BuildKeys.LAUNCHER_NAME)
             Text(
-                modifier = Modifier.align(Alignment.CenterVertically),
-                text = BuildKeys.LAUNCHER_NAME
+                text = stringResource(R.string.unofficial_modified_version),
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
