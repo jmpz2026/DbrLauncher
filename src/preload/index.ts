@@ -7,6 +7,7 @@ import type { LauncherSettings } from '../shared/settings'
 import type { ServerStatus } from '../shared/status'
 import type { NewsResult } from '../shared/news'
 import type { UpdateStatus } from '../shared/update'
+import type { FuseStatus, FuseInstallResult } from '../shared/fuse'
 
 const api = {
   platform: process.platform,
@@ -85,6 +86,11 @@ const api = {
       ipcRenderer.on('update:status', listener)
       return () => ipcRenderer.removeListener('update:status', listener)
     }
+  },
+
+  fuse: {
+    status: (): Promise<FuseStatus> => ipcRenderer.invoke('fuse:status'),
+    install: (): Promise<FuseInstallResult> => ipcRenderer.invoke('fuse:install')
   }
 }
 

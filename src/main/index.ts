@@ -8,6 +8,7 @@ import { registerSettings } from './settings'
 import { registerStatus } from './status'
 import { registerNews } from './news'
 import { registerUpdater } from './updater'
+import { registerFuse } from './fuse'
 
 // UI estática de pixel-art: no necesita GPU. Desactivar la aceleración por hardware elimina
 // el proceso GPU de Chromium (~30-50MB menos de RAM) y va mejor en equipos viejos. Debe
@@ -71,6 +72,8 @@ app.whenReady().then(() => {
   registerNews()
   // Auto-actualización (GitHub Releases)
   registerUpdater(() => mainWindow)
+  // Detección de libfuse2 en Linux (AppImage)
+  registerFuse()
 
   createWindow()
 

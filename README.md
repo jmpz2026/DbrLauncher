@@ -107,6 +107,28 @@ publish:
 
    El auto-update solo funciona en la app **instalada** (no en `npm run dev`).
 
+### Linux (AppImage)
+
+El AppImage se monta con **FUSE** (`libfuse.so.2`). Los runtimes modernos de AppImage
+hacen fallback a *extract-and-run* cuando falta, pero en algunas distros el doble-click
+no abre nada. Solución:
+
+```bash
+# Debian/Ubuntu/Mint/Pop!_OS
+sudo apt install libfuse2
+# Fedora/RHEL:  sudo dnf install fuse-libs
+# Arch/Manjaro: sudo pacman -S fuse2
+```
+
+Alternativa sin instalar nada (fuerza la extracción):
+
+```bash
+./Dbr-Launcher-*.AppImage --appimage-extract-and-run
+```
+
+Si el launcher **sí** abre sin libfuse2 (modo extract-and-run), muestra un aviso in-app
+con el comando y un botón «Instalar ahora» (usa `pkexec`, con diálogo gráfico de contraseña).
+
 ## Tests
 
 Scripts de verificación (Node + esbuild, sin abrir la app):
