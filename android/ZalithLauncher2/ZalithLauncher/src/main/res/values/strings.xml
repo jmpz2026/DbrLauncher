@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_server_label">Servidor:</string>
+    <string name="dbr_server_offline">Servidor: offline</string>
     <string name="dbr_welcome_back">Bienvenido de vuelta</string>
     <string name="dbr_play">▶ JUGAR</string>
     <string name="dbr_mods_ok">Mods al día</string>

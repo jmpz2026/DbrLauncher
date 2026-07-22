@@ -58,36 +58,13 @@ private val speckles = listOf(
     Speck(4, 14, 1, 1, 0xFF3B352E), Speck(15, 2, 1, 1, 0xFF342E28)
 )
 
-/**
- * Fondo de bloques deepslate pixelado, tileado.
- * El patrón se dibuja UNA vez en un [ImageBitmap] y se repite con un shader
- * (barato por frame), para no penalizar las transiciones entre pantallas.
- */
+/** Fondo plano oscuro (estilo desktop, sin ruido). */
 @Composable
 fun BlockBackground(
     modifier: Modifier = Modifier,
-    tileSize: Dp = 48.dp,
-    baseColor: Color = Color(0xFF2B2723)
+    color: Color = Color(0xFF191614)
 ) {
-    val density = LocalDensity.current
-    val tilePx = with(density) { tileSize.roundToPx() }.coerceAtLeast(16)
-    val tile = remember(tilePx, baseColor) {
-        val bmp = ImageBitmap(tilePx, tilePx)
-        val canvas = Canvas(bmp)
-        val paint = Paint()
-        val cell = tilePx / 16f
-        paint.color = baseColor
-        canvas.drawRect(0f, 0f, tilePx.toFloat(), tilePx.toFloat(), paint)
-        for (s in speckles) {
-            paint.color = Color(s.color)
-            canvas.drawRect(s.x * cell, s.y * cell, (s.x + s.w) * cell, (s.y + s.h) * cell, paint)
-        }
-        bmp
-    }
-    val brush = remember(tile) {
-        ShaderBrush(ImageShader(tile, TileMode.Repeated, TileMode.Repeated))
-    }
-    Box(modifier = modifier.background(brush))
+    Box(modifier = modifier.background(color))
 }
 
 /** Bisel pixelado: fondo + borde negro 2px + realce claro (arriba/izq) y sombra (abajo/der). */

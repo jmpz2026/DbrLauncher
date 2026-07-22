@@ -92,6 +92,7 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.viewmodel.HomePageState
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import com.movtery.zalithlauncher.viewmodel.DbrServerViewModel
 import android.content.Context
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
@@ -154,6 +155,7 @@ private fun DbrHome(
     val allVersions by VersionsManager.versions.collectAsStateWithLifecycle()
     val hasDbr = allVersions.any { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
     val dbrVm = rememberDbrInstallViewModel()
+    val serverVm: DbrServerViewModel = viewModel()
     val context = LocalContext.current
 
     val nick = account?.username ?: "—"
@@ -230,7 +232,18 @@ private fun DbrHome(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(text = stringResource(R.string.dbr_mods_ok), dot = Color(0xFF5FA838))
                 RendererChip()
-                InfoChip(text = stringResource(R.string.dbr_server))
+                val serverState = serverVm.state
+                val serverDot = when (serverState) {
+                    is DbrServerViewModel.State.Online -> Color(0xFF5FA838)
+                    is DbrServerViewModel.State.Offline -> Color(0xFFE0603A)
+                    else -> null
+                }
+                val serverText = when (val s = serverState) {
+                    is DbrServerViewModel.State.Online -> "${stringResource(R.string.dbr_server_label)} ${s.online}/${s.max}"
+                    is DbrServerViewModel.State.Offline -> stringResource(R.string.dbr_server_offline)
+                    else -> stringResource(R.string.dbr_server)
+                }
+                InfoChip(text = serverText, dot = serverDot, onClick = { serverVm.refresh() })
             }
         }
 

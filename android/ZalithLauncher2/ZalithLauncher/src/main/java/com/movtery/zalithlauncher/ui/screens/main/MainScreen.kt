@@ -56,6 +56,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -116,6 +118,7 @@ import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.ui.dbr.DbrBottomBar
+import com.movtery.zalithlauncher.viewmodel.DbrNewsDialog
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
@@ -154,6 +157,7 @@ fun MainScreen(
 
     val mainScreenKey = screenBackStackModel.mainScreen.currentKey
     val inLauncherScreen = mainScreenKey == null || mainScreenKey is NormalNavKey.LauncherMain
+    var showNews by remember { mutableStateOf(false) }
 
     val isBackgroundValid = LocalBackgroundViewModel.current?.isValid == true
     val launcherBackgroundOpacity = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f
@@ -235,7 +239,7 @@ fun MainScreen(
             DbrBottomBar(
                 inLauncherScreen = inLauncherScreen,
                 inSettingsScreen = mainScreenKey is NestedNavKey.Settings,
-                onNews = { eventViewModel.sendToast(androidText(R.string.dbr_news_soon)) },
+                onNews = { showNews = true },
                 toMainScreen = toMainScreen,
                 toSettingsScreen = {
                     screenBackStackModel.mainScreen.removeAndNavigateTo(
@@ -248,6 +252,11 @@ fun MainScreen(
                 }
             )
         }
+    }
+
+    //DBR: diálogo de Noticias (news.json)
+    if (showNews) {
+        DbrNewsDialog(onDismiss = { showNews = false })
     }
 }
 
