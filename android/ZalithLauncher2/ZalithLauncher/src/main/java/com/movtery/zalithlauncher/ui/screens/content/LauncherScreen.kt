@@ -104,6 +104,9 @@ import com.movtery.zalithlauncher.game.dbr.DbrInstall
 import com.movtery.zalithlauncher.game.dbr.DbrSync
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.dbr.BlockBackground
+import com.movtery.zalithlauncher.ui.dbr.GoldButton
+import com.movtery.zalithlauncher.ui.dbr.stonePanel
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
 import kotlinx.coroutines.launch
 
@@ -119,6 +122,8 @@ fun LauncherScreen(
         screenKey = NormalNavKey.LauncherMain,
         currentKey = backStackViewModel.mainScreen.currentKey
     ) { isVisible ->
+        Box(modifier = Modifier.fillMaxSize()) {
+        BlockBackground(modifier = Modifier.fillMaxSize())
         Row(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -164,6 +169,7 @@ fun LauncherScreen(
                 toVersionManageScreen = toVersionManageScreen,
                 toVersionSettingsScreen = toVersionSettingsScreen
             )
+        }
         }
     }
 }
@@ -445,9 +451,11 @@ private fun RightMenu(
         isHorizontal = true
     )
 
-    BackgroundCard(
-        modifier = modifier.offset { IntOffset(x = xOffset.roundToPx(), y = 0) },
-        shape = MaterialTheme.shapes.extraLarge
+    Box(
+        modifier = modifier
+            .offset { IntOffset(x = xOffset.roundToPx(), y = 0) }
+            .stonePanel()
+            .padding(6.dp)
     ) {
         RightMenuContent(
             modifier = Modifier.fillMaxSize(),
@@ -456,9 +464,9 @@ private fun RightMenu(
             toVersionManageScreen = toVersionManageScreen,
             toVersionSettingsScreen = toVersionSettingsScreen
         ) { innerModifier, onClick, text ->
-            ScalingActionButton(
+            //DBR: botón "Jugar" oro estilo desktop
+            GoldButton(
                 modifier = innerModifier,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp),
                 onClick = onClick,
                 content = text
             )
