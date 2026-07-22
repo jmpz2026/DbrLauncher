@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_syncing_message">Sincronizando el modpack DBR…</string>
     <string name="dbr_install_button">Instalar DBR</string>
     <string name="dbr_installing_message">Instalando DBR (Minecraft 1.7.10 + Forge).
 Esto puede tardar unos minutos…</string>

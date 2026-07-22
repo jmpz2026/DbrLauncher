@@ -100,6 +100,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.game.dbr.DbrInstall
+import com.movtery.zalithlauncher.game.dbr.DbrSync
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
 import kotlinx.coroutines.launch
 
@@ -396,9 +397,17 @@ private fun RightMenuContent(
                 }
                 .padding(PaddingValues(horizontal = 12.dp)),
             {
-                //DBR: si no hay instancia DBR, el botón la instala; si ya está, lanza el juego.
-                if (hasDbr) onLaunchGame(null)
-                else dbrInstallViewModel.install(context)
+                //DBR: sin instancia → instalar; con instancia → sincronizar modpack (obligatorio) y lanzar.
+                if (hasDbr) {
+                    val dbrVersion = allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
+                    if (dbrVersion != null) {
+                        dbrInstallViewModel.syncThenLaunch(dbrVersion) { onLaunchGame(null) }
+                    } else {
+                        onLaunchGame(null)
+                    }
+                } else {
+                    dbrInstallViewModel.install(context)
+                }
             },
             {
                 MarqueeText(
@@ -524,6 +533,7 @@ private sealed interface DbrInstallState {
     data object Idle : DbrInstallState
     data object Preparing : DbrInstallState
     data object Installing : DbrInstallState
+    data class Syncing(val done: Int, val total: Int) : DbrInstallState
     data object Success : DbrInstallState
     data class Error(val th: Throwable) : DbrInstallState
 }
@@ -564,6 +574,27 @@ private class DbrInstallViewModel : ViewModel() {
         }
     }
 
+    /** Sincroniza el modpack (obligatorio) y, si tiene éxito, lanza el juego. */
+    fun syncThenLaunch(version: Version, onLaunch: () -> Unit) {
+        when (state) {
+            is DbrInstallState.Preparing, is DbrInstallState.Installing, is DbrInstallState.Syncing -> return
+            else -> {}
+        }
+        state = DbrInstallState.Syncing(0, 0)
+        viewModelScope.launch {
+            runCatching {
+                DbrSync.sync(version.getGameDir()) { p ->
+                    state = DbrInstallState.Syncing(p.done, p.total)
+                }
+            }.onSuccess {
+                state = DbrInstallState.Idle
+                onLaunch()
+            }.onFailure { th ->
+                state = DbrInstallState.Error(th)
+            }
+        }
+    }
+
     fun dismissError() {
         if (state is DbrInstallState.Error) state = DbrInstallState.Idle
     }
@@ -599,6 +630,33 @@ private fun DbrInstallDialog(
                             text = stringResource(R.string.dbr_installing_message),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                    }
+                }
+            }
+        }
+        is DbrInstallState.Syncing -> {
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(all = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        LoadingIndicator()
+                        Text(
+                            text = stringResource(R.string.dbr_syncing_message),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (state.total > 0) {
+                            Text(
+                                text = "${state.done} / ${state.total}",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
                     }
                 }
             }
