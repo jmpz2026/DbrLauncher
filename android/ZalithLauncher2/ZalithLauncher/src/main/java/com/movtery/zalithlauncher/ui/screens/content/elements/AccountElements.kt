@@ -485,10 +485,10 @@ fun LoginMenuDialog(
                             onDismissRequest()
                         }
                     )
-                    //微软登录 (aún no disponible)
+                    //DBR: "Iniciar sesión" (aún no disponible)
                     LoginItem(
                         modifier = Modifier.fillMaxWidth(),
-                        title = stringResource(R.string.account_type_microsoft),
+                        title = stringResource(R.string.dbr_login_button),
                         onClick = {
                             Toast.makeText(
                                 context,

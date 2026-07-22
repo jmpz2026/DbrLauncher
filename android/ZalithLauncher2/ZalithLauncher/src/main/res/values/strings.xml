@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_login_button">Iniciar sesión</string>
     <string name="dbr_login_not_available">Inicio de sesión no disponible por ahora</string>
     <string name="unofficial_modified_version">Unofficial Modified Version</string>
     <string name="generic_cancel">Cancel</string>
