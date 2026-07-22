@@ -48,8 +48,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -99,8 +99,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -130,8 +130,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1200,
                         "heightPercentage": 1200,
                         "widthReference": "screen_height",
@@ -161,8 +161,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -192,8 +192,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -223,8 +223,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -254,8 +254,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -294,8 +294,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2289,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -333,8 +333,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2621,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -364,8 +364,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2621,
                         "heightPercentage": 1100,
                         "widthReference": "screen_height",
@@ -412,8 +412,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2150,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -452,8 +452,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2150,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -483,8 +483,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2150,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -514,8 +514,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 2150,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -554,8 +554,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -589,8 +589,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -620,8 +620,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -655,8 +655,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -686,8 +686,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -721,8 +721,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -752,8 +752,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -787,8 +787,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -818,8 +818,8 @@
                     },
                     "buttonSize": {
                         "type": "percentage",
-                        "widthDp": 50.0,
-                        "heightDp": 50.0,
+                        "widthDp": 50,
+                        "heightDp": 50,
                         "widthPercentage": 1380,
                         "heightPercentage": 1380,
                         "widthReference": "screen_height",
@@ -832,6 +832,235 @@
                     "isToggleable": false
                 }
             ]
+        },
+        {
+            "name": "DBC",
+            "uuid": "d0bc00000000layer1",
+            "hide": false,
+            "hideWhenMouse": true,
+            "hideWhenGamepad": true,
+            "hideWhenJoystick": false,
+            "visibilityType": "always",
+            "normalButtons": [
+                {
+                    "text": {
+                        "default": "C",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa010000000001",
+                    "position": {
+                        "x": 8400,
+                        "y": 1600
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_C"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": false
+                },
+                {
+                    "text": {
+                        "default": "Y",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa020000000002",
+                    "position": {
+                        "x": 9200,
+                        "y": 1600
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_Y"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": true
+                },
+                {
+                    "text": {
+                        "default": "R",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa030000000003",
+                    "position": {
+                        "x": 8400,
+                        "y": 2900
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_R"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": false
+                },
+                {
+                    "text": {
+                        "default": "X",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa050000000005",
+                    "position": {
+                        "x": 9200,
+                        "y": 2900
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_X"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": true
+                },
+                {
+                    "text": {
+                        "default": "H",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa040000000004",
+                    "position": {
+                        "x": 8400,
+                        "y": 4200
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_H"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": false
+                },
+                {
+                    "text": {
+                        "default": "V",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa060000000006",
+                    "position": {
+                        "x": 9200,
+                        "y": 4200
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_V"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": false
+                },
+                {
+                    "text": {
+                        "default": "J",
+                        "matchQueue": []
+                    },
+                    "uuid": "d0bcaa070000000007",
+                    "position": {
+                        "x": 8400,
+                        "y": 5500
+                    },
+                    "buttonSize": {
+                        "type": "percentage",
+                        "widthDp": 50,
+                        "heightDp": 50,
+                        "widthPercentage": 1400,
+                        "heightPercentage": 1400,
+                        "widthReference": "screen_height",
+                        "heightReference": "screen_height"
+                    },
+                    "buttonStyle": "cac8c754ffa0",
+                    "visibilityType": "always",
+                    "clickEvents": [
+                        {
+                            "type": "key",
+                            "key": "GLFW_KEY_J"
+                        }
+                    ],
+                    "isSwipple": false,
+                    "isPenetrable": false,
+                    "isToggleable": false
+                }
+            ],
+            "textBoxes": []
         }
     ],
     "styles": [
@@ -840,10 +1069,10 @@
             "uuid": "21b054786830",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -851,23 +1080,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -875,16 +1104,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             }
         },
@@ -893,10 +1122,10 @@
             "uuid": "43f4fb63f80a",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -904,23 +1133,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -928,16 +1157,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             }
         },
@@ -946,10 +1175,10 @@
             "uuid": "0fa337d97f90",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -957,23 +1186,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -981,16 +1210,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 }
             }
         },
@@ -999,10 +1228,10 @@
             "uuid": "a5824dc0029d",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1010,23 +1239,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1034,16 +1263,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 }
             }
         },
@@ -1052,10 +1281,10 @@
             "uuid": "d8cd25b80d5d",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1063,23 +1292,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1087,16 +1316,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 0
                 }
             }
         },
@@ -1105,10 +1334,10 @@
             "uuid": "ea3ab7bc621f",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1116,23 +1345,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1140,16 +1369,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 40
                 }
             }
         },
@@ -1158,10 +1387,10 @@
             "uuid": "cac8c754ffa0",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1169,23 +1398,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 40
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1193,16 +1422,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 40
                 },
                 "pressedBorderRadius": {
-                    "topStart": 40.0,
-                    "topEnd": 40.0,
-                    "bottomEnd": 40.0,
-                    "bottomStart": 40.0
+                    "topStart": 40,
+                    "topEnd": 40,
+                    "bottomEnd": 40,
+                    "bottomStart": 40
                 }
             }
         },
@@ -1211,10 +1440,10 @@
             "uuid": "d1096cf91caa",
             "animateSwap": false,
             "lightStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1222,23 +1451,23 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             },
             "darkStyle": {
-                "alpha": 1.0,
-                "pressedAlpha": 1.0,
-                "backgroundColor": -9223372036854775808,
-                "pressedBackgroundColor": -5510004026390872064,
+                "alpha": 1,
+                "pressedAlpha": 1,
+                "backgroundColor": -9223372036854776000,
+                "pressedBackgroundColor": -5510004026390872000,
                 "contentColor": -4294967296,
                 "pressedContentColor": -4294967296,
                 "borderWidth": 0,
@@ -1246,16 +1475,16 @@
                 "borderColor": -4294967296,
                 "pressedBorderColor": -4294967296,
                 "borderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 },
                 "pressedBorderRadius": {
-                    "topStart": 0.0,
-                    "topEnd": 0.0,
-                    "bottomEnd": 0.0,
-                    "bottomStart": 0.0
+                    "topStart": 0,
+                    "topEnd": 0,
+                    "bottomEnd": 0,
+                    "bottomStart": 0
                 }
             }
         }

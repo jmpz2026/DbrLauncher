@@ -565,17 +565,17 @@ object AllSettings : SettingsRegistry() {
     /**
      * 是否在游戏中启用摇杆移动组件
      */
-    val enableJoystickControl = boolSetting("enableJoystickControl", false)
+    val enableJoystickControl = boolSetting("enableJoystickControl", true) //DBR: joystick de movimiento por defecto
 
     /**
      * 游戏中摇杆移动组件的 X 坐标 0~10000
      */
-    val joystickControlX = intSetting("joystickControlX", 5000, POSITION_RANGE)
+    val joystickControlX = intSetting("joystickControlX", 1800, POSITION_RANGE) //DBR: abajo-izquierda
 
     /**
      * 游戏中摇杆移动组件的 Y 坐标 0~10000
      */
-    val joystickControlY = intSetting("joystickControlY", 5000, POSITION_RANGE)
+    val joystickControlY = intSetting("joystickControlY", 7200, POSITION_RANGE) //DBR: abajo-izquierda
 
     /**
      * 游戏中摇杆移动组件的大小 Dp

@@ -74,15 +74,13 @@ object ControlManager {
      * 检查当前是否不存在控制布局，不存在则解压一份默认控制布局
      * @param context 访问assets的上下文
      */
+    /** DBR: nombre fijo del layout de controles curado (DBC). */
+    private const val DBR_LAYOUT_FILE = "dbr_layout.json"
+
     fun checkDefaultAndRefresh(context: Context) {
         scope.launch(Dispatchers.IO) {
-            val files = (PathManager.DIR_CONTROL_LAYOUTS.listFiles() ?: emptyArray())
-                .filter { file ->
-                    file.isFile && file.exists() && file.extension.equals("json", true)
-                }
-            if (files.isEmpty()) {
-                unpackDefaultControl(context)
-            }
+            //DBR: asegura el layout DBC actualizado (se sobrescribe con el del bundle) y lo deja seleccionado.
+            unpackDefaultControl(context)
             refresh()
         }
     }
@@ -154,8 +152,11 @@ object ControlManager {
         context: Context
     ) = withContext(Dispatchers.IO) {
         try {
-            val file = getNewRandomFile()
-            context.copyAssetFile(fileName = "default_layout.json", output = file, overwrite = false)
+            //DBR: archivo fijo + sobrescribir para propagar actualizaciones del layout curado,
+            //y dejarlo como layout seleccionado.
+            val file = File(PathManager.DIR_CONTROL_LAYOUTS, DBR_LAYOUT_FILE)
+            context.copyAssetFile(fileName = "default_layout.json", output = file, overwrite = true)
+            AllSettings.controlLayout.save(DBR_LAYOUT_FILE)
         } catch (e: Exception) {
             Logger.warning(TAG, "Failed to unpack default control layout", e)
         }

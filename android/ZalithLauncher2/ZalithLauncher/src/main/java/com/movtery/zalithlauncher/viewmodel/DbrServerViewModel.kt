@@ -16,10 +16,16 @@ import com.movtery.zalithlauncher.utils.network.ServerAddress
 import kotlinx.coroutines.launch
 
 class DbrServerViewModel : ViewModel() {
-    /** Servidor DBR: dominio primero; si falla, IP directa (mismo puerto 25575). */
+    /**
+     * Servidor DBR. Se prueban varias direcciones en orden:
+     * 1) dominio sin puerto (usa SRV/puerto por defecto, como conecta el juego)
+     * 2) dominio:25575  3) IP:25575  4) IP sin puerto
+     */
     private val addresses = listOf(
+        "dragonblock.online",
         "dragonblock.online:25575",
-        "163.227.179.245:25575"
+        "163.227.179.245:25575",
+        "163.227.179.245"
     )
 
     sealed interface State {
