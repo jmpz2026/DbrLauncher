@@ -1,0 +1,4 @@
+ZalithLauncher2
+https://github.com/ZalithLauncher/ZalithLauncher2
+36bc1adaae7deaefb3fe61d615d8ada0332bc012
+vendored: 2026-07-22

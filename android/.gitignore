@@ -1,0 +1,9 @@
+.sdk/
+*/build/
+*/.gradle/
+.gradle/
+ZalithLauncher2/local.properties
+ZalithLauncher2/.gradle/
+ZalithLauncher2/**/build/
+ZalithLauncher2/.cxx/
+ZalithLauncher2/**/.cxx/
