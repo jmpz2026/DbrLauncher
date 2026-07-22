@@ -55,6 +55,7 @@ app.whenReady().then(() => {
   ipcMain.on('window:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize())
   ipcMain.on('window:close', (e) => BrowserWindow.fromWebContents(e.sender)?.close())
   ipcMain.on('app:open-folder', () => shell.openPath(app.getPath('userData')))
+  ipcMain.handle('app:version', () => app.getVersion())
 
   // Autenticación (pirata + premium Microsoft)
   registerAuth()

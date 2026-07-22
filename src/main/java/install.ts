@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { basename, join } from 'path'
 import type { JavaProgress } from '../../shared/java'
 import { adoptiumUrl, type JrePlatform } from './platform'
+import { extractZip } from './zip'
 
 type OnProgress = (p: JavaProgress) => void
 
@@ -30,24 +31,10 @@ export async function downloadArchive(
 }
 
 /**
- * Binario de tar a usar. En Windows se fuerza el `tar.exe` de System32 (bsdtar/libarchive,
- * que SÍ extrae zip); así se evita que un `tar` GNU en el PATH (p.ej. de Git) lo tape y falle.
- */
-function tarBinary(): string {
-  if (process.platform === 'win32') {
-    const root = process.env.SystemRoot ?? 'C:\\Windows'
-    // Sysnative primero: un proceso 32-bit ve System32 redirigido a SysWOW64 (sin tar.exe);
-    // Sysnative evita esa redirección WOW64 y apunta al System32 real de 64-bit.
-    for (const dir of ['Sysnative', 'System32']) {
-      const p = join(root, dir, 'tar.exe')
-      if (existsSync(p)) return p
-    }
-  }
-  return 'tar'
-}
-
-/**
- * Extrae zip (Windows) o tar.gz (mac/linux) con `tar` (bsdtar autodetecta el formato).
+ * Extrae el archivo a destDir.
+ * - .tar.gz/.tgz (JRE de mac/linux) → `tar` del sistema (siempre presente en unix).
+ * - .zip/.jar (JRE de Windows y natives de todas las plataformas) → extractor Node puro,
+ *   para NO depender del `tar.exe` del SO, ausente en Windows anteriores a 10 build 1803.
  * `exclude` acepta patrones tipo manifest ('META-INF/') que se omiten de la extracción.
  */
 export function extractArchive(
@@ -56,9 +43,19 @@ export function extractArchive(
   exclude: string[] = []
 ): Promise<void> {
   mkdirSync(destDir, { recursive: true })
+  const lower = archiveFile.toLowerCase()
+  if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) {
+    return extractTarGz(archiveFile, destDir, exclude)
+  }
+  extractZip(archiveFile, destDir, exclude)
+  return Promise.resolve()
+}
+
+/** Extrae .tar.gz con el `tar` del sistema. Solo mac/linux (unix siempre trae tar). */
+function extractTarGz(archiveFile: string, destDir: string, exclude: string[]): Promise<void> {
   const excludeArgs = exclude.flatMap((e) => ['--exclude', e.endsWith('/') ? `${e}*` : e])
   return new Promise((resolve, reject) => {
-    const p = spawn(tarBinary(), ['-xf', archiveFile, '-C', destDir, ...excludeArgs])
+    const p = spawn('tar', ['-xf', archiveFile, '-C', destDir, ...excludeArgs])
     let err = ''
     p.stderr.on('data', (d) => (err += d))
     p.on('error', (e) => reject(new Error(`No se pudo ejecutar tar: ${e.message}`)))

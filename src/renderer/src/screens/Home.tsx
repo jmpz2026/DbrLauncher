@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useStore } from '../store'
 
 export default function Home(): JSX.Element {
@@ -199,9 +199,17 @@ function Chip({ children, online }: { children: ReactNode; online?: boolean }): 
 }
 
 function BuildTag(): JSX.Element {
+  // La versión se lee en runtime desde app.getVersion() (package.json),
+  // así el tag se actualiza solo en cada release. No hardcodear.
+  const [version, setVersion] = useState('')
+
+  useEffect(() => {
+    void window.dbr.getVersion().then(setVersion)
+  }, [])
+
   return (
     <div className="pointer-events-none absolute bottom-6 right-8 text-right text-[10px] font-medium uppercase leading-relaxed tracking-[0.22em] text-muted mc-text-sm">
-      <div>Build v1.0.3</div>
+      <div>Build v{version}</div>
       <div className="text-gold-deep">Forge · Java 8</div>
     </div>
   )

@@ -13,6 +13,7 @@ const api = {
   minimize: (): void => ipcRenderer.send('window:minimize'),
   close: (): void => ipcRenderer.send('window:close'),
   openGameFolder: (): void => ipcRenderer.send('app:open-folder'),
+  getVersion: (): Promise<string> => ipcRenderer.invoke('app:version'),
 
   auth: {
     get: (): Promise<Account | null> => ipcRenderer.invoke('auth:get'),
