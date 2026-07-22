@@ -486,12 +486,7 @@ private fun VersionsLayout(
                             contentDescription = stringResource(R.string.generic_refresh),
                             text = stringResource(R.string.generic_refresh)
                         )
-                        IconTextButton(
-                            onClick = onInstall,
-                            painter = painterResource(R.drawable.ic_download),
-                            contentDescription = stringResource(R.string.versions_manage_install_new),
-                            text = stringResource(R.string.versions_manage_install_new),
-                        )
+                        //DBR: botón "Instalar nueva versión" oculto (una sola instancia DBR).
                         //版本分类
                         VersionCategoryItem(
                             value = VersionCategory.ALL,

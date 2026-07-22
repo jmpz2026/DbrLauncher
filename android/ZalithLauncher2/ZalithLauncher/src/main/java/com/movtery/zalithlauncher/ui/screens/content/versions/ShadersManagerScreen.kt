@@ -549,11 +549,7 @@ private fun ShadersActionsHeader(
                         }
                     )
 
-                    IconTextButton(
-                        onClick = swapToDownload,
-                        painter = painterResource(R.drawable.ic_download_2_filled),
-                        text = stringResource(R.string.generic_download)
-                    )
+                    //DBR: boton "Descargar" oculto (no se permite descargar)
 
                     IconButton(
                         onClick = refresh
