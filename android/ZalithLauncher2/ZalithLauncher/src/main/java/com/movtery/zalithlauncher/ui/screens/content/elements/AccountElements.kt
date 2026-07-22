@@ -90,6 +90,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -445,6 +446,7 @@ fun LoginMenuDialog(
     onAddAuthServer: () -> Unit,
     onDeleteAuthServer: (server: AuthServer) -> Unit,
 ) {
+    val context = LocalContext.current
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -487,7 +489,12 @@ fun LoginMenuDialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 title = stringResource(R.string.account_type_microsoft),
                                 onClick = {
-                                    onMicrosoftLogin()
+                                    //DBR: inicio de sesión (Microsoft) aún no disponible
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.dbr_login_not_available),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     onDismissRequest()
                                 }
                             )
@@ -502,52 +509,7 @@ fun LoginMenuDialog(
                             )
                         }
 
-                        LazyColumn(
-                            modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(
-                                start = 6.dp,
-                                top = 12.dp,
-                                end = 12.dp,
-                                bottom = 12.dp
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            item {
-                                //添加认证服务器
-                                InfoLayoutTextItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    title = stringResource(R.string.account_add_new_server_button),
-                                    showArrow = true,
-                                    onClick = {
-                                        onAddAuthServer()
-                                        onDismissRequest()
-                                    }
-                                )
-                            }
-
-                            items(authServers) { server ->
-                                LoginItem(
-                                    title = server.serverName,
-                                    icon = {
-                                        IconButton(
-                                            modifier = Modifier.size(22.dp),
-                                            onClick = {
-                                                onDeleteAuthServer(server)
-                                            }
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.ic_delete_outlined),
-                                                contentDescription = stringResource(R.string.generic_delete)
-                                            )
-                                        }
-                                    },
-                                    onClick = {
-                                        onAuthServerLogin(server)
-                                        onDismissRequest()
-                                    }
-                                )
-                            }
-                        }
+                        //DBR: servidores de autenticación externos ocultos (solo offline + login).
                     }
 
                     Button(

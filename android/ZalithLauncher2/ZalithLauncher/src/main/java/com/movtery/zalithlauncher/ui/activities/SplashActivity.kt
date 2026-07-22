@@ -127,7 +127,8 @@ class SplashActivity : BaseAppCompatActivity() {
                 )
             }
         }
-        Jre.entries.forEach { jre ->
+        // DBR: solo Java 8 (el server es Minecraft 1.7.10). No se empaquetan 17/21/25.
+        listOf(Jre.JRE_8).forEach { jre ->
             val task = UnpackJreTask(this@SplashActivity, jre)
             if (!task.isCheckFailed()) {
                 unpackItems.add(

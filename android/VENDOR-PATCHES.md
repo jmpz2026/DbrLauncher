@@ -34,3 +34,18 @@ Version" en arranque, conservar avisos de copyright).
   `ic_launcher_background=#101014`, quitado `monochrome` (era silueta ZL). Los webp legacy
   quedan sin usar (minSdk 26 usa siempre el adaptive). *Icono básico; refinar padding/monochrome después.*
 - Avisos de copyright de upstream (cabeceras de archivos, LICENSE, README) **conservados**.
+
+## 3) Recortes por feedback de dispositivo (2026-07-22)
+**Motivo:** primeras pruebas en Android real; quitar lo que no aplica a un server 1.7.10.
+
+- **Solo Java 8**: `SplashActivity.initUnpackItems()` desempaqueta únicamente `Jre.JRE_8`
+  (antes `Jre.entries`); eliminados los assets `assets/runtimes/jre-17|jre-21|jre-25`.
+  El enum `Jre` se deja intacto (evita romper referencias); esos runtimes nunca se usan
+  porque el server es 1.7.10 (Java 8).
+- **Sección "Descargar" oculta**: quitado el `TopBarRailItem` de Download en
+  `ui/screens/main/MainScreen.kt` (el destino `NestedNavKey.Download` queda inalcanzable).
+- **Login**: en `ui/screens/content/elements/AccountElements.kt` (`LoginMenuDialog`):
+  - Offline (Local) sigue funcional.
+  - Microsoft → muestra Toast `dbr_login_not_available` ("Inicio de sesión no disponible por ahora"),
+    no inicia el flujo (falta OAuth client id; se implementará después).
+  - Ocultada la columna de servidores de autenticación externos (solo 2 opciones).

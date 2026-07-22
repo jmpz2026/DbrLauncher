@@ -403,14 +403,8 @@ private fun <E: TitledNavKey> TopBar(
                     },
                 )
 
-                TopBarRailItem(
-                    selected = inDownloadScreen,
-                    painter = painterResource(R.drawable.ic_download_2_filled),
-                    text = stringResource(R.string.generic_download),
-                    onClick = {
-                        if (!inDownloadScreen) toDownloadScreen()
-                    },
-                )
+                // DBR: sección "Descargar" (versiones/modpacks/mods) oculta — el launcher
+                // gestiona una única instancia DBR fija, no se descargan otras versiones.
 
                 TopBarRailItem(
                     selected = inSettingsScreen,
