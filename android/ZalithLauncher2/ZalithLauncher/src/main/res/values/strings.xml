@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_update_title">Actualización disponible</string>
+    <string name="dbr_update_update">Actualizar</string>
+    <string name="dbr_update_later">Después</string>
+    <string name="dbr_update_downloading">Descargando actualización…</string>
     <string name="dbr_syncing_message">Sincronizando el modpack DBR…</string>
     <string name="dbr_install_button">Instalar DBR</string>
     <string name="dbr_installing_message">Instalando DBR (Minecraft 1.7.10 + Forge).

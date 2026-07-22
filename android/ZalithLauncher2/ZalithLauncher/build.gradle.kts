@@ -21,6 +21,7 @@ val launcherUrl = project.findProperty("url_home") as? String ?: error("The \"ur
 
 val launcherVersionCode = (project.findProperty("launcher_version_code") as? String)?.toIntOrNull() ?: error("The \"launcher_version_code\" property is not set as an integer in gradle.properties.")
 val launcherVersionName = project.findProperty("launcher_version_name") as? String ?: error("The \"launcher_version_name\" property is not set in gradle.properties.")
+val dbrBuild = (project.findProperty("dbr_build") as? String) ?: "1"
 
 val defaultOAuthClientID = project.findProperty("oauth_client_id") as? String
 val defaultStorePassword = project.findProperty("default_store_password") as? String ?: error("The \"default_store_password\" property is not set in gradle.properties.")
@@ -66,6 +67,7 @@ android {
         versionCode = launcherVersionCode
         versionName = launcherVersionName
         manifestPlaceholders["launcher_name"] = launcherAPPName
+        buildConfigField("int", "DBR_BUILD", dbrBuild)
     }
 
     buildTypes {

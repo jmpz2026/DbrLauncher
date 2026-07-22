@@ -92,6 +92,8 @@ import com.movtery.zalithlauncher.viewmodel.HomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import com.movtery.zalithlauncher.viewmodel.LauncherUpgradeOperation
 import com.movtery.zalithlauncher.viewmodel.LauncherUpgradeViewModel
+import com.movtery.zalithlauncher.viewmodel.DbrUpdateViewModel
+import com.movtery.zalithlauncher.viewmodel.DbrUpdateDialog
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.LogShareViewModel
 import com.movtery.zalithlauncher.viewmodel.LogsUploadViewModel
@@ -148,6 +150,7 @@ class MainActivity : BaseAppCompatActivity() {
      * 启动器更新状态 ViewModel
      */
     val launcherUpgradeViewModel: LauncherUpgradeViewModel by viewModels()
+    val dbrUpdateViewModel: DbrUpdateViewModel by viewModels()
 
     /**
      * 启动器自定义主页 ViewModel
@@ -191,7 +194,7 @@ class MainActivity : BaseAppCompatActivity() {
         //检查更新
         if (!isImporting && launcherUpgradeViewModel.operation == LauncherUpgradeOperation.None) {
             lifecycleScope.launch {
-                launcherUpgradeViewModel.checkOnAppStart()
+                dbrUpdateViewModel.checkOnStart()
             }
         }
 
@@ -464,6 +467,8 @@ class MainActivity : BaseAppCompatActivity() {
                     },
                     onLinkClick = { eventViewModel.sendEvent(EventViewModel.Event.OpenLink(it)) }
                 )
+
+                DbrUpdateDialog(dbrUpdateViewModel)
 
                 val vcOperation by vulkanCheckerViewModel.vcOperation.collectAsStateWithLifecycle()
                 VulkanChecker(
