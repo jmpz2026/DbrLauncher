@@ -222,8 +222,10 @@ object AccountsManager {
     }
 
     private fun checkLimit(): Boolean {
-        val circumventLimit = File(PathManager.DIR_FILES_EXTERNAL, "circumventLimit")
-        return !circumventLimit.exists() && !isInGreaterChina() && !hasMicrosoftAccount()
+        //DBR: launcher offline-first para un server privado 1.7.10. Sin límite
+        //anti-piratería (ZL2 bloqueaba usar/seleccionar cuentas fuera de China y sin
+        //cuenta Microsoft). Siempre "no limitado".
+        return false
     }
 
     /**
