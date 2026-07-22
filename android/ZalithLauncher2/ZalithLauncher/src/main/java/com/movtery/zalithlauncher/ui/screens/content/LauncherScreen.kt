@@ -91,6 +91,17 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.viewmodel.HomePageState
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import android.content.Context
+import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.movtery.zalithlauncher.game.dbr.DbrInstall
+import com.movtery.zalithlauncher.game.download.game.GameInstaller
+import kotlinx.coroutines.launch
 
 @Composable
 fun LauncherScreen(
@@ -257,6 +268,13 @@ private fun RightMenuContent(
     val account by AccountsManager.currentAccountFlow.collectAsStateWithLifecycle()
     val version by VersionsManager.currentVersion.collectAsStateWithLifecycle()
     val isRefreshing by VersionsManager.isRefreshing.collectAsStateWithLifecycle()
+    val allVersions by VersionsManager.versions.collectAsStateWithLifecycle()
+    //DBR: ¿ya existe la instancia DBR válida? Si no, el botón "Jugar" pasa a "Instalar DBR".
+    val hasDbr = allVersions.any { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
+    val dbrInstallViewModel = rememberDbrInstallViewModel()
+    val context = LocalContext.current
+
+    DbrInstallDialog(dbrInstallViewModel)
 
     ConstraintLayout(
         modifier = modifier
@@ -378,10 +396,16 @@ private fun RightMenuContent(
                 }
                 .padding(PaddingValues(horizontal = 12.dp)),
             {
-                onLaunchGame(null)
+                //DBR: si no hay instancia DBR, el botón la instala; si ya está, lanza el juego.
+                if (hasDbr) onLaunchGame(null)
+                else dbrInstallViewModel.install(context)
             },
             {
-                MarqueeText(text = stringResource(R.string.main_launch_game))
+                MarqueeText(
+                    text = stringResource(
+                        if (hasDbr) R.string.main_launch_game else R.string.dbr_install_button
+                    )
+                )
             }
         )
     }
@@ -493,5 +517,121 @@ private fun VersionManagerLayout(
                 }
             }
         }
+    }
+}
+/** Estado de la provisión de la instancia DBR (Minecraft 1.7.10 + Forge). */
+private sealed interface DbrInstallState {
+    data object Idle : DbrInstallState
+    data object Preparing : DbrInstallState
+    data object Installing : DbrInstallState
+    data object Success : DbrInstallState
+    data class Error(val th: Throwable) : DbrInstallState
+}
+
+private class DbrInstallViewModel : ViewModel() {
+    var state by mutableStateOf<DbrInstallState>(DbrInstallState.Idle)
+        private set
+    var installer by mutableStateOf<GameInstaller?>(null)
+        private set
+
+    fun install(context: Context) {
+        if (state is DbrInstallState.Preparing || state is DbrInstallState.Installing) return
+        state = DbrInstallState.Preparing
+        viewModelScope.launch {
+            val info = runCatching { DbrInstall.buildInfo() }.getOrElse { th ->
+                state = DbrInstallState.Error(th)
+                return@launch
+            }
+            state = DbrInstallState.Installing
+            installer = GameInstaller(context, info, viewModelScope).also { gi ->
+                gi.installGame(
+                    onInstalled = { version ->
+                        installer = null
+                        VersionsManager.refresh("[DBR] provision", version)
+                        state = DbrInstallState.Success
+                    },
+                    onError = { th ->
+                        installer = null
+                        state = DbrInstallState.Error(th)
+                    },
+                    onGameAlreadyInstalled = {
+                        installer = null
+                        VersionsManager.refresh("[DBR] already", DbrInstall.VERSION_NAME)
+                        state = DbrInstallState.Success
+                    }
+                )
+            }
+        }
+    }
+
+    fun dismissError() {
+        if (state is DbrInstallState.Error) state = DbrInstallState.Idle
+    }
+
+    override fun onCleared() {
+        installer?.cancelInstall()
+    }
+}
+
+@Composable
+private fun rememberDbrInstallViewModel(): DbrInstallViewModel = viewModel { DbrInstallViewModel() }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun DbrInstallDialog(
+    viewModel: DbrInstallViewModel
+) {
+    when (val state = viewModel.state) {
+        is DbrInstallState.Preparing, is DbrInstallState.Installing -> {
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(all = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        LoadingIndicator()
+                        Text(
+                            text = stringResource(R.string.dbr_installing_message),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        }
+        is DbrInstallState.Error -> {
+            Dialog(onDismissRequest = { viewModel.dismissError() }) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(all = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dbr_install_error_title),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = state.th.localizedMessage ?: state.th.toString(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Button(
+                            modifier = Modifier.align(Alignment.End),
+                            onClick = { viewModel.dismissError() }
+                        ) {
+                            Text(stringResource(R.string.generic_close))
+                        }
+                    }
+                }
+            }
+        }
+        else -> {}
     }
 }

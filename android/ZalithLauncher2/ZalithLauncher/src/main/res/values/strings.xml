@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="dbr_install_button">Instalar DBR</string>
+    <string name="dbr_installing_message">Instalando DBR (Minecraft 1.7.10 + Forge).
+Esto puede tardar unos minutos…</string>
+    <string name="dbr_install_error_title">Error al instalar DBR</string>
     <string name="dbr_login_button">Iniciar sesión</string>
     <string name="dbr_login_not_available">Inicio de sesión no disponible por ahora</string>
     <string name="unofficial_modified_version">Unofficial Modified Version</string>
