@@ -6,7 +6,9 @@
     </style>
     <style name="AppTheme.SplashScreen" parent="@style/Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/AppTheme.ZalithLauncher</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_launcher</item>
+        <!-- DBR: logo de Dragon Block Resurrection en el splash de apertura -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/dbr_logo</item>
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
         <item name="windowSplashScreenAnimationDuration">200</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
