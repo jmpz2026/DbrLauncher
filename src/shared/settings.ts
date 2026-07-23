@@ -10,6 +10,7 @@ export interface LauncherSettings {
   jvmArgs: string // argumentos JVM extra separados por espacios
   jvmArgsMigrated: boolean // true tras aplicar (una vez) los flags GC por defecto a usuarios viejos
   modpackVariant: ModpackVariant // 'full' (por defecto) | 'lite'
+  autoSyncMods: boolean // sincronizar/actualizar mods al dar Jugar (por defecto true)
 }
 
 /**
@@ -27,7 +28,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   fullscreen: false,
   jvmArgs: DEFAULT_JVM_ARGS,
   jvmArgsMigrated: false,
-  modpackVariant: 'full'
+  modpackVariant: 'full',
+  autoSyncMods: true
 }
 
 /** RAM mínima asignable al juego (GB). */

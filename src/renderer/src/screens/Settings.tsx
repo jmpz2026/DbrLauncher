@@ -26,6 +26,9 @@ export default function Settings(): JSX.Element {
       {/* Variante del modpack */}
       <ModpackPanel />
 
+      {/* Actualización automática de mods */}
+      <AutoSyncPanel />
+
       {/* Memoria RAM */}
       <div className="mc-panel p-5">
         <div className="mb-3 flex items-center justify-between">
@@ -94,6 +97,36 @@ function ModpackPanel(): JSX.Element {
       <p className="text-xs leading-relaxed text-muted">
         Al cambiar de versión, los mods se re-sincronizan la próxima vez que le des a Jugar.
       </p>
+    </div>
+  )
+}
+
+function AutoSyncPanel(): JSX.Element {
+  const autoSync = useStore((s) => s.autoSyncMods)
+  const setSetting = useStore((s) => s.setSetting)
+
+  return (
+    <div className="mc-panel p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="text-sm font-semibold uppercase tracking-wider">
+            Actualización automática de mods
+          </span>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            {autoSync
+              ? 'Al dar Jugar se descargan e instalan los últimos mods del servidor.'
+              : 'Desactivada: se juega con los mods ya instalados, sin descargar cambios.'}
+          </p>
+        </div>
+        <button
+          onClick={() => void setSetting({ autoSyncMods: !autoSync })}
+          className={`mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
+            autoSync ? 'mc-btn-on' : ''
+          }`}
+        >
+          {autoSync ? 'Activada' : 'Desactivada'}
+        </button>
+      </div>
     </div>
   )
 }

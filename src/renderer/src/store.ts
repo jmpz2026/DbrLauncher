@@ -53,6 +53,7 @@ interface State {
   fullscreen: boolean
   jvmArgs: string
   modpackVariant: ModpackVariant // 'full' | 'lite'
+  autoSyncMods: boolean // sincronizar mods al dar Jugar
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
@@ -121,9 +122,12 @@ export const useStore = create<State>((set, get) => ({
   gameRunning: false,
   play: async () => {
     if (!window.dbr?.launch) return
-    // 1) Sincronizar mods (si está configurado el manifest).
-    await get().startSync()
-    if (get().syncError) return
+    // 1) Sincronizar mods (si está configurado el manifest y el usuario dejó activada la
+    // actualización automática). Con autoSyncMods=false se lanza con lo que ya haya instalado.
+    if (get().autoSyncMods) {
+      await get().startSync()
+      if (get().syncError) return
+    }
 
     // 2) Preparar + lanzar. El listener de estado vive hasta que el juego termina
     // (el proceso sigue vivo después de que launch.start() resuelva al arrancar).
@@ -177,6 +181,7 @@ export const useStore = create<State>((set, get) => ({
   fullscreen: false,
   jvmArgs: DEFAULT_JVM_ARGS,
   modpackVariant: 'full',
+  autoSyncMods: true,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -192,6 +197,7 @@ export const useStore = create<State>((set, get) => ({
       fullscreen: s.fullscreen,
       jvmArgs: s.jvmArgs,
       modpackVariant: s.modpackVariant,
+      autoSyncMods: s.autoSyncMods,
       maxRamGb: limits.maxGb,
       totalRamGb: limits.totalGb
     })
@@ -206,7 +212,8 @@ export const useStore = create<State>((set, get) => ({
       height: s.height,
       fullscreen: s.fullscreen,
       jvmArgs: s.jvmArgs,
-      modpackVariant: s.modpackVariant
+      modpackVariant: s.modpackVariant,
+      autoSyncMods: s.autoSyncMods
     })
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),
