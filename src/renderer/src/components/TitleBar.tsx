@@ -26,7 +26,7 @@ export default function TitleBar(): JSX.Element {
             <span className={`h-2 w-2 ${isPremium ? 'bg-gold' : 'bg-muted'}`} />
             <span className="text-xs text-text mc-text-sm">{account.username}</span>
             <span className="text-[9px] uppercase tracking-wider text-gold-deep">
-              {account.type}
+              {isPremium ? 'Premium' : 'No-Premium'}
             </span>
           </div>
         )}
