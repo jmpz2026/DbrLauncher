@@ -1,0 +1,505 @@
+{
+  "version": "1.0.0",
+  "minecraft": "1.7.10",
+  "forge": "10.13.4.1614",
+  "files": [
+    {
+      "path": "config/ArmorStatusHUD.cfg",
+      "sha1": "5bbf51edf6c723541e823ac9533107f5448df0d2",
+      "size": 4730,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/ArmorStatusHUD.cfg"
+    },
+    {
+      "path": "config/armourersWorkshop/client.cfg",
+      "sha1": "93d7a96f973073a91c058a785b46585eb9c499ce",
+      "size": 4451,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/armourersWorkshop/client.cfg"
+    },
+    {
+      "path": "config/armourersWorkshop/common.cfg",
+      "sha1": "e01e8134fcff2e68efac46aa0b92186742883fce",
+      "size": 3387,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/armourersWorkshop/common.cfg"
+    },
+    {
+      "path": "config/armourersWorkshop/overrides.cfg",
+      "sha1": "ca20c3cb5eddd344672f879a9868d122446015db",
+      "size": 18535,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/armourersWorkshop/overrides.cfg"
+    },
+    {
+      "path": "config/bspkrsCore.cfg",
+      "sha1": "2ebe991d0d15eb6e3d7b9b640caeffa4d6be10a5",
+      "size": 1388,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/bspkrsCore.cfg"
+    },
+    {
+      "path": "config/coretweaks.cfg",
+      "sha1": "b4bd11684a45566c9397f159e552dddd698b2c30",
+      "size": 18264,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/coretweaks.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/client.cfg",
+      "sha1": "f7cdc499e805d8615ae765ac0392f1f5682aedcf",
+      "size": 2467,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/client.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/dbc/capsules.cfg",
+      "sha1": "0bb9a306db175bae89ba18bbece3d6f3ba04dfb4",
+      "size": 5241,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/capsules.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/dbc/client.cfg",
+      "sha1": "a13711e852a885e242e642805584fedf7406ca42",
+      "size": 1804,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/client.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/dbc/effects.cfg",
+      "sha1": "295f04e6c229a0cbdb50c05446f70f02f25ab73e",
+      "size": 12294,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/effects.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/dbc/gameplay.cfg",
+      "sha1": "8c7b6ea2a799ae11f087ecf17fd1e826aafa26cd",
+      "size": 4305,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/gameplay.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/dbc/general.cfg",
+      "sha1": "09bc4029f045f0e4da97db8ac27f1020886dc682",
+      "size": 1193,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/general.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/debug.cfg",
+      "sha1": "4138635a3da46c866fe9f71878d2197d804b1eff",
+      "size": 1179,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/debug.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/experimental.cfg",
+      "sha1": "1420b8d0ab38129edbbf0174df6081c9b1a6c551",
+      "size": 153,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/experimental.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/item.cfg",
+      "sha1": "e70685c8b7e4f2093418c6e56347cb33cac96528",
+      "size": 338,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/item.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/main.cfg",
+      "sha1": "4baafc2ed82882ab4b453108a82907a9006694a1",
+      "size": 3338,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/main.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/mixin.cfg",
+      "sha1": "ccd05f186d069de9c90245269189c4267b302d33",
+      "size": 668,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/mixin.cfg"
+    },
+    {
+      "path": "config/CustomNpcPlus/script.cfg",
+      "sha1": "c8a0d656748ae520b587ebee03a01d1bad8a6e43",
+      "size": 3216,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/script.cfg"
+    },
+    {
+      "path": "config/dbranticheat.cfg",
+      "sha1": "aad9ff816b4c12742cf1cc0dba72336b3b3cf0e1",
+      "size": 3143,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbranticheat.cfg"
+    },
+    {
+      "path": "config/dbrcombathud.cfg",
+      "sha1": "c762277eeb644c758cdba3a96b7261890a6736f8",
+      "size": 1239,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcombathud.cfg"
+    },
+    {
+      "path": "config/dbrshieldki.cfg",
+      "sha1": "5a9441793c9c5471abd8babeaeaee38c7b20c5dc",
+      "size": 631,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrshieldki.cfg"
+    },
+    {
+      "path": "config/dbrvoice-server.cfg",
+      "sha1": "c4c27fe45e4e31516be855b541055a5e39e2f0aa",
+      "size": 220,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrvoice-server.cfg"
+    },
+    {
+      "path": "config/dbrvoice.cfg",
+      "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "size": 0,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrvoice.cfg"
+    },
+    {
+      "path": "config/forge.cfg",
+      "sha1": "6c8b4397b26c1aebdaf6df5c05f406c443a52380",
+      "size": 2365,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/forge.cfg"
+    },
+    {
+      "path": "config/forgeChunkLoading.cfg",
+      "sha1": "5cebbd950e8dfd612ac435b71589459e0578b330",
+      "size": 2025,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/forgeChunkLoading.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/aai/Easy.cfg",
+      "sha1": "aa706626cffaeb9e71981b527bdc1908e38ab526",
+      "size": 1804,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/aai/Easy.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/aai/Hard.cfg",
+      "sha1": "7caa9143a661d26b8b61cdb31f9e909913b9eb2a",
+      "size": 1802,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/aai/Hard.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/aai/Insane.cfg",
+      "sha1": "3db66687a4542c878af284b1ea121c6e742cb2ce",
+      "size": 1802,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/aai/Insane.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/aai/Medium.cfg",
+      "sha1": "f958753c0ca7e04941b0a24b9b40a8fcddc21beb",
+      "size": 1802,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/aai/Medium.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/forms/form_mastery_main.cfg",
+      "sha1": "6cb2c00da56ac25f7ef70ebdc470b90e0f01eb16",
+      "size": 806,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/forms/form_mastery_main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/forms/god_of_destruction.cfg",
+      "sha1": "74fbac3525f4e1f5551764d2163ae469c1799cbc",
+      "size": 3649,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/forms/god_of_destruction.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/forms/ultra_instinct.cfg",
+      "sha1": "4318fecae6d9a0da3e483885fa9ff7fe1a84fd41",
+      "size": 10396,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/forms/ultra_instinct.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/arcosian/form_mastery.cfg",
+      "sha1": "5438c3d99e149e24ccc617d162093acdab86d099",
+      "size": 13464,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/arcosian/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/arcosian/main.cfg",
+      "sha1": "216fd383eb3767bb226cfc96f9ce352db9effac2",
+      "size": 4117,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/arcosian/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/half-saiyan/form_mastery.cfg",
+      "sha1": "3fb53df50b25b2d71844596d8805a8b2f3d11458",
+      "size": 18056,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/half-saiyan/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/half-saiyan/main.cfg",
+      "sha1": "6ece3597a2c8db89bc095970c2ada5f2472aad4d",
+      "size": 4187,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/half-saiyan/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/human/form_mastery.cfg",
+      "sha1": "bbbe11472bdcf1d5e546b4533bce12cc46a4c0e4",
+      "size": 8326,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/human/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/human/main.cfg",
+      "sha1": "1a1671adbd02b01761567564349440924838ecbc",
+      "size": 4049,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/human/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/majin/form_mastery.cfg",
+      "sha1": "d65e256596e5c1c205dec1ef5816ed008c818af8",
+      "size": 9272,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/majin/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/majin/main.cfg",
+      "sha1": "3e970c0cfe4caac57b17199389b2d7b389e56961",
+      "size": 10403,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/majin/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/namekian/form_mastery.cfg",
+      "sha1": "8e5abaeaebea7c19494779c855caf416e5f336bd",
+      "size": 8325,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/namekian/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/namekian/main.cfg",
+      "sha1": "d7813d37a6dd8c4e290d78dabe102abc530d1fb7",
+      "size": 4114,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/namekian/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/saiyan/form_mastery.cfg",
+      "sha1": "3fb53df50b25b2d71844596d8805a8b2f3d11458",
+      "size": 18056,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/saiyan/form_mastery.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/races/saiyan/main.cfg",
+      "sha1": "d8a09683f77faf80e2e9463f1f7e2bcb256008fa",
+      "size": 4069,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/races/saiyan/main.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/skill_costs.cfg",
+      "sha1": "95a07800e3957e4f288cb65e1f1b4199bda8260c",
+      "size": 7635,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/skill_costs.cfg"
+    },
+    {
+      "path": "config/jingames/dbc/skills/instant_transmission.cfg",
+      "sha1": "e49e1e65256c25fa110e6e5ce6e7c1b3eaf86eb6",
+      "size": 6212,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/dbc/skills/instant_transmission.cfg"
+    },
+    {
+      "path": "config/jingames/jrmc/client_notifications.cfg",
+      "sha1": "8ed06583db31346b1ef2b034772e200bc976097b",
+      "size": 600,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/client_notifications.cfg"
+    },
+    {
+      "path": "config/jingames/jrmc/client_settings.cfg",
+      "sha1": "54b42520ba7b6ba0a231fc904cdb0b082cd9285e",
+      "size": 9739,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/client_settings.cfg"
+    },
+    {
+      "path": "config/jingames/jrmc/minigames/airboxing.cfg",
+      "sha1": "adefb266b1be8563e12a52e246a639a3f01dcc32",
+      "size": 2493,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/minigames/airboxing.cfg"
+    },
+    {
+      "path": "config/jingames/jrmc/minigames/concentration.cfg",
+      "sha1": "edcf67dd8e9b4059f65f099b3d45f3fbf5caab04",
+      "size": 1053,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/minigames/concentration.cfg"
+    },
+    {
+      "path": "config/jingames/jrmc/skill_costs.cfg",
+      "sha1": "66ef3d3ed910607c49e3bfa14804d70e22576e41",
+      "size": 950,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/skill_costs.cfg"
+    },
+    {
+      "path": "config/jingames/nc/skill_costs.cfg",
+      "sha1": "154dd257961abd202a0c902bf9677d95e7bf48a3",
+      "size": 4903,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/nc/skill_costs.cfg"
+    },
+    {
+      "path": "config/jinryuudragonblockc.cfg",
+      "sha1": "946aec7e39f4d3e764179c69fc4fc2ba33a38f62",
+      "size": 20113,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jinryuudragonblockc.cfg"
+    },
+    {
+      "path": "config/jinryuufamilyc.cfg",
+      "sha1": "9ba374032271302b90afa55bbb46604d04c85366",
+      "size": 839,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jinryuufamilyc.cfg"
+    },
+    {
+      "path": "config/jinryuuhdskinsextended_Config.cfg",
+      "sha1": "9550b5ccf20a7ef72f5786cb14e1b419d2453b79",
+      "size": 821,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jinryuuhdskinsextended_Config.cfg"
+    },
+    {
+      "path": "config/jinryuujrmcore.cfg",
+      "sha1": "e14796d415a8d16c5994840385e1c8f41941e2ed",
+      "size": 46959,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jinryuujrmcore.cfg"
+    },
+    {
+      "path": "config/jinryuuyearsc.cfg",
+      "sha1": "b32ccee8b7e322d00a981e99dc2d42dd44abcfa3",
+      "size": 409,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jinryuuyearsc.cfg"
+    },
+    {
+      "path": "config/mixingasm/transformer_exclusion_list.txt",
+      "sha1": "d09a81fd9ce9e6d24f1f250a36dd527cf645b38f",
+      "size": 236,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/mixingasm/transformer_exclusion_list.txt"
+    },
+    {
+      "path": "config/mixingasm/transformer_inclusion_list_default.txt",
+      "sha1": "6f516cc73321dfca058780ca90195b220c75c43b",
+      "size": 1260,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/mixingasm/transformer_inclusion_list_default.txt"
+    },
+    {
+      "path": "config/mixingasm/transformer_inclusion_list.txt",
+      "sha1": "ac409a637e2f3db95abb0443b2d8350212a68043",
+      "size": 253,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/mixingasm/transformer_inclusion_list.txt"
+    },
+    {
+      "path": "config/sloppydeploader.cfg",
+      "sha1": "4281ff10c9c987ef5f25c0dd901d8c2003c8304d",
+      "size": 291,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/sloppydeploader.cfg"
+    },
+    {
+      "path": "config/splash.properties",
+      "sha1": "574a818f2d2ba643370fabfbc36b3a7667b61c45",
+      "size": 339,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/splash.properties"
+    },
+    {
+      "path": "config/unimixins.properties",
+      "sha1": "93c079b4217a4fc1c48a6085c7ab531b2ec06d61",
+      "size": 764,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/unimixins.properties"
+    },
+    {
+      "path": "config/UniqueNames.txt",
+      "sha1": "7838799b533bb7c83a1233ae36ef569362dac79a",
+      "size": 100125,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/UniqueNames.txt"
+    },
+    {
+      "path": "config/UpdateCheckLib.cfg",
+      "sha1": "ec18b361ae158c06b724bf334ee02fe703261e8f",
+      "size": 971,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/UpdateCheckLib.cfg"
+    },
+    {
+      "path": "mods/+unimixins-all-1.7.10-0.1.22.jar",
+      "sha1": "047bb736c27fb9fe0f6ab6fd323140bab7748b71",
+      "size": 5259957,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/%2Bunimixins-all-1.7.10-0.1.22.jar"
+    },
+    {
+      "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
+      "sha1": "e7751986fec3ca3ce871ebde56ad9672032946f2",
+      "size": 2196921,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/CoreTweaks-1.7.10-0.3.3.2.jar"
+    },
+    {
+      "path": "mods/CustomNpcResu-1.10.3.jar",
+      "sha1": "427cc0c84244c3880d92a566fedc91da3189ff33",
+      "size": 52023338,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/CustomNpcResu-1.10.3.jar"
+    },
+    {
+      "path": "mods/DbrFrutas.jar",
+      "sha1": "1c55f9737cf2a72fe64fa9863010c4717314943e",
+      "size": 31319,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrFrutas.jar"
+    },
+    {
+      "path": "mods/DbrServerPack-2.3.0.jar",
+      "sha1": "878810a58ccd64d5120739fed48eafcd47a5658b",
+      "size": 47576516,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-2.3.0.jar"
+    },
+    {
+      "path": "mods/dbsparking-1.0.jar",
+      "sha1": "28818e4260cd74f6c4b6b368ec5f1fbdc7d355e3",
+      "size": 18062,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/dbsparking-1.0.jar"
+    },
+    {
+      "path": "mods/DragonBlockC-v1.4.85.jar",
+      "sha1": "4d5d2ae7016be49c0d47aa9e54adada8fc3f27ab",
+      "size": 15187123,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DragonBlockC-v1.4.85.jar"
+    },
+    {
+      "path": "mods/JBRA-Client-v1.6.52.jar",
+      "sha1": "be242f62ad2768e205402adc6dc6db9214716a6d",
+      "size": 129587,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JBRA-Client-v1.6.52.jar"
+    },
+    {
+      "path": "mods/JFamilyC-v1.2.18.jar",
+      "sha1": "a9f1d12767d1b168c0e1397346f73649741be249",
+      "size": 146745,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JFamilyC-v1.2.18.jar"
+    },
+    {
+      "path": "mods/JinRyuu's-HDSkins-Mod-1.7.10-v1.3.1.jar",
+      "sha1": "e5145b60250c0bd39763c234054f21aa39d6ffff",
+      "size": 23139,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JinRyuu's-HDSkins-Mod-1.7.10-v1.3.1.jar"
+    },
+    {
+      "path": "mods/JRMCore-v1.3.51.jar",
+      "sha1": "b0d22df0da95a0456b3b79da3b0e8673a1cafcfb",
+      "size": 2560555,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JRMCore-v1.3.51.jar"
+    },
+    {
+      "path": "mods/JYearsC-v1.2.5.jar",
+      "sha1": "7e5eefc9d5c14a3f1c2c3310d60c56809a7ec7a6",
+      "size": 61192,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JYearsC-v1.2.5.jar"
+    },
+    {
+      "path": "mods/NBArmors-2.3.jar",
+      "sha1": "9b18182fcb25e5c9ede096bc49aee6f3ac647474",
+      "size": 3843119,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/NBArmors-2.3.jar"
+    },
+    {
+      "path": "mods/ninjinentities-1.2.7.4.jar",
+      "sha1": "6dbb20394c667f92c5524faeaa46e0c6ecef4d5c",
+      "size": 1079622,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/ninjinentities-1.2.7.4.jar"
+    },
+    {
+      "path": "mods/npcdbc-1.1.5.jar",
+      "sha1": "9a1d5a2056bd467b39b3faf566f6774ab377d872",
+      "size": 4340154,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.5.jar"
+    },
+    {
+      "path": "mods/OptifineComplemento.jar",
+      "sha1": "b591d7b526794c0b9d22d10e0a0b46636c10fce3",
+      "size": 198525,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/OptifineComplemento.jar"
+    },
+    {
+      "path": "mods/OptifinePrincipal.jar",
+      "sha1": "2130d7266224da6a7325051e37444f7e7c19277c",
+      "size": 1774165,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/OptifinePrincipal.jar"
+    },
+    {
+      "path": "resourcepacks/DbrTexture v6.zip",
+      "sha1": "b1d17c7d22551756e6715ecb6a96b61b9e97fc0a",
+      "size": 4323579,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/resourcepacks/DbrTexture%20v6.zip"
+    }
+  ]
+}
