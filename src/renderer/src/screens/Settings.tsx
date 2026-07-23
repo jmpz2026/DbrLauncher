@@ -4,11 +4,17 @@ import { useStore } from '../store'
 export default function Settings(): JSX.Element {
   const ram = useStore((s) => s.ramGb)
   const setRam = useStore((s) => s.setRamGb)
+  const maxRam = useStore((s) => s.maxRamGb)
+  const totalRam = useStore((s) => s.totalRamGb)
   const loadJava = useStore((s) => s.loadJava)
 
   useEffect(() => {
     void loadJava()
   }, [loadJava])
+
+  // El slider nunca deja pasar del tope del equipo, pero avisamos cuando el usuario ya está
+  // en el máximo para que entienda por qué no puede subir más.
+  const atMax = ram >= maxRam
 
   return (
     <div className="h-full space-y-4 overflow-y-auto px-12 py-8">
@@ -29,12 +35,20 @@ export default function Settings(): JSX.Element {
           id="ram"
           type="range"
           min={2}
-          max={16}
+          max={Math.max(2, maxRam)}
           step={1}
-          value={ram}
+          value={Math.min(ram, Math.max(2, maxRam))}
           onChange={(e) => setRam(Number(e.target.value))}
           className="mc-range"
         />
+        <p className="mt-2 text-xs leading-relaxed text-muted">
+          {totalRam > 0
+            ? `Tu equipo tiene ${totalRam} GB. Máximo asignable: ${maxRam} GB (se reservan 2 GB para el sistema).`
+            : 'Asigna solo parte de tu RAM; deja memoria libre para el sistema.'}
+          {atMax && totalRam > 0 && (
+            <span className="text-gold"> Estás en el máximo recomendado para tu equipo.</span>
+          )}
+        </p>
       </div>
 
       {/* Ventana y JVM */}

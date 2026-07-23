@@ -3,7 +3,7 @@ import type { Account, AuthResult, DeviceCodeInfo } from '../shared/account'
 import type { SyncProgress, SyncResult } from '../shared/sync'
 import type { JavaInfo, JavaProgress, JavaResult } from '../shared/java'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../shared/launch'
-import type { LauncherSettings } from '../shared/settings'
+import type { LauncherSettings, RamLimits } from '../shared/settings'
 import type { ServerStatus } from '../shared/status'
 import type { NewsResult } from '../shared/news'
 import type { UpdateStatus } from '../shared/update'
@@ -66,6 +66,7 @@ const api = {
 
   settings: {
     get: (): Promise<LauncherSettings> => ipcRenderer.invoke('settings:get'),
+    limits: (): Promise<RamLimits> => ipcRenderer.invoke('settings:limits'),
     set: (patch: Partial<LauncherSettings>): Promise<LauncherSettings> =>
       ipcRenderer.invoke('settings:set', patch)
   },

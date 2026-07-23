@@ -52,6 +52,8 @@ interface State {
   height: number
   fullscreen: boolean
   jvmArgs: string
+  maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
+  totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
   setSetting: (patch: Partial<LauncherSettings>) => Promise<void>
   setRamGb: (n: number) => void
@@ -173,15 +175,22 @@ export const useStore = create<State>((set, get) => ({
   height: 480,
   fullscreen: false,
   jvmArgs: DEFAULT_JVM_ARGS,
+  maxRamGb: 16,
+  totalRamGb: 0,
   loadSettings: async () => {
     if (!window.dbr?.settings) return
-    const s = await window.dbr.settings.get()
+    const [s, limits] = await Promise.all([
+      window.dbr.settings.get(),
+      window.dbr.settings.limits()
+    ])
     set({
       ramGb: s.ramGb,
       width: s.width,
       height: s.height,
       fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs
+      jvmArgs: s.jvmArgs,
+      maxRamGb: limits.maxGb,
+      totalRamGb: limits.totalGb
     })
   },
   setSetting: async (patch) => {

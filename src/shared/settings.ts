@@ -24,3 +24,15 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   jvmArgs: DEFAULT_JVM_ARGS,
   jvmArgsMigrated: false
 }
+
+/** RAM mínima asignable al juego (GB). */
+export const MIN_RAM_GB = 2
+
+/** RAM (GB) que se reserva para el SO al calcular el máximo asignable al juego. */
+export const RAM_HEADROOM_GB = 2
+
+/** Límites de RAM calculados según la memoria física del equipo (main → renderer). */
+export interface RamLimits {
+  totalGb: number
+  maxGb: number
+}
