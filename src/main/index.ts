@@ -1,3 +1,10 @@
+// Electron 22 (última versión con soporte Windows 7/8/8.1) corre sobre Node 16, que NO trae
+// `fetch` global. Todo el proceso main usa fetch (auth, sync, descargas, news), así que lo
+// inyectamos desde undici antes de cualquier import que lo use. undici v5 es compatible con
+// Node 16 y es la misma implementación que Node 18+ expone de forma nativa.
+import { fetch, Headers, Request, Response, FormData } from 'undici'
+Object.assign(globalThis, { fetch, Headers, Request, Response, FormData })
+
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { registerAuth } from './auth'
