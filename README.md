@@ -3,7 +3,7 @@
 Launcher de la comunidad **Dbr** para Minecraft **Forge 1.7.10** (Java 8).
 
 - Mods, configs y texture pack siempre al día (sincronización por manifest + SHA1, borra mods obsoletos).
-- Login **Pirata** (offline) o **Premium** (Microsoft OAuth).
+- Login **No-Premium** (offline) o **Premium** (Microsoft OAuth).
 - JRE 8 auto-descargado por SO/arquitectura (Temurin/Adoptium).
 - Descarga vanilla (Mojang) + Forge y lanza el juego.
 - Estado del servidor en vivo (ping), noticias, ajustes (RAM/resolución/JVM).
@@ -31,7 +31,7 @@ Toda la lógica sensible vive en el **proceso main** y se expone al renderer por
 
 | Módulo | Qué hace |
 |--------|----------|
-| `auth/` | Login pirata (UUID offline) y premium (Microsoft device-code → Xbox → Minecraft). Token cifrado con `safeStorage`. |
+| `auth/` | Login no-premium (UUID offline) y premium (Microsoft device-code → Xbox → Minecraft). Token cifrado con `safeStorage`. |
 | `sync/` | Descarga mods/configs desde `manifest.json`, verifica SHA1, borra obsoletos (`managed.json`). Núcleo puro en `engine.ts`. |
 | `java/` | Descarga y verifica el JRE 8 (Adoptium). Cachea en `userData/runtime/`. |
 | `launch/` | Resuelve versión (vanilla Mojang + overlay Forge), descarga libs/natives/assets, arma el comando y lanza. |
@@ -67,7 +67,7 @@ publish:
 1. **Login premium (opcional):** registrar una app en Azure Portal (Entra ID) →
    *App registrations* → tipo **Personal Microsoft accounts** → activar
    *Allow public client flows*. Pegar el **Application (client) ID** en
-   `config.ts` → `auth.azureClientId`. (Pirata funciona sin esto.)
+   `config.ts` → `auth.azureClientId`. (No-Premium funciona sin esto.)
 
 2. **Modpack:** generar el manifest y alojar los archivos.
 
@@ -145,7 +145,7 @@ node -e "require('esbuild').build({entryPoints:['scripts/<test>.ts'],bundle:true
 ## Roadmap
 
 1. ✅ Scaffold + UI (estilo Minecraft pixel)
-2. ✅ Auth: Pirata + Microsoft + store cifrado
+2. ✅ Auth: No-Premium + Microsoft + store cifrado
 3. ✅ Motor de sync (manifest, descarga, SHA1, prune, progreso)
 4. ✅ JRE 8 auto-download por SO/arch
 5. ✅ Forge/vanilla launch *(código completo; falta probar in-game con el modpack real)*
