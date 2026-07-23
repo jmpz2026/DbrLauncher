@@ -3,7 +3,7 @@ import type { Account } from '../../shared/account'
 import type { SyncProgress, SyncSummary } from '../../shared/sync'
 import type { JavaInfo, JavaProgress } from '../../shared/java'
 import type { LaunchProgress } from '../../shared/launch'
-import { DEFAULT_JVM_ARGS, type LauncherSettings } from '../../shared/settings'
+import { DEFAULT_JVM_ARGS, type LauncherSettings, type ModpackVariant } from '../../shared/settings'
 import type { ServerStatus } from '../../shared/status'
 import type { UpdateStatus } from '../../shared/update'
 
@@ -52,6 +52,7 @@ interface State {
   height: number
   fullscreen: boolean
   jvmArgs: string
+  modpackVariant: ModpackVariant // 'full' | 'lite'
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
@@ -175,6 +176,7 @@ export const useStore = create<State>((set, get) => ({
   height: 480,
   fullscreen: false,
   jvmArgs: DEFAULT_JVM_ARGS,
+  modpackVariant: 'full',
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -189,6 +191,7 @@ export const useStore = create<State>((set, get) => ({
       height: s.height,
       fullscreen: s.fullscreen,
       jvmArgs: s.jvmArgs,
+      modpackVariant: s.modpackVariant,
       maxRamGb: limits.maxGb,
       totalRamGb: limits.totalGb
     })
@@ -202,7 +205,8 @@ export const useStore = create<State>((set, get) => ({
       width: s.width,
       height: s.height,
       fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs
+      jvmArgs: s.jvmArgs,
+      modpackVariant: s.modpackVariant
     })
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),

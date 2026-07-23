@@ -12,7 +12,11 @@ export const CONFIG = {
   forge: '10.13.4.1614', // versión de Forge para 1.7.10
 
   // Hosting del modpack (repo DBR-ASSETS, servido por raw.githubusercontent).
+  // Dos variantes del modpack que comparten Forge/MC: 'full' (por defecto) y 'lite'.
+  // El manifest lite vive junto al full en la rama assets; sus jars van en la subcarpeta
+  // lite/ (mismo `path` local, distinta url/sha1) → cambiar de variante re-sincroniza solo.
   manifestUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest.json',
+  manifestUrlLite: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-lite.json',
   newsUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/news.json',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',

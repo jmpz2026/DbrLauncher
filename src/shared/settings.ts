@@ -1,3 +1,6 @@
+// Variante del modpack a sincronizar (comparten Forge/MC, distinto set de mods).
+export type ModpackVariant = 'full' | 'lite'
+
 // Ajustes del launcher (persistidos en userData/settings.json).
 export interface LauncherSettings {
   ramGb: number
@@ -6,6 +9,7 @@ export interface LauncherSettings {
   fullscreen: boolean
   jvmArgs: string // argumentos JVM extra separados por espacios
   jvmArgsMigrated: boolean // true tras aplicar (una vez) los flags GC por defecto a usuarios viejos
+  modpackVariant: ModpackVariant // 'full' (por defecto) | 'lite'
 }
 
 /**
@@ -22,7 +26,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   height: 480,
   fullscreen: false,
   jvmArgs: DEFAULT_JVM_ARGS,
-  jvmArgsMigrated: false
+  jvmArgsMigrated: false,
+  modpackVariant: 'full'
 }
 
 /** RAM mínima asignable al juego (GB). */

@@ -23,6 +23,9 @@ export default function Settings(): JSX.Element {
         <h2 className="mc-text text-2xl font-bold uppercase tracking-wide text-gold">Ajustes</h2>
       </div>
 
+      {/* Variante del modpack */}
+      <ModpackPanel />
+
       {/* Memoria RAM */}
       <div className="mc-panel p-5">
         <div className="mb-3 flex items-center justify-between">
@@ -56,6 +59,41 @@ export default function Settings(): JSX.Element {
 
       {/* Runtime de Java */}
       <JavaPanel />
+    </div>
+  )
+}
+
+function ModpackPanel(): JSX.Element {
+  const variant = useStore((s) => s.modpackVariant)
+  const setSetting = useStore((s) => s.setSetting)
+
+  const options = [
+    { id: 'full' as const, label: 'Completo', desc: 'Todos los mods (recomendado)' },
+    { id: 'lite' as const, label: 'Lite', desc: 'Menos mods, para equipos justos' }
+  ]
+
+  return (
+    <div className="mc-panel space-y-3 p-5">
+      <span className="text-sm font-semibold uppercase tracking-wider">Versión del modpack</span>
+      <div className="flex gap-3">
+        {options.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => void setSetting({ modpackVariant: o.id })}
+            className={`mc-btn flex-1 px-4 py-3 text-left ${variant === o.id ? 'mc-btn-on' : ''}`}
+          >
+            <span className="block text-sm font-semibold uppercase tracking-[0.12em]">
+              {o.label}
+            </span>
+            <span className="mt-0.5 block text-xs normal-case tracking-normal text-muted">
+              {o.desc}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs leading-relaxed text-muted">
+        Al cambiar de versión, los mods se re-sincronizan la próxima vez que le des a Jugar.
+      </p>
     </div>
   )
 }
