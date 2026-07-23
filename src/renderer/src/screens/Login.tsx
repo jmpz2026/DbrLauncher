@@ -49,7 +49,7 @@ export default function Login(): JSX.Element {
         <section className="mc-panel flex flex-col gap-4 p-6">
           <div className="flex items-center gap-2">
             <span className="h-4 w-2 bg-muted" />
-            <h2 className="mc-text-sm text-lg font-bold uppercase tracking-wide text-text">Pirata</h2>
+            <h2 className="mc-text-sm text-lg font-bold uppercase tracking-wide text-text">No-Premium</h2>
           </div>
           <p className="text-xs leading-relaxed text-muted">
             Sin cuenta de Mojang. Solo elige tu nombre en el servidor.
