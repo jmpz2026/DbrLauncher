@@ -1,5 +1,5 @@
 // Electron 22 (última versión con soporte Windows 7/8/8.1) corre sobre Node 16, que NO trae
-// `fetch` global. Todo el proceso main usa fetch (auth, sync, descargas, news), así que lo
+// `fetch` global. Todo el proceso main usa fetch (auth, sync, descargas), así que lo
 // inyectamos desde undici antes de cualquier import que lo use. undici v5 es compatible con
 // Node 16 y es la misma implementación que Node 18+ expone de forma nativa.
 import { fetch, Headers, Request, Response, FormData } from 'undici'
@@ -10,10 +10,9 @@ import { join } from 'path'
 import { registerAuth } from './auth'
 import { registerSync } from './sync'
 import { registerJava } from './java'
-import { registerLaunch } from './launch'
+import { registerLaunch, readGameLogTail } from './launch'
 import { registerSettings } from './settings'
 import { registerStatus } from './status'
-import { registerNews } from './news'
 import { registerUpdater } from './updater'
 import { registerFuse } from './fuse'
 
@@ -64,6 +63,8 @@ app.whenReady().then(() => {
   ipcMain.on('window:close', (e) => BrowserWindow.fromWebContents(e.sender)?.close())
   ipcMain.on('app:open-folder', () => shell.openPath(app.getPath('userData')))
   ipcMain.handle('app:version', () => app.getVersion())
+  // Log del último arranque del juego (para el visor / diagnóstico de crashes).
+  ipcMain.handle('app:read-log', () => readGameLogTail(200))
 
   // Autenticación (pirata + premium Microsoft)
   registerAuth()
@@ -73,10 +74,9 @@ app.whenReady().then(() => {
   registerJava()
   // Lanzamiento de Minecraft/Forge
   registerLaunch()
-  // Ajustes, estado del servidor y noticias
+  // Ajustes y estado del servidor
   registerSettings()
   registerStatus()
-  registerNews()
   // Auto-actualización (GitHub Releases)
   registerUpdater(() => mainWindow)
   // Detección de libfuse2 en Linux (AppImage)

@@ -13,6 +13,22 @@ export interface SyncOptions {
 
 type OnProgress = (p: SyncProgress) => void
 
+// Nº de descargas/verificaciones simultáneas. Igual criterio que installAssets:
+// en serie son decenas de archivos uno a uno = lentísimo en el primer install.
+const CONCURRENCY = 8
+
+/** Corre `task` sobre `items` con un pool acotado de workers. Preserva el orden de entrada. */
+async function pool<T>(items: T[], limit: number, task: (item: T, i: number) => Promise<void>): Promise<void> {
+  let next = 0
+  const worker = async (): Promise<void> => {
+    while (next < items.length) {
+      const i = next++
+      await task(items[i], i)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+}
+
 function loadManaged(managedFile: string): string[] {
   try {
     const j = JSON.parse(readFileSync(managedFile, 'utf-8')) as { files?: unknown }
@@ -41,17 +57,20 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   mkdirSync(gameDir, { recursive: true })
 
   // 1) Comprobar qué archivos hay que descargar (faltan o SHA1 distinto).
-  const toDownload: ManifestFile[] = []
-  for (let i = 0; i < manifest.files.length; i++) {
-    const f = manifest.files[i]
-    onProgress({ phase: 'check', file: f.path, done: i, total: manifest.files.length })
+  // El sha1 en disco se calcula en paralelo: es I/O + CPU, en serie tarda en modpacks grandes.
+  const checkTotal = manifest.files.length
+  const needed: boolean[] = new Array(checkTotal).fill(false)
+  let checked = 0
+  await pool(manifest.files, CONCURRENCY, async (f, i) => {
     const dest = safeJoin(gameDir, f.path)
     let needs = true
     if (existsSync(dest)) {
       needs = f.sha1 ? (await sha1File(dest)).toLowerCase() !== f.sha1.toLowerCase() : false
     }
-    if (needs) toDownload.push(f)
-  }
+    needed[i] = needs
+    onProgress({ phase: 'check', file: f.path, done: ++checked, total: checkTotal })
+  })
+  const toDownload: ManifestFile[] = manifest.files.filter((_, i) => needed[i])
 
   // 2) Determinar archivos obsoletos: gestionados antes pero ya no en el manifest.
   const wantedPaths = new Set(manifest.files.map((f) => f.path))
@@ -60,12 +79,12 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   const total = toDownload.length + toDelete.length
   let done = 0
 
-  // 3) Descargar.
-  for (const f of toDownload) {
-    onProgress({ phase: 'download', file: f.path, done, total })
+  // 3) Descargar en paralelo (pool acotado). `done` es un contador compartido: como JS es
+  // monohilo entre awaits, el ++ no compite; solo la barra ve el orden de finalización.
+  await pool(toDownload, CONCURRENCY, async (f) => {
     await ensureFile(safeJoin(gameDir, f.path), f.url, f.sha1)
-    done++
-  }
+    onProgress({ phase: 'download', file: f.path, done: ++done, total })
+  })
 
   // 4) Borrar obsoletos.
   for (const p of toDelete) {

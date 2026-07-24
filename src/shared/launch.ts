@@ -21,6 +21,7 @@ export interface LaunchStatus {
   state: LaunchState
   code?: number // código de salida del proceso
   error?: string
+  logTail?: string // últimas líneas del log del juego cuando sale con error (crash)
 }
 
 export type LaunchResult = { ok: true } | { ok: false; error: string }

@@ -6,7 +6,7 @@ Launcher de la comunidad **Dbr** para Minecraft **Forge 1.7.10** (Java 8).
 - Login **No-Premium** (offline) o **Premium** (Microsoft OAuth).
 - JRE 8 auto-descargado por SO/arquitectura (Temurin/Adoptium).
 - Descarga vanilla (Mojang) + Forge y lanza el juego.
-- Estado del servidor en vivo (ping), noticias, ajustes (RAM/resolución/JVM).
+- Estado del servidor en vivo (ping), ajustes (RAM/resolución/JVM).
 - Multiplataforma: Windows, macOS, Linux. Auto-update por GitHub Releases.
 - UI estilo **Minecraft pixel** (fuente Pixelify Sans, paneles de piedra, acento oro).
 
@@ -37,7 +37,6 @@ Toda la lógica sensible vive en el **proceso main** y se expone al renderer por
 | `launch/` | Resuelve versión (vanilla Mojang + overlay Forge), descarga libs/natives/assets, arma el comando y lanza. |
 | `status/` | Server List Ping 1.7+ (con SRV). |
 | `settings/` | Persiste `userData/settings.json` (RAM, resolución, JVM args). |
-| `news/` | Descarga `news.json`. |
 | `updater/` | Auto-update con electron-updater (solo app instalada). |
 
 ## Configuración (rellenar antes de producción)
@@ -48,7 +47,6 @@ Toda la lógica sensible vive en el **proceso main** y se expone al renderer por
 serverHost / serverPort   // IP:puerto real del servidor (para el ping)
 forge                     // versión de Forge (ej. 10.13.4.1614)
 manifestUrl               // URL del manifest.json del modpack
-newsUrl                   // URL del news.json
 forgeJsonUrl              // URL del JSON de versión de Forge (overlay)
 auth.azureClientId        // Client ID de Azure (solo login premium)
 ```
@@ -84,19 +82,10 @@ publish:
    `.minecraft/versions/1.7.10-Forge…/1.7.10-Forge….json`, subirlo y apuntar
    `forgeJsonUrl` a él. (Sin `forgeJsonUrl` el launcher arranca **vanilla**.)
 
-4. **Noticias:** subir un `news.json`:
-
-   ```json
-   { "items": [
-     { "title": "Apertura", "date": "2026-07-21", "tag": "Evento",
-       "body": "Texto…", "url": "https://…" }
-   ] }
-   ```
-
-5. **Iconos:** añadir `build/icon.ico` (Windows), `build/icon.icns` (macOS),
+4. **Iconos:** añadir `build/icon.ico` (Windows), `build/icon.icns` (macOS),
    `build/icon.png` (Linux).
 
-6. **Empaquetar y publicar:**
+5. **Empaquetar y publicar:**
 
    ```bash
    export GITHUB_TOKEN=xxxx
@@ -149,6 +138,6 @@ node -e "require('esbuild').build({entryPoints:['scripts/<test>.ts'],bundle:true
 3. ✅ Motor de sync (manifest, descarga, SHA1, prune, progreso)
 4. ✅ JRE 8 auto-download por SO/arch
 5. ✅ Forge/vanilla launch *(código completo; falta probar in-game con el modpack real)*
-6. ✅ Ajustes + estado del servidor + noticias
+6. ✅ Ajustes + estado del servidor
 7. ✅ Empaquetado + auto-update *(código listo; falta ejecutar el empaquetado/publicación)*
 8. ✅ Tooling del modpack (generador de manifest)

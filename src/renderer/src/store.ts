@@ -7,11 +7,18 @@ import { DEFAULT_JVM_ARGS, type LauncherSettings, type ModpackVariant } from '..
 import type { ServerStatus } from '../../shared/status'
 import type { UpdateStatus } from '../../shared/update'
 
-export type Tab = 'home' | 'news' | 'settings'
+export type Tab = 'home' | 'settings'
 export type { Account, AccountType } from '../../shared/account'
 
 // Marca temporal del último ping para no repetirlo en cada cambio de pestaña.
 let lastPingAt = 0
+
+// Promesa del pre-calentamiento en curso (Java + sync) para deduplicar con play().
+let prewarmPromise: Promise<void> | null = null
+
+// Señales de que el último arranque del juego terminó en crash (para avisar al re-abrir).
+const CRASH_RE =
+  /---- Minecraft Crash Report ----|Exception in thread|A fatal error has been detected|#\s+A fatal error/i
 
 interface State {
   tab: Tab
@@ -37,6 +44,19 @@ interface State {
   launchError: string
   gameRunning: boolean // el proceso de Minecraft está vivo
   play: () => Promise<void> // sync + launch
+
+  // Pre-calentamiento: Java + sync en segundo plano al abrir, para que Jugar sea instantáneo.
+  prewarming: boolean
+  prewarmDone: boolean // el sync de pre-calentamiento terminó sin error
+  prewarm: () => Promise<void>
+
+  // Visor de log / diagnóstico de crashes
+  gameLog: string
+  logOpen: boolean
+  lastCrash: boolean // el último arranque terminó con señales de error
+  openLog: () => Promise<void>
+  closeLog: () => void
+  dismissCrash: () => void
 
   // Runtime de Java
   javaInfo: JavaInfo | null
@@ -92,6 +112,14 @@ export const useStore = create<State>((set, get) => ({
     } catch {
       /* defaults */
     }
+    // Como el launcher se cierra al lanzar, un crash del juego solo se detecta al re-abrir:
+    // inspeccionamos el log del último arranque en busca de señales de error.
+    try {
+      const log = await window.dbr?.readGameLog?.()
+      if (log && CRASH_RE.test(log)) set({ lastCrash: true, gameLog: log })
+    } catch {
+      /* sin log, sin aviso */
+    }
   },
   logout: async () => {
     await window.dbr.auth.logout()
@@ -122,9 +150,12 @@ export const useStore = create<State>((set, get) => ({
   gameRunning: false,
   play: async () => {
     if (!window.dbr?.launch) return
+    // 0) Si hay un pre-calentamiento en curso, esperarlo (evita doble sync / doble Java).
+    if (prewarmPromise) await prewarmPromise.catch(() => {})
+
     // 1) Sincronizar mods (si está configurado el manifest y el usuario dejó activada la
-    // actualización automática). Con autoSyncMods=false se lanza con lo que ya haya instalado.
-    if (get().autoSyncMods) {
+    // actualización automática). Si el pre-calentamiento ya sincronizó bien, se salta.
+    if (get().autoSyncMods && !get().prewarmDone) {
       await get().startSync()
       if (get().syncError) return
     }
@@ -136,6 +167,8 @@ export const useStore = create<State>((set, get) => ({
     const offS = window.dbr.launch.onStatus((s) => {
       if (s.state === 'running') set({ gameRunning: true, launching: false, launchProgress: null })
       else if (s.state === 'exited') {
+        // Crash antes de que el launcher se cierre (p. ej. en dev): el main adjunta el log.
+        if (s.code !== 0 && s.logTail) set({ lastCrash: true, gameLog: s.logTail })
         set({ gameRunning: false })
         offS()
       } else if (s.state === 'error') {
@@ -151,6 +184,41 @@ export const useStore = create<State>((set, get) => ({
       set({ launching: false })
     }
   },
+
+  prewarming: false,
+  prewarmDone: false,
+  prewarm: async () => {
+    if (prewarmPromise) return prewarmPromise
+    const run = async (): Promise<void> => {
+      // Java en segundo plano: no-op instantáneo si ya está cacheado en runtime/jre8.
+      try {
+        await get().ensureJava()
+      } catch {
+        /* launch reintentará Java si hace falta */
+      }
+      // Sync silencioso solo si el usuario lo tiene activado. Marca prewarmDone si fue limpio,
+      // así play() no re-sincroniza; si falló, play lo reintentará y mostrará el error.
+      let synced = true
+      if (get().autoSyncMods) {
+        await get().startSync()
+        synced = !get().syncError
+      }
+      set({ prewarmDone: synced })
+    }
+    set({ prewarming: true })
+    prewarmPromise = run().finally(() => set({ prewarming: false }))
+    return prewarmPromise
+  },
+
+  gameLog: '',
+  logOpen: false,
+  lastCrash: false,
+  openLog: async () => {
+    const gameLog = (await window.dbr?.readGameLog?.()) ?? ''
+    set({ gameLog, logOpen: true })
+  },
+  closeLog: () => set({ logOpen: false }),
+  dismissCrash: () => set({ lastCrash: false }),
 
   javaInfo: null,
   javaBusy: false,

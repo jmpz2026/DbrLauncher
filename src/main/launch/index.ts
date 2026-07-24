@@ -1,6 +1,6 @@
 import { app, ipcMain } from 'electron'
 import { spawn } from 'child_process'
-import { closeSync, mkdirSync, openSync } from 'fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { CONFIG, isForgeConfigured } from '../../shared/config'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../../shared/launch'
@@ -17,6 +17,14 @@ import { ensureFile } from '../net'
 import { assetsDir, getGameDir, librariesDir, versionsDir } from './paths'
 
 type OnProgress = (p: LaunchProgress) => void
+
+/** Devuelve las últimas `lines` líneas del log del juego (para diagnóstico de crashes). */
+export function readGameLogTail(lines = 60): string {
+  const logPath = join(getGameDir(), 'launcher-game.log')
+  if (!existsSync(logPath)) return ''
+  const all = readFileSync(logPath, 'utf-8').split(/\r?\n/)
+  return all.slice(-lines).join('\n').trim()
+}
 
 interface Prepared {
   version: VersionJson
@@ -122,7 +130,12 @@ export async function launch(
     closeSync(logFd) // el proceso hijo mantiene su propio handle del archivo
   }
 
-  child.on('exit', (code) => onStatus({ state: 'exited', code: code ?? -1 }))
+  // Salida con código != 0 = crash: adjuntamos el final del log para diagnóstico en la UI.
+  child.on('exit', (code) => {
+    const exitCode = code ?? -1
+    const logTail = exitCode !== 0 ? readGameLogTail() : undefined
+    onStatus({ state: 'exited', code: exitCode, logTail })
+  })
 }
 
 /** Registra el handler IPC de lanzamiento. */

@@ -5,7 +5,6 @@ import type { JavaInfo, JavaProgress, JavaResult } from '../shared/java'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../shared/launch'
 import type { LauncherSettings, RamLimits } from '../shared/settings'
 import type { ServerStatus } from '../shared/status'
-import type { NewsResult } from '../shared/news'
 import type { UpdateStatus } from '../shared/update'
 import type { FuseStatus, FuseInstallResult } from '../shared/fuse'
 
@@ -15,6 +14,8 @@ const api = {
   close: (): void => ipcRenderer.send('window:close'),
   openGameFolder: (): void => ipcRenderer.send('app:open-folder'),
   getVersion: (): Promise<string> => ipcRenderer.invoke('app:version'),
+  // Últimas líneas del log del juego (visor / diagnóstico de crashes).
+  readGameLog: (): Promise<string> => ipcRenderer.invoke('app:read-log'),
 
   auth: {
     get: (): Promise<Account | null> => ipcRenderer.invoke('auth:get'),
@@ -73,10 +74,6 @@ const api = {
 
   status: {
     ping: (): Promise<ServerStatus> => ipcRenderer.invoke('status:ping')
-  },
-
-  news: {
-    get: (): Promise<NewsResult> => ipcRenderer.invoke('news:get')
   },
 
   update: {

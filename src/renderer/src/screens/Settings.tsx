@@ -62,6 +62,32 @@ export default function Settings(): JSX.Element {
 
       {/* Runtime de Java */}
       <JavaPanel />
+
+      {/* Diagnóstico */}
+      <DiagnosticsPanel />
+    </div>
+  )
+}
+
+function DiagnosticsPanel(): JSX.Element {
+  const openLog = useStore((s) => s.openLog)
+
+  return (
+    <div className="mc-panel p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="text-sm font-semibold uppercase tracking-wider">Diagnóstico</span>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Revisa el log del último arranque del juego si algo falló.
+          </p>
+        </div>
+        <button
+          onClick={() => void openLog()}
+          className="mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+        >
+          Ver último log
+        </button>
+      </div>
     </div>
   )
 }

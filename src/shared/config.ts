@@ -17,7 +17,6 @@ export const CONFIG = {
   // lite/ (mismo `path` local, distinta url/sha1) → cambiar de variante re-sincroniza solo.
   manifestUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest.json',
   manifestUrlLite: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-lite.json',
-  newsUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/news.json',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 

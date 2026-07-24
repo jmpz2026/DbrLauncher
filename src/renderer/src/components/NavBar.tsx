@@ -2,7 +2,6 @@ import { useStore, type Tab } from '../store'
 import discordIcon from '../assets/discord.png'
 
 const items: { id: Tab; label: string }[] = [
-  { id: 'news', label: 'Noticias' },
   { id: 'home', label: 'Jugar' },
   { id: 'settings', label: 'Ajustes' }
 ]

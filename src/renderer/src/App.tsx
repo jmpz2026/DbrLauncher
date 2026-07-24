@@ -3,11 +3,11 @@ import Background from './components/Background'
 import TitleBar from './components/TitleBar'
 import NavBar from './components/NavBar'
 import Home from './screens/Home'
-import News from './screens/News'
 import Settings from './screens/Settings'
 import Login from './screens/Login'
 import UpdateOverlay from './components/UpdateOverlay'
 import FuseBanner from './components/FuseBanner'
+import GameLogModal from './components/GameLogModal'
 import { useStore } from './store'
 
 export default function App(): JSX.Element {
@@ -16,10 +16,17 @@ export default function App(): JSX.Element {
   const account = useStore((s) => s.account)
   const hydrate = useStore((s) => s.hydrate)
   const setUpdateStatus = useStore((s) => s.setUpdateStatus)
+  const prewarm = useStore((s) => s.prewarm)
 
   useEffect(() => {
     void hydrate()
   }, [hydrate])
+
+  // Pre-calentamiento: en cuanto hay sesión, adelantamos Java + sync en segundo plano
+  // para que el botón Jugar arranque casi al instante en el caso común (todo al día).
+  useEffect(() => {
+    if (account) void prewarm()
+  }, [account, prewarm])
 
   // Suscripción a la auto-actualización (dispara el chequeo en main).
   useEffect(() => {
@@ -42,7 +49,6 @@ export default function App(): JSX.Element {
           ) : (
             <>
               {tab === 'home' && <Home />}
-              {tab === 'news' && <News />}
               {tab === 'settings' && <Settings />}
             </>
           )}
@@ -50,6 +56,7 @@ export default function App(): JSX.Element {
         {ready && account && <NavBar />}
       </div>
       <UpdateOverlay />
+      <GameLogModal />
       <FuseBanner />
     </div>
   )

@@ -68,9 +68,36 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
   const summary = useStore((s) => s.syncSummary)
   const syncError = useStore((s) => s.syncError)
   const launchError = useStore((s) => s.launchError)
+  const lastCrash = useStore((s) => s.lastCrash)
+  const openLog = useStore((s) => s.openLog)
+  const dismissCrash = useStore((s) => s.dismissCrash)
 
   if (syncing) return <SyncBar />
   if (launching) return <LaunchBar />
+
+  if (lastCrash && !gameRunning) {
+    return (
+      <div className="mc-panel !border-red-600 mt-1 flex max-w-lg flex-col items-center gap-2 px-5 py-3 text-center">
+        <p className="text-xs uppercase tracking-wider text-red-300 mc-text-sm">
+          El juego se cerró con errores en el último arranque
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => void openLog()}
+            className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
+          >
+            Ver log
+          </button>
+          <button
+            onClick={dismissCrash}
+            className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
+          >
+            Descartar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const error = launchError || syncError
   if (error) {
