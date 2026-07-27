@@ -750,7 +750,11 @@ private class DbrInstallViewModel : ViewModel() {
             else -> {}
         }
         val gameDir = version.getGameDir()
-        if (!AllSettings.dbrAutoSyncMods.getValue() && !DbrSync.neverSynced(gameDir)) {
+        //Un cambio de variante pendiente (o una config por aplicar) obliga a sincronizar
+        //aunque el jugador tenga apagada la actualización automática.
+        val pending = AllSettings.dbrModpackSyncPending.getValue() ||
+                AllSettings.dbrModpackSeedPending.getValue()
+        if (!AllSettings.dbrAutoSyncMods.getValue() && !pending && !DbrSync.neverSynced(gameDir)) {
             onLaunch()
             return
         }
@@ -765,6 +769,9 @@ private class DbrInstallViewModel : ViewModel() {
                 }
             }.onSuccess {
                 if (reseed) AllSettings.dbrModpackSeedPending.save(false)
+                if (AllSettings.dbrModpackSyncPending.getValue()) {
+                    AllSettings.dbrModpackSyncPending.save(false)
+                }
                 state = DbrInstallState.Idle
                 onLaunch()
             }.onFailure { th ->

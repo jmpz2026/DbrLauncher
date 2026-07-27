@@ -199,7 +199,11 @@ fun LauncherSettingsScreen(
                         summary = stringResource(R.string.dbr_modpack_variant_summary),
                         getRadioEnable = { true },
                         getRadioText = { variant -> stringResource(variant.textRes) },
-                        onValueChange = { askSeed = true }
+                        onValueChange = {
+                            //La variante cambió: hay que re-sincronizar sí o sí.
+                            AllSettings.dbrModpackSyncPending.save(true)
+                            askSeed = true
+                        }
                     )
 
                     SwitchSettingsCard(

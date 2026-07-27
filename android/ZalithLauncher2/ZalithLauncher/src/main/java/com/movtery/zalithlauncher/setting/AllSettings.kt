@@ -64,6 +64,13 @@ object AllSettings : SettingsRegistry() {
      */
     val dbrModpackSeedPending = boolSetting("dbrModpackSeedPending", false)
 
+    /**
+     * DBR: hay un cambio de variante sin sincronizar. Obliga a sincronizar en el próximo
+     * Jugar aunque el jugador tenga apagada la actualización automática de mods: ese
+     * interruptor es para no bajar mods nuevos, no para jugar con la otra variante.
+     */
+    val dbrModpackSyncPending = boolSetting("dbrModpackSyncPending", false)
+
     //Renderer
     /**
      * 全局渲染器
