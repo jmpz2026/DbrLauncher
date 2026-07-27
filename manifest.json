@@ -496,6 +496,27 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/OptifinePrincipal.jar"
     },
     {
+      "path": "options.txt",
+      "sha1": "76184c33f2247af8c0375ac9f55cdb15866c6d0f",
+      "size": 2565,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/options.txt"
+    },
+    {
+      "path": "optionsof.txt",
+      "sha1": "2d704e74e65bdd0c917d53dca45d60fc770b1b5e",
+      "size": 1339,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/optionsof.txt"
+    },
+    {
+      "path": "optionsshaders.txt",
+      "sha1": "dfd9717466ba95fc5318d32aa28df8aeae6042a9",
+      "size": 364,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/optionsshaders.txt"
+    },
+    {
       "path": "resourcepacks/DbrTexture v6.zip",
       "sha1": "b1d17c7d22551756e6715ecb6a96b61b9e97fc0a",
       "size": 4323579,
