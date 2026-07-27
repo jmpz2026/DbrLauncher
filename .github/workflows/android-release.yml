@@ -77,9 +77,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ steps.ver.outputs.tag }}"
+          # --prerelease: si no, GitHub marca la release de Android como "latest" del repo y
+          # electron-updater (launcher de PC) busca ahi su latest.yml -> 404 -> no actualiza.
           gh release create "$TAG" DbrLauncherMobile-arm64.apk \
             --title "DbrLauncherMobile $TAG" \
             --notes "Build ${{ steps.ver.outputs.n }}" \
+            --prerelease \
           || gh release upload "$TAG" DbrLauncherMobile-arm64.apk --clobber
 
       # mandatory=true: el launcher debe ir al dia con el modpack. Un launcher viejo no
