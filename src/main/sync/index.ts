@@ -33,7 +33,9 @@ export function registerSync(): void {
         },
         (p) => e.sender.send('sync:progress', p)
       )
+      // Sync correcta: los pendientes (config por re-sembrar, cambio de variante) quedan servidos.
       if (reseed) saveSettings({ modpackSeedPending: false })
+      if (loadSettings().modpackSyncPending) saveSettings({ modpackSyncPending: false })
       return { ok: true, summary }
     } catch (err) {
       return { ok: false, error: (err as Error).message }

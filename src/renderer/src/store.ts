@@ -20,6 +20,18 @@ let prewarmPromise: Promise<void> | null = null
 // Un sync que arrancó antes del cambio no puede marcar prewarmDone: bajó la variante vieja.
 let syncGeneration = 0
 
+/**
+ * ¿Hay que sincronizar antes de jugar? Normalmente manda el interruptor de actualización
+ * automática, pero un cambio de variante pendiente (o una config recomendada por aplicar)
+ * obliga igualmente: ese interruptor sirve para no bajar mods nuevos, no para acabar jugando
+ * con el modpack de la otra variante.
+ */
+const mustSync = (s: {
+  autoSyncMods: boolean
+  modpackSyncPending: boolean
+  modpackSeedPending: boolean
+}): boolean => s.autoSyncMods || s.modpackSyncPending || s.modpackSeedPending
+
 // Señales de que el último arranque del juego terminó en crash (para avisar al re-abrir).
 const CRASH_RE =
   /---- Minecraft Crash Report ----|Exception in thread|A fatal error has been detected|#\s+A fatal error/i
@@ -79,6 +91,7 @@ interface State {
   modpackVariant: ModpackVariant // 'full' | 'lite'
   autoSyncMods: boolean // sincronizar mods al dar Jugar
   modpackSeedPending: boolean // aplicar la config recomendada en la próxima sync
+  modpackSyncPending: boolean // cambio de variante sin sincronizar todavía
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
@@ -158,9 +171,8 @@ export const useStore = create<State>((set, get) => ({
     // 0) Si hay un pre-calentamiento en curso, esperarlo (evita doble sync / doble Java).
     if (prewarmPromise) await prewarmPromise.catch(() => {})
 
-    // 1) Sincronizar mods (si está configurado el manifest y el usuario dejó activada la
-    // actualización automática). Si el pre-calentamiento ya sincronizó bien, se salta.
-    if (get().autoSyncMods && !get().prewarmDone) {
+    // 1) Sincronizar mods (ver mustSync). Si el pre-calentamiento ya sincronizó bien, se salta.
+    if (mustSync(get()) && !get().prewarmDone) {
       await get().startSync()
       if (get().syncError) return
     }
@@ -202,10 +214,10 @@ export const useStore = create<State>((set, get) => ({
       } catch {
         /* launch reintentará Java si hace falta */
       }
-      // Sync silencioso solo si el usuario lo tiene activado. Marca prewarmDone si fue limpio,
-      // así play() no re-sincroniza; si falló, play lo reintentará y mostrará el error.
+      // Sync silencioso (ver mustSync). Marca prewarmDone si fue limpio, así play() no
+      // re-sincroniza; si falló, play lo reintentará y mostrará el error.
       let synced = true
-      if (get().autoSyncMods) {
+      if (mustSync(get())) {
         await get().startSync()
         synced = !get().syncError
       }
@@ -258,6 +270,7 @@ export const useStore = create<State>((set, get) => ({
   modpackVariant: 'full',
   autoSyncMods: true,
   modpackSeedPending: false,
+  modpackSyncPending: false,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -275,6 +288,7 @@ export const useStore = create<State>((set, get) => ({
       modpackVariant: s.modpackVariant,
       autoSyncMods: s.autoSyncMods,
       modpackSeedPending: s.modpackSeedPending,
+      modpackSyncPending: s.modpackSyncPending,
       maxRamGb: limits.maxGb,
       totalRamGb: limits.totalGb
     })
@@ -300,7 +314,8 @@ export const useStore = create<State>((set, get) => ({
       jvmArgs: s.jvmArgs,
       modpackVariant: s.modpackVariant,
       autoSyncMods: s.autoSyncMods,
-      modpackSeedPending: s.modpackSeedPending
+      modpackSeedPending: s.modpackSeedPending,
+      modpackSyncPending: s.modpackSyncPending
     })
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),

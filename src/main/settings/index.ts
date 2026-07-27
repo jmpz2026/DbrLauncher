@@ -67,8 +67,17 @@ export function registerSettings(): void {
   ipcMain.handle('settings:get', (): LauncherSettings => loadSettings())
   ipcMain.handle('settings:limits', (): RamLimits => ramLimits())
   ipcMain.handle('settings:set', (_e, patch: Partial<LauncherSettings>): LauncherSettings =>
-    saveSettings(clampPatch(patch))
+    saveSettings(markVariantChange(clampPatch(patch)))
   )
+}
+
+/**
+ * Si el patch cambia la variante del modpack, marca que hace falta sincronizar. Se hace aquí y
+ * no en la UI para que valga venga de donde venga el cambio.
+ */
+function markVariantChange(patch: Partial<LauncherSettings>): Partial<LauncherSettings> {
+  if (!patch.modpackVariant || patch.modpackVariant === loadSettings().modpackVariant) return patch
+  return { ...patch, modpackSyncPending: true }
 }
 
 /** Aplica el tope de RAM también al guardar, por si el patch llega con un valor fuera de rango. */

@@ -14,6 +14,10 @@ export interface LauncherSettings {
   // Aplicar la configuración recomendada (archivos `once` del manifest) en la próxima sync.
   // Lo activa el jugador al cambiar de variante si acepta el aviso; la sync lo consume.
   modpackSeedPending: boolean
+  // Hay un cambio de variante sin sincronizar: obliga a sincronizar en el próximo Jugar aunque
+  // el jugador tenga apagada la actualización automática de mods (si no, jugaría con los mods
+  // de la otra variante). La sync lo consume.
+  modpackSyncPending: boolean
 }
 
 /**
@@ -33,7 +37,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   jvmArgsMigrated: false,
   modpackVariant: 'full',
   autoSyncMods: true,
-  modpackSeedPending: false
+  modpackSeedPending: false,
+  modpackSyncPending: false
 }
 
 /** RAM mínima asignable al juego (GB). */
