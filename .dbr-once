@@ -1,0 +1,19 @@
+# Archivos de "siembra" del modpack FULL.
+#
+# Lo que se liste aqui se descarga SOLO si el jugador no lo tiene todavia:
+# no se pisa nunca mas (aunque cambie el sha1) y no se borra aunque lo quites
+# del manifest. Es para configuracion del jugador.
+# Todo lo demas (mods, config/) sigue siendo gestionado: se pisa por sha1 y se
+# borra al salir del manifest.
+#
+# Una ruta o glob por linea, relativa a la raiz del pack. '#' = comentario.
+# Al cambiar de variante Full/Lite el launcher pregunta si re-aplicar estos.
+
+options.txt
+optionsof.txt
+optionsshaders.txt
+
+# Ejemplo de .cfg que quieras dejar que el jugador toque sin que la sync se lo
+# revierta (descomenta y ajusta):
+# config/ArmorStatusHUD.cfg
+# config/*Client*.cfg
