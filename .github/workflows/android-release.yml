@@ -82,6 +82,9 @@ jobs:
             --notes "Build ${{ steps.ver.outputs.n }}" \
           || gh release upload "$TAG" DbrLauncherMobile-arm64.apk --clobber
 
+      # mandatory=true: el launcher debe ir al dia con el modpack. Un launcher viejo no
+      # entiende los archivos de siembra (`once`) del manifest y pisaria la configuracion
+      # grafica del jugador en cada Jugar.
       - name: Actualizar version.json (auto-updater)
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,7 +92,7 @@ jobs:
           N="${{ steps.ver.outputs.n }}"
           TAG="${{ steps.ver.outputs.tag }}"
           URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/DbrLauncherMobile-arm64.apk"
-          printf '{\n  "build": %s,\n  "versionName": "DbrLauncher Mobile %s",\n  "apkUrl": "%s",\n  "mandatory": false,\n  "changelog": "Build %s"\n}\n' \
+          printf '{\n  "build": %s,\n  "versionName": "DbrLauncher Mobile %s",\n  "apkUrl": "%s",\n  "mandatory": true,\n  "changelog": "Build %s"\n}\n' \
             "$N" "$TAG" "$URL" "$N" > android/version.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
