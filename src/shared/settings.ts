@@ -11,6 +11,9 @@ export interface LauncherSettings {
   jvmArgsMigrated: boolean // true tras aplicar (una vez) los flags GC por defecto a usuarios viejos
   modpackVariant: ModpackVariant // 'full' (por defecto) | 'lite'
   autoSyncMods: boolean // sincronizar/actualizar mods al dar Jugar (por defecto true)
+  // Aplicar la configuración recomendada (archivos `once` del manifest) en la próxima sync.
+  // Lo activa el jugador al cambiar de variante si acepta el aviso; la sync lo consume.
+  modpackSeedPending: boolean
 }
 
 /**
@@ -29,7 +32,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   jvmArgs: DEFAULT_JVM_ARGS,
   jvmArgsMigrated: false,
   modpackVariant: 'full',
-  autoSyncMods: true
+  autoSyncMods: true,
+  modpackSeedPending: false
 }
 
 /** RAM mínima asignable al juego (GB). */

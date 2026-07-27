@@ -5,6 +5,10 @@ export interface ManifestFile {
   url: string // URL de descarga directa
   sha1: string // hash esperado (hex) para verificar/decidir descarga
   size?: number
+  // Archivo de "siembra": se descarga solo si NO existe en el equipo (config del jugador,
+  // p.ej. options.txt). No se re-descarga aunque cambie el sha1 ni se borra al quedar
+  // fuera del manifest. Se marca con el archivo `.dbr-once` del repo de assets.
+  once?: boolean
 }
 
 export interface Manifest {

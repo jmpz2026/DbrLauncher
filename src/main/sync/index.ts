@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { CONFIG, isManifestConfigured } from '../../shared/config'
 import type { SyncResult } from '../../shared/sync'
-import { loadSettings } from '../settings'
+import { loadSettings, saveSettings } from '../settings'
 import { getGameDir, getManagedFile } from './paths'
 import { runSync } from './engine'
 
@@ -21,14 +21,19 @@ export function registerSync(): void {
       if (!isManifestConfigured()) {
         return { ok: true, summary: { updated: 0, removed: 0, version: '' } }
       }
+      // Si el jugador aceptó aplicar la config recomendada al cambiar de variante,
+      // esta sync re-aplica los archivos de siembra y se consume el flag.
+      const reseed = loadSettings().modpackSeedPending
       const summary = await runSync(
         {
           gameDir: getGameDir(),
           managedFile: getManagedFile(),
-          manifestUrl: manifestUrlForVariant()
+          manifestUrl: manifestUrlForVariant(),
+          reseed
         },
         (p) => e.sender.send('sync:progress', p)
       )
+      if (reseed) saveSettings({ modpackSeedPending: false })
       return { ok: true, summary }
     } catch (err) {
       return { ok: false, error: (err as Error).message }

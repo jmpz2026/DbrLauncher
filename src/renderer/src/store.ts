@@ -74,6 +74,7 @@ interface State {
   jvmArgs: string
   modpackVariant: ModpackVariant // 'full' | 'lite'
   autoSyncMods: boolean // sincronizar mods al dar Jugar
+  modpackSeedPending: boolean // aplicar la config recomendada en la próxima sync
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
@@ -250,6 +251,7 @@ export const useStore = create<State>((set, get) => ({
   jvmArgs: DEFAULT_JVM_ARGS,
   modpackVariant: 'full',
   autoSyncMods: true,
+  modpackSeedPending: false,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -266,6 +268,7 @@ export const useStore = create<State>((set, get) => ({
       jvmArgs: s.jvmArgs,
       modpackVariant: s.modpackVariant,
       autoSyncMods: s.autoSyncMods,
+      modpackSeedPending: s.modpackSeedPending,
       maxRamGb: limits.maxGb,
       totalRamGb: limits.totalGb
     })
@@ -281,7 +284,8 @@ export const useStore = create<State>((set, get) => ({
       fullscreen: s.fullscreen,
       jvmArgs: s.jvmArgs,
       modpackVariant: s.modpackVariant,
-      autoSyncMods: s.autoSyncMods
+      autoSyncMods: s.autoSyncMods,
+      modpackSeedPending: s.modpackSeedPending
     })
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),

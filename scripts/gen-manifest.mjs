@@ -7,6 +7,13 @@
 //
 // El `--base` es la URL donde estarán alojados los archivos preservando la ruta
 // (recomendado: raw.githubusercontent.com/OWNER/REPO/BRANCH/, o un host estático/CDN).
+//
+// Archivos de "siembra": si el pack tiene un `.dbr-once` en su raíz, cada línea (ruta o
+// glob, relativa a la raíz del pack; `#` = comentario) marca archivos con `once: true`.
+// Esos se descargan solo si NO existen en el equipo del jugador y nunca se borran: son su
+// configuración (options.txt, optionsof.txt, .cfg que quieras dejar tocar). Las rutas
+// exactas listadas ahí se incluyen aunque estén fuera de `--include` (p.ej. options.txt,
+// que vive en la raíz del pack).
 
 import { createHash } from 'crypto'
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
@@ -30,6 +37,49 @@ function walk(root, base, out) {
   }
 }
 
+const ONCE_FILE = '.dbr-once'
+
+/** Lee `.dbr-once` (una ruta o glob por línea, `#` comentarios). Devuelve los patrones. */
+function readOncePatterns(dir) {
+  const file = join(dir, ONCE_FILE)
+  if (!existsSync(file)) return []
+  return readFileSync(file, 'utf-8')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'))
+    .map((l) => l.split(sep).join('/').replace(/^\.\//, ''))
+}
+
+/** Convierte un glob simple (`*`, `**`, `?`) en RegExp anclada. `*` no cruza carpetas. */
+function globToRegExp(pattern) {
+  let re = ''
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i]
+    if (c === '*') {
+      if (pattern[i + 1] === '*') {
+        re += '.*'
+        i++
+      } else {
+        re += '[^/]*'
+      }
+    } else if (c === '?') re += '[^/]'
+    else re += c.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+  }
+  return new RegExp(`^${re}$`)
+}
+
+/** Añade un archivo suelto (ruta relativa al pack) a la lista del manifest. */
+function addFile(dir, rel, out) {
+  const full = join(dir, ...rel.split('/'))
+  if (!existsSync(full) || !statSync(full).isFile()) return
+  const buf = readFileSync(full)
+  out.push({
+    path: rel,
+    sha1: createHash('sha1').update(buf).digest('hex'),
+    size: statSync(full).size
+  })
+}
+
 /** Construye el objeto manifest. `base` es la URL raíz donde viven los archivos. */
 export function buildManifest({
   dir,
@@ -44,6 +94,21 @@ export function buildManifest({
     const root = join(dir, sub)
     if (existsSync(root)) walk(root, dir, files)
   }
+
+  // Siembra: patrones de `.dbr-once`. Las rutas exactas que no haya recogido el walk
+  // (típico: options.txt en la raíz del pack) se añaden aquí.
+  const oncePatterns = readOncePatterns(dir)
+  const onceRegExps = oncePatterns.map(globToRegExp)
+  const isOnce = (p) => onceRegExps.some((re) => re.test(p))
+  for (const pattern of oncePatterns) {
+    if (/[*?]/.test(pattern)) continue // los globs no crean entradas nuevas
+    if (files.some((f) => f.path === pattern)) continue
+    addFile(dir, pattern, files)
+  }
+  for (const f of files) {
+    if (isOnce(f.path)) f.once = true
+  }
+
   files.sort((a, b) => a.path.localeCompare(b.path))
 
   const baseUrl = base.endsWith('/') ? base : base + '/'

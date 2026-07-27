@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import type { ModpackVariant } from '../../../shared/settings'
 import { useStore } from '../store'
 
 export default function Settings(): JSX.Element {
@@ -95,11 +96,20 @@ function DiagnosticsPanel(): JSX.Element {
 function ModpackPanel(): JSX.Element {
   const variant = useStore((s) => s.modpackVariant)
   const setSetting = useStore((s) => s.setSetting)
+  // Variante que el jugador acaba de pulsar, pendiente de confirmar si aplica también la
+  // configuración recomendada de esa variante (gráficos y .cfg marcados como `once`).
+  const [pending, setPending] = useState<ModpackVariant | null>(null)
 
   const options = [
     { id: 'full' as const, label: 'Completo', desc: 'Todos los mods (recomendado)' },
     { id: 'lite' as const, label: 'Lite', desc: 'Menos mods, para equipos justos' }
   ]
+
+  const apply = (seed: boolean): void => {
+    if (!pending) return
+    void setSetting({ modpackVariant: pending, ...(seed ? { modpackSeedPending: true } : {}) })
+    setPending(null)
+  }
 
   return (
     <div className="mc-panel space-y-3 p-5">
@@ -108,7 +118,9 @@ function ModpackPanel(): JSX.Element {
         {options.map((o) => (
           <button
             key={o.id}
-            onClick={() => void setSetting({ modpackVariant: o.id })}
+            onClick={() => {
+              if (o.id !== variant) setPending(o.id)
+            }}
             className={`mc-btn flex-1 px-4 py-3 text-left ${variant === o.id ? 'mc-btn-on' : ''}`}
           >
             <span className="block text-sm font-semibold uppercase tracking-[0.12em]">
@@ -123,6 +135,43 @@ function ModpackPanel(): JSX.Element {
       <p className="text-xs leading-relaxed text-muted">
         Al cambiar de versión, los mods se re-sincronizan la próxima vez que le des a Jugar.
       </p>
+
+      {pending && (
+        <div className="fixed inset-0 z-[95] grid place-items-center bg-bg/80 p-8">
+          <div className="mc-panel flex w-full max-w-md flex-col gap-3 p-5">
+            <div className="flex items-center gap-3">
+              <span className="h-5 w-2 bg-gold" />
+              <h2 className="mc-text text-lg font-bold uppercase tracking-wide text-gold">
+                Cambiar a {pending === 'lite' ? 'Lite' : 'Completo'}
+              </h2>
+            </div>
+            <p className="text-xs leading-relaxed text-muted">
+              ¿Quieres aplicar también la configuración recomendada de esta versión (opciones
+              gráficas y ajustes de mods)? Sobrescribe la configuración que tengas ahora.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => apply(true)}
+                className="mc-btn mc-btn-gold px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+              >
+                Sí, aplicarla
+              </button>
+              <button
+                onClick={() => apply(false)}
+                className="mc-btn px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+              >
+                Conservar la mía
+              </button>
+              <button
+                onClick={() => setPending(null)}
+                className="mc-btn ml-auto px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

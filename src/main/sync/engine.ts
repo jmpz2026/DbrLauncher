@@ -9,6 +9,9 @@ export interface SyncOptions {
   gameDir: string // dónde viven los mods/configs
   managedFile: string // índice JSON de archivos gestionados
   manifestUrl: string
+  // Re-aplicar los archivos de siembra (`once`) aunque ya existan. Se usa al cambiar de
+  // variante del modpack, cuando el jugador acepta la config recomendada de la nueva.
+  reseed?: boolean
 }
 
 type OnProgress = (p: SyncProgress) => void
@@ -52,12 +55,14 @@ export function safeJoin(base: string, rel: string): string {
 
 /** Sincroniza los archivos locales con el manifest. Reporta progreso por callback. */
 export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promise<SyncSummary> {
-  const { gameDir, managedFile, manifestUrl } = opts
+  const { gameDir, managedFile, manifestUrl, reseed = false } = opts
   const manifest = await fetchManifest(manifestUrl)
   mkdirSync(gameDir, { recursive: true })
 
   // 1) Comprobar qué archivos hay que descargar (faltan o SHA1 distinto).
   // El sha1 en disco se calcula en paralelo: es I/O + CPU, en serie tarda en modpacks grandes.
+  // Los `once` (siembra) no se comparan por hash: se bajan solo si faltan, para no pisar la
+  // configuración que el jugador haya tocado. Con `reseed` sí se vuelven a aplicar.
   const checkTotal = manifest.files.length
   const needed: boolean[] = new Array(checkTotal).fill(false)
   let checked = 0
@@ -65,7 +70,11 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     const dest = safeJoin(gameDir, f.path)
     let needs = true
     if (existsSync(dest)) {
-      needs = f.sha1 ? (await sha1File(dest)).toLowerCase() !== f.sha1.toLowerCase() : false
+      needs = f.once
+        ? reseed
+        : f.sha1
+          ? (await sha1File(dest)).toLowerCase() !== f.sha1.toLowerCase()
+          : false
     }
     needed[i] = needs
     onProgress({ phase: 'check', file: f.path, done: ++checked, total: checkTotal })
@@ -73,6 +82,9 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   const toDownload: ManifestFile[] = manifest.files.filter((_, i) => needed[i])
 
   // 2) Determinar archivos obsoletos: gestionados antes pero ya no en el manifest.
+  // Los `once` no entran nunca en el índice de gestionados: así jamás se borran del equipo
+  // (son del jugador), ni siquiera si desaparecen del manifest.
+  const managedPaths = manifest.files.filter((f) => !f.once).map((f) => f.path)
   const wantedPaths = new Set(manifest.files.map((f) => f.path))
   const toDelete = loadManaged(managedFile).filter((p) => !wantedPaths.has(p))
 
@@ -97,7 +109,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     done++
   }
 
-  saveManaged(managedFile, [...wantedPaths])
+  saveManaged(managedFile, managedPaths)
   onProgress({ phase: 'done', file: '', done: total, total })
   return { updated: toDownload.length, removed: toDelete.length, version: manifest.version }
 }
