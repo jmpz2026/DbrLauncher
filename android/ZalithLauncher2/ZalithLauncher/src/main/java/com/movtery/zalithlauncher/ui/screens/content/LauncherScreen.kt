@@ -755,12 +755,16 @@ private class DbrInstallViewModel : ViewModel() {
             return
         }
         state = DbrInstallState.Syncing(0, 0)
+        //Si el jugador aceptó la config recomendada al cambiar de variante, esta sync la
+        //re-aplica y consume el flag.
+        val reseed = AllSettings.dbrModpackSeedPending.getValue()
         viewModelScope.launch {
             runCatching {
-                DbrSync.sync(gameDir) { p ->
+                DbrSync.sync(gameDir, reseed) { p ->
                     state = DbrInstallState.Syncing(p.done, p.total)
                 }
             }.onSuccess {
+                if (reseed) AllSettings.dbrModpackSeedPending.save(false)
                 state = DbrInstallState.Idle
                 onLaunch()
             }.onFailure { th ->

@@ -22,6 +22,10 @@ Esto puede tardar unos minutos…</string>
     <string name="dbr_modpack_variant_summary">Full y Lite comparten Minecraft y Forge. Al cambiar, el próximo Jugar re-sincroniza los mods.</string>
     <string name="dbr_modpack_full">Full</string>
     <string name="dbr_modpack_lite">Lite</string>
+    <string name="dbr_modpack_seed_title">Configuración recomendada</string>
+    <string name="dbr_modpack_seed_text">¿Aplicar también la configuración recomendada de esta versión (opciones gráficas y ajustes de mods)? Sobrescribe la configuración que tengas ahora. Se aplica al pulsar Jugar.</string>
+    <string name="dbr_modpack_seed_apply">Aplicarla</string>
+    <string name="dbr_modpack_seed_keep">Conservar la mía</string>
     <string name="dbr_auto_sync_title">Actualización automática de mods</string>
     <string name="dbr_auto_sync_summary_on">Al pulsar Jugar se descargan e instalan los últimos mods del servidor.</string>
     <string name="dbr_auto_sync_summary_off">Desactivada: se juega con los mods ya instalados, sin descargar cambios.</string>

@@ -157,6 +157,22 @@ fun LauncherSettingsScreen(
     val context = LocalContext.current
     //Se lee fuera de la lista: dentro del scope lazy no se pueden leer CompositionLocals.
     val backgroundViewModel = LocalBackgroundViewModel.current
+    //DBR: aviso tras cambiar de variante (¿aplicar también su configuración recomendada?).
+    var askSeed by remember { mutableStateOf(false) }
+
+    if (askSeed) {
+        SimpleAlertDialog(
+            title = stringResource(R.string.dbr_modpack_seed_title),
+            text = stringResource(R.string.dbr_modpack_seed_text),
+            confirmText = stringResource(R.string.dbr_modpack_seed_apply),
+            dismissText = stringResource(R.string.dbr_modpack_seed_keep),
+            onConfirm = {
+                AllSettings.dbrModpackSeedPending.save(true)
+                askSeed = false
+            },
+            onDismiss = { askSeed = false }
+        )
+    }
 
     BaseScreen(
         Triple(key, mainScreenKey, false),
@@ -182,7 +198,8 @@ fun LauncherSettingsScreen(
                         title = stringResource(R.string.dbr_modpack_variant_title),
                         summary = stringResource(R.string.dbr_modpack_variant_summary),
                         getRadioEnable = { true },
-                        getRadioText = { variant -> stringResource(variant.textRes) }
+                        getRadioText = { variant -> stringResource(variant.textRes) },
+                        onValueChange = { askSeed = true }
                     )
 
                     SwitchSettingsCard(

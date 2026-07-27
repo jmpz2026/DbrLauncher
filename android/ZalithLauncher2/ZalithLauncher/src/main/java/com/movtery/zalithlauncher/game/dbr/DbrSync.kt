@@ -43,7 +43,13 @@ object DbrSync {
         val path: String = "",
         val url: String = "",
         val sha1: String? = null,
-        val size: Long? = null
+        val size: Long? = null,
+        /**
+         * Archivo de "siembra": se descarga solo si NO existe (config del jugador, p.ej.
+         * options.txt). No se re-descarga aunque cambie el sha1 ni se borra al salir del
+         * manifest. Se marca con el archivo `.dbr-once` del repo de assets.
+         */
+        val once: Boolean = false
     )
 
     data class Manifest(
@@ -91,8 +97,14 @@ object DbrSync {
     /**
      * Sincroniza los archivos del modpack en [gameDir]. Lanza excepción si falla
      * (el llamador debe BLOQUEAR el arranque del juego). Corre en IO.
+     * Con [reseed] se re-aplican los archivos de siembra aunque ya existan (lo usa el
+     * cambio de variante Full/Lite cuando el jugador acepta la config recomendada).
      */
-    suspend fun sync(gameDir: File, onProgress: (Progress) -> Unit) = withContext(Dispatchers.IO) {
+    suspend fun sync(
+        gameDir: File,
+        reseed: Boolean = false,
+        onProgress: (Progress) -> Unit
+    ) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
         val json = URL(manifestUrl()).readText()
@@ -110,6 +122,8 @@ object DbrSync {
             val dest = safeJoin(gameDir, f.path)
             needed[i] = when {
                 !dest.exists() -> true
+                //Siembra: si ya existe es del jugador; solo se pisa si acepta re-aplicarla.
+                f.once -> reseed
                 f.size != null && dest.length() != f.size -> true
                 f.sha1.isNullOrEmpty() -> false
                 else -> !sha1(dest).equals(f.sha1, ignoreCase = true)
@@ -119,9 +133,11 @@ object DbrSync {
         val toDownload = files.filterIndexed { i, _ -> needed[i] }
 
         // 2) Obsoletos: gestionados antes pero ya no en el manifest.
+        //Los `once` nunca entran en el índice: así jamás se borran del equipo del jugador,
+        //ni siquiera si desaparecen del manifest.
         val managedFile = File(gameDir, MANAGED_FILE)
-        val wanted = files.map { it.path }
-        val wantedSet = wanted.toSet()
+        val managedPaths = files.filter { !it.once }.map { it.path }
+        val wantedSet = files.map { it.path }.toSet()
         val previouslyManaged = runCatching {
             GSON.fromJson(managedFile.readText(), Array<String>::class.java)?.toList() ?: emptyList()
         }.getOrDefault(emptyList())
@@ -150,7 +166,7 @@ object DbrSync {
             onProgress(Progress("delete", done.incrementAndGet(), total, p))
         }
 
-        managedFile.writeText(GSON.toJson(wanted))
+        managedFile.writeText(GSON.toJson(managedPaths))
         onProgress(Progress("done", total, total, ""))
     }
 }

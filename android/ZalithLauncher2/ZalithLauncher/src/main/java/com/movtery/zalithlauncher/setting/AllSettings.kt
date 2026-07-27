@@ -58,6 +58,12 @@ object AllSettings : SettingsRegistry() {
      */
     val dbrAutoSyncMods = boolSetting("dbrAutoSyncMods", true)
 
+    /**
+     * DBR: aplicar la configuración recomendada (archivos `once` del manifest) en la
+     * próxima sincronización. Lo activa el jugador al cambiar de variante si acepta el aviso.
+     */
+    val dbrModpackSeedPending = boolSetting("dbrModpackSeedPending", false)
+
     //Renderer
     /**
      * 全局渲染器
