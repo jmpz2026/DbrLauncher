@@ -497,21 +497,21 @@
     },
     {
       "path": "options.txt",
-      "sha1": "819d972f9ff17c5084e9ca751d1bb019152fa0a3",
-      "size": 2566,
+      "sha1": "76184c33f2247af8c0375ac9f55cdb15866c6d0f",
+      "size": 2565,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/options.txt"
     },
     {
       "path": "optionsof.txt",
-      "sha1": "3df6d0c98624b474323e7d57a2c65233466d0179",
-      "size": 1336,
+      "sha1": "2d704e74e65bdd0c917d53dca45d60fc770b1b5e",
+      "size": 1339,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/optionsof.txt"
     },
     {
       "path": "optionsshaders.txt",
-      "sha1": "64bb76b6d1064fa21d1f70bbcf79eccda8fddd59",
+      "sha1": "dfd9717466ba95fc5318d32aa28df8aeae6042a9",
       "size": 364,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/optionsshaders.txt"

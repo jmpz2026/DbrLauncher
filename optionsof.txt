@@ -1,4 +1,4 @@
-ofRenderDistanceChunks:8
+ofRenderDistanceChunks:4
 ofFogType:3
 ofFogStart:0.8
 ofMipmapType:0
@@ -7,7 +7,7 @@ ofPreloadedChunks:0
 ofOcclusionFancy:false
 ofSmoothFps:false
 ofSmoothWorld:true
-ofAoLevel:0.5070422
+ofAoLevel:0.0
 ofClouds:3
 ofCloudsHeight:0.0
 ofTrees:1
@@ -36,7 +36,7 @@ ofLagometer:false
 ofShowFps:false
 ofAutoSaveTicks:4000
 ofBetterGrass:3
-ofConnectedTextures:1
+ofConnectedTextures:3
 ofWeather:true
 ofSky:false
 ofStars:false
@@ -54,9 +54,9 @@ ofBetterSnow:false
 ofSwampColors:false
 ofRandomMobs:false
 ofSmoothBiomes:false
-ofCustomFonts:true
-ofCustomColors:true
-ofCustomSky:true
+ofCustomFonts:false
+ofCustomColors:false
+ofCustomSky:false
 ofShowCapes:false
 ofNaturalTextures:false
 ofLazyChunkLoading:true
