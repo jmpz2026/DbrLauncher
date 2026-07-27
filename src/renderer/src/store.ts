@@ -16,6 +16,10 @@ let lastPingAt = 0
 // Promesa del pre-calentamiento en curso (Java + sync) para deduplicar con play().
 let prewarmPromise: Promise<void> | null = null
 
+// Sube cada vez que cambia algo que invalida una sincronización (la variante del modpack).
+// Un sync que arrancó antes del cambio no puede marcar prewarmDone: bajó la variante vieja.
+let syncGeneration = 0
+
 // Señales de que el último arranque del juego terminó en crash (para avisar al re-abrir).
 const CRASH_RE =
   /---- Minecraft Crash Report ----|Exception in thread|A fatal error has been detected|#\s+A fatal error/i
@@ -190,6 +194,7 @@ export const useStore = create<State>((set, get) => ({
   prewarmDone: false,
   prewarm: async () => {
     if (prewarmPromise) return prewarmPromise
+    const gen = syncGeneration
     const run = async (): Promise<void> => {
       // Java en segundo plano: no-op instantáneo si ya está cacheado en runtime/jre8.
       try {
@@ -204,7 +209,8 @@ export const useStore = create<State>((set, get) => ({
         await get().startSync()
         synced = !get().syncError
       }
-      set({ prewarmDone: synced })
+      // Si mientras sincronizábamos cambió la variante, este resultado ya no vale.
+      set({ prewarmDone: synced && gen === syncGeneration })
     }
     set({ prewarming: true })
     prewarmPromise = run().finally(() => set({ prewarming: false }))
@@ -275,6 +281,15 @@ export const useStore = create<State>((set, get) => ({
   },
   setSetting: async (patch) => {
     set(patch)
+    // Cambiar de variante (o pedir aplicar su configuración) invalida el pre-calentamiento:
+    // el sync silencioso del arranque ya corrió con la variante anterior, y play() lo da por
+    // bueno y se salta la sincronización. Sin esto el cambio no surtía efecto hasta reiniciar
+    // el launcher: se jugaba con los mods y la config de la variante vieja.
+    if (patch.modpackVariant !== undefined || patch.modpackSeedPending !== undefined) {
+      syncGeneration++
+      prewarmPromise = null
+      set({ prewarmDone: false })
+    }
     if (!window.dbr?.settings) return
     const s = await window.dbr.settings.set(patch)
     set({
