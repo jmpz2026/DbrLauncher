@@ -21,6 +21,8 @@ package com.movtery.zalithlauncher.ui.screens.content.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -49,7 +51,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.setting.unit.min
 import com.movtery.zalithlauncher.ui.base.BaseScreen
-import com.movtery.zalithlauncher.ui.components.AnimatedColumn
+import com.movtery.zalithlauncher.ui.components.AnimatedLazyColumn
 import com.movtery.zalithlauncher.ui.components.verticalScrollWithBar
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
@@ -78,14 +80,12 @@ fun GameSettingsScreen(
         Triple(key, mainScreenKey, false),
         Triple(NormalNavKey.Settings.Game, settingsScreenKey, false)
     ) { isVisible ->
-        AnimatedColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScrollWithBar(state = rememberScrollState())
-                .padding(all = 12.dp),
-            isVisible = isVisible
+        AnimatedLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            isVisible = isVisible,
+            contentPadding = PaddingValues(all = 12.dp)
         ) { scope ->
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -117,7 +117,7 @@ fun GameSettingsScreen(
                 }
             }
 
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -244,7 +244,7 @@ fun GameSettingsScreen(
                 }
             }
 
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()

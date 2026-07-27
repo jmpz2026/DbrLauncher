@@ -142,12 +142,11 @@ fun StoneNavButton(
     }
 }
 
-/** Barra de navegación inferior estilo desktop: Noticias · Jugar · Ajustes (+ Discord). */
+/** Barra de navegación inferior estilo desktop: Jugar · Ajustes (+ Discord). */
 @Composable
 fun DbrBottomBar(
     inLauncherScreen: Boolean,
     inSettingsScreen: Boolean,
-    onNews: () -> Unit,
     toMainScreen: () -> Unit,
     toSettingsScreen: () -> Unit,
     onDiscord: () -> Unit,
@@ -172,7 +171,6 @@ fun DbrBottomBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StoneNavButton(text = "Noticias", selected = false, onClick = onNews)
             StoneNavButton(text = "Jugar", selected = inLauncherScreen, onClick = toMainScreen)
             StoneNavButton(text = "Ajustes", selected = inSettingsScreen, onClick = toSettingsScreen)
         }

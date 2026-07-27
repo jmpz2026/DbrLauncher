@@ -32,6 +32,7 @@ import com.movtery.zalithlauncher.game.version.installed.GraphicsApi
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.setting.enums.DarkMode
+import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
 import com.movtery.zalithlauncher.setting.enums.HomePageType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
@@ -45,6 +46,18 @@ import com.movtery.zalithlauncher.ui.theme.ColorThemeType
 import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
 
 object AllSettings : SettingsRegistry() {
+    //DBR
+    /**
+     * DBR: variante del modpack a sincronizar (Full por defecto, Lite = menos mods).
+     */
+    val dbrModpackVariant = enumSetting("dbrModpackVariant", DbrModpackVariant.FULL)
+
+    /**
+     * DBR: actualizar los mods automáticamente al pulsar Jugar.
+     * Desactivado, se juega con lo que ya haya instalado (salvo la primera sincronización).
+     */
+    val dbrAutoSyncMods = boolSetting("dbrAutoSyncMods", true)
+
     //Renderer
     /**
      * 全局渲染器

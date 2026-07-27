@@ -21,6 +21,7 @@ package com.movtery.zalithlauncher.setting
 import android.content.Context
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.platform.bytesToMB
+import com.movtery.zalithlauncher.utils.platform.getMaxMemoryForSettings
 import com.movtery.zalithlauncher.utils.platform.getTotalMemory
 import com.movtery.zalithlauncher.utils.string.splitPreservingQuotes
 
@@ -37,9 +38,16 @@ private const val DBR_DEFAULT_JVM_ARGS =
  */
 fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     if (reloadAll) AllSettings.reloadAll()
-    if (AllSettings.ramAllocation.getValue() == null) {
+    val currentRam = AllSettings.ramAllocation.getValue()
+    if (currentRam == null) {
         val ram = findBestRAMAllocation(context)
         AllSettings.ramAllocation.save(ram)
+    } else {
+        //DBR: nunca dejar que la RAM asignada supere lo que el dispositivo puede dar
+        //(un -Xmx por encima de la RAM real = thrashing y crash al cargar). Corrige valores
+        //heredados de otro dispositivo o escritos por un modpack importado.
+        val maxRam = getMaxMemoryForSettings(context)
+        if (currentRam > maxRam) AllSettings.ramAllocation.save(maxRam)
     }
     //DBR: si no hay args JVM configurados, aplicar los de G1GC por defecto.
     if (AllSettings.jvmArgs.getValue().isBlank()) {

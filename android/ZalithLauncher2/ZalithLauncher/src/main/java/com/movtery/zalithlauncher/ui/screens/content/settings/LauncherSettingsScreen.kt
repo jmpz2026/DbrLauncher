@@ -29,9 +29,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -80,17 +82,20 @@ import com.movtery.zalithlauncher.contract.MediaPickerContract
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.game.dbr.DbrInstall
+import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.BackgroundBlur
 import com.movtery.zalithlauncher.setting.enums.DarkMode
+import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import com.movtery.zalithlauncher.setting.enums.HomePageType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.setting.enums.applyLanguage
 import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.base.BaseScreen
-import com.movtery.zalithlauncher.ui.components.AnimatedColumn
+import com.movtery.zalithlauncher.ui.components.AnimatedLazyColumn
 import com.movtery.zalithlauncher.ui.components.IconTextButton
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.OwnOutlinedTextField
@@ -127,6 +132,7 @@ import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
+import com.movtery.zalithlauncher.viewmodel.sendToast
 import kotlinx.coroutines.Dispatchers
 import java.io.File
 
@@ -149,19 +155,70 @@ fun LauncherSettingsScreen(
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
 ) {
     val context = LocalContext.current
+    //Se lee fuera de la lista: dentro del scope lazy no se pueden leer CompositionLocals.
+    val backgroundViewModel = LocalBackgroundViewModel.current
 
     BaseScreen(
         Triple(key, mainScreenKey, false),
         Triple(NormalNavKey.Settings.Launcher, settingsScreenKey, false)
     ) { isVisible ->
-        AnimatedColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScrollWithBar(state = rememberScrollState())
-                .padding(all = 12.dp),
-            isVisible = isVisible
+        AnimatedLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            isVisible = isVisible,
+            contentPadding = PaddingValues(all = 12.dp)
         ) { scope ->
-            AnimatedItem(scope) { yOffset ->
+            //DBR: modpack, sincronización de mods y log del juego
+            animatedItem(scope) { yOffset ->
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                ) {
+                    EnumSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Top,
+                        unit = AllSettings.dbrModpackVariant,
+                        entries = DbrModpackVariant.entries,
+                        title = stringResource(R.string.dbr_modpack_variant_title),
+                        summary = stringResource(R.string.dbr_modpack_variant_summary),
+                        getRadioEnable = { true },
+                        getRadioText = { variant -> stringResource(variant.textRes) }
+                    )
+
+                    SwitchSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        unit = AllSettings.dbrAutoSyncMods,
+                        title = stringResource(R.string.dbr_auto_sync_title),
+                        summary = stringResource(
+                            if (AllSettings.dbrAutoSyncMods.state) R.string.dbr_auto_sync_summary_on
+                            else R.string.dbr_auto_sync_summary_off
+                        )
+                    )
+
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        title = stringResource(R.string.dbr_game_log_title),
+                        summary = stringResource(R.string.dbr_game_log_summary),
+                        onClick = {
+                            //Log del último arranque de la instancia DBR: ver, compartir o subir.
+                            val logFile = VersionsManager.versions.value
+                                .firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
+                                ?.let { version -> VersionsManager.getLatestLog(version) }
+                            if (logFile != null && logFile.exists()) {
+                                eventViewModel.sendEvent(
+                                    EventViewModel.Event.LogShare.ShareGameLog(logFile)
+                                )
+                            } else {
+                                eventViewModel.sendToast(androidText(R.string.dbr_game_log_missing))
+                            }
+                        }
+                    )
+                }
+            }
+
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,8 +244,8 @@ fun LauncherSettingsScreen(
             }
 
             //启动器背景设置板块
-            LocalBackgroundViewModel.current?.let { backgroundViewModel ->
-                AnimatedItem(scope) { yOffset ->
+            backgroundViewModel?.let { backgroundViewModel ->
+                animatedItem(scope) { yOffset ->
                     SettingsCardColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -277,7 +334,7 @@ fun LauncherSettingsScreen(
             }
 
             //启动器主页
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -452,7 +509,7 @@ fun LauncherSettingsScreen(
             }
 
             //动画设置板块
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -493,7 +550,7 @@ fun LauncherSettingsScreen(
                 }
             }
 
-            AnimatedItem(scope) { yOffset ->
+            animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
                         .fillMaxWidth()

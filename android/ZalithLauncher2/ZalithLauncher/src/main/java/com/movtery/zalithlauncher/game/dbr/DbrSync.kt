@@ -8,20 +8,36 @@
 
 package com.movtery.zalithlauncher.game.dbr
 
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import com.movtery.zalithlauncher.utils.GSON
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URL
 import java.security.MessageDigest
+import java.util.concurrent.atomic.AtomicInteger
 
 object DbrSync {
-    /** Manifest del modpack DBR (repo DBR-ASSETS servido por raw.githubusercontent). */
-    const val MANIFEST_URL =
-        "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest.json"
-
     /** Nombre del índice de archivos gestionados, dentro del gameDir. */
     private const val MANAGED_FILE = ".dbr_managed.json"
+
+    /**
+     * Descargas/verificaciones simultáneas. En serie, un modpack de ~100 archivos tarda
+     * muchísimo en la primera instalación (mismo criterio que el launcher de escritorio).
+     */
+    private const val CONCURRENCY = 8
+
+    /** Manifest del modpack según la variante elegida en Ajustes (Full/Lite). */
+    fun manifestUrl(): String = AllSettings.dbrModpackVariant.getValue().manifestUrl
+
+    /** true si esta instancia nunca se sincronizó (no hay índice de archivos gestionados). */
+    fun neverSynced(gameDir: File): Boolean = !File(gameDir, MANAGED_FILE).exists()
 
     data class ManifestFile(
         val path: String = "",
@@ -61,6 +77,17 @@ object DbrSync {
         return md.digest().joinToString("") { "%02x".format(it) }
     }
 
+    /** Corre [task] sobre [items] con un pool acotado de corrutinas. */
+    private suspend fun <T> pool(items: List<T>, limit: Int, task: suspend (T) -> Unit) {
+        if (items.isEmpty()) return
+        val gate = Semaphore(limit)
+        coroutineScope {
+            items.map { item ->
+                async { gate.withPermit { task(item) } }
+            }.awaitAll()
+        }
+    }
+
     /**
      * Sincroniza los archivos del modpack en [gameDir]. Lanza excepción si falla
      * (el llamador debe BLOQUEAR el arranque del juego). Corre en IO.
@@ -68,25 +95,28 @@ object DbrSync {
     suspend fun sync(gameDir: File, onProgress: (Progress) -> Unit) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
-        val json = URL(MANIFEST_URL).readText()
+        val json = URL(manifestUrl()).readText()
         val manifest = GSON.fromJson(json, Manifest::class.java)
             ?: error("No se pudo leer el manifest del modpack")
         val files = manifest.files
         if (files.isEmpty()) error("El manifest no contiene archivos")
 
         // 1) Qué hay que descargar (falta, tamaño distinto, o SHA-1 distinto).
-        val toDownload = ArrayList<ManifestFile>()
-        files.forEachIndexed { i, f ->
-            onProgress(Progress("check", i, files.size, f.path))
+        // El SHA-1 del disco se calcula en paralelo: es I/O + CPU y en serie se nota mucho.
+        val checked = AtomicInteger(0)
+        val needed = BooleanArray(files.size)
+        pool(files.indices.toList(), CONCURRENCY) { i ->
+            val f = files[i]
             val dest = safeJoin(gameDir, f.path)
-            val needs = when {
+            needed[i] = when {
                 !dest.exists() -> true
                 f.size != null && dest.length() != f.size -> true
                 f.sha1.isNullOrEmpty() -> false
                 else -> !sha1(dest).equals(f.sha1, ignoreCase = true)
             }
-            if (needs) toDownload.add(f)
+            onProgress(Progress("check", checked.incrementAndGet(), files.size, f.path))
         }
+        val toDownload = files.filterIndexed { i, _ -> needed[i] }
 
         // 2) Obsoletos: gestionados antes pero ya no en el manifest.
         val managedFile = File(gameDir, MANAGED_FILE)
@@ -98,11 +128,10 @@ object DbrSync {
         val toDelete = previouslyManaged.filter { it !in wantedSet }
 
         val total = toDownload.size + toDelete.size
-        var done = 0
+        val done = AtomicInteger(0)
 
-        // 3) Descargar (con verificación de SHA-1).
-        for (f in toDownload) {
-            onProgress(Progress("download", done, total, f.path))
+        // 3) Descargar en paralelo (con verificación de SHA-1).
+        pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
             URL(f.url).openStream().use { input ->
@@ -112,14 +141,13 @@ object DbrSync {
                 dest.delete()
                 error("El archivo descargado no coincide (hash): ${f.path}")
             }
-            done++
+            onProgress(Progress("download", done.incrementAndGet(), total, f.path))
         }
 
         // 4) Borrar obsoletos.
         for (p in toDelete) {
-            onProgress(Progress("delete", done, total, p))
             runCatching { safeJoin(gameDir, p).delete() }
-            done++
+            onProgress(Progress("delete", done.incrementAndGet(), total, p))
         }
 
         managedFile.writeText(GSON.toJson(wanted))

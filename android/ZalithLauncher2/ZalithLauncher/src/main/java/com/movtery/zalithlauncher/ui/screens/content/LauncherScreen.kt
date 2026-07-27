@@ -739,16 +739,25 @@ private class DbrInstallViewModel : ViewModel() {
         }
     }
 
-    /** Sincroniza el modpack (obligatorio) y, si tiene éxito, lanza el juego. */
+    /**
+     * Sincroniza el modpack y, si tiene éxito, lanza el juego.
+     * Con la actualización automática desactivada se lanza con lo que ya haya instalado,
+     * salvo que la instancia nunca se haya sincronizado (si no, se entraría sin mods).
+     */
     fun syncThenLaunch(version: Version, onLaunch: () -> Unit) {
         when (state) {
             is DbrInstallState.Preparing, is DbrInstallState.Installing, is DbrInstallState.Syncing -> return
             else -> {}
         }
+        val gameDir = version.getGameDir()
+        if (!AllSettings.dbrAutoSyncMods.getValue() && !DbrSync.neverSynced(gameDir)) {
+            onLaunch()
+            return
+        }
         state = DbrInstallState.Syncing(0, 0)
         viewModelScope.launch {
             runCatching {
-                DbrSync.sync(version.getGameDir()) { p ->
+                DbrSync.sync(gameDir) { p ->
                     state = DbrInstallState.Syncing(p.done, p.total)
                 }
             }.onSuccess {
