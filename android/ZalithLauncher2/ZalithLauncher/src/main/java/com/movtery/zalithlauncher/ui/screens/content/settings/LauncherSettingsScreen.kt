@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.ui.screens.content.settings
 
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
@@ -73,16 +74,21 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.materialkolor.PaletteStyle
 import com.movtery.colorpicker.ColorPickerController
 import com.movtery.colorpicker.components.HueBarPicker
 import com.movtery.colorpicker.rememberColorPickerController
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.copyLocalFile
+import com.movtery.zalithlauncher.context.getFileName
 import com.movtery.zalithlauncher.contract.MediaPickerContract
+import com.movtery.zalithlauncher.contract.extensionToMimeType
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.game.dbr.DbrInstall
+import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
@@ -123,6 +129,7 @@ import com.movtery.zalithlauncher.ui.theme.ColorThemeType
 import com.movtery.zalithlauncher.ui.theme.cardColor
 import com.movtery.zalithlauncher.ui.theme.onCardColor
 import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
+import com.movtery.zalithlauncher.utils.file.checkExtensionOrThrow
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.isChinaMainland
 import com.movtery.zalithlauncher.utils.logging.Logger
@@ -135,6 +142,7 @@ import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.sendToast
 import kotlinx.coroutines.Dispatchers
 import java.io.File
+import java.io.IOException
 
 private const val TAG = "LauncherSettingsScreen"
 
@@ -159,6 +167,50 @@ fun LauncherSettingsScreen(
     val backgroundViewModel = LocalBackgroundViewModel.current
     //DBR: aviso tras cambiar de variante (¿aplicar también su configuración recomendada?).
     var askSeed by remember { mutableStateOf(false) }
+
+    //DBR: importar mods propios (.jar) a la carpeta mods de la instancia DBR.
+    //El sync nunca los borra: solo borra rutas que estaban en su índice de gestionados.
+    val dbrVersions by VersionsManager.versions.collectAsStateWithLifecycle()
+    val dbrModsDir = remember(dbrVersions) {
+        dbrVersions
+            .firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
+            ?.let { VersionFolders.MOD.getDir(it.getGameDir()) }
+    }
+    val modImportErrorText = stringResource(R.string.error_import_file)
+    val modImportedText = stringResource(R.string.dbr_mods_import_done)
+    val modPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        val targetDir = dbrModsDir
+        if (uris.isNullOrEmpty() || targetDir == null) return@rememberLauncherForActivityResult
+        TaskSystem.submitTask(
+            Task.runTask(
+                id = "Dbr.Mods.Import",
+                dispatcher = Dispatchers.IO,
+                task = { task ->
+                    task.updateProgress(-1f)
+                    targetDir.mkdirs()
+                    uris.forEach { uri ->
+                        val fileName = context.getFileName(uri)
+                            ?: throw IOException("Failed to get file name")
+                        task.updateMessage(androidText(fileName))
+                        val outputFile = File(targetDir, fileName)
+                        outputFile.checkExtensionOrThrow(listOf("jar"))
+                        context.copyLocalFile(uri, outputFile)
+                    }
+                    eventViewModel.sendToast(androidText(modImportedText))
+                },
+                onError = { th ->
+                    submitError(
+                        ErrorViewModel.ThrowableMessage(
+                            title = androidText(modImportErrorText),
+                            message = androidText(th.getMessageOrToString())
+                        )
+                    )
+                }
+            )
+        )
+    }
 
     if (askSeed) {
         SimpleAlertDialog(
@@ -215,6 +267,21 @@ fun LauncherSettingsScreen(
                             if (AllSettings.dbrAutoSyncMods.state) R.string.dbr_auto_sync_summary_on
                             else R.string.dbr_auto_sync_summary_off
                         )
+                    )
+
+                    //DBR: instalar un .jar propio en mods (testear mods sin tocar el manifest).
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        title = stringResource(R.string.dbr_mods_import_title),
+                        summary = stringResource(R.string.dbr_mods_import_summary),
+                        onClick = {
+                            if (dbrModsDir == null) {
+                                eventViewModel.sendToast(androidText(R.string.dbr_mods_import_no_instance))
+                            } else {
+                                modPicker.launch("jar".extensionToMimeType())
+                            }
+                        }
                     )
 
                     SettingsCard(

@@ -46,9 +46,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.game.dbr.DbrInstall
+import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.fadeEdge
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
@@ -64,6 +67,7 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.GamepadSettingsScr
 import com.movtery.zalithlauncher.ui.screens.content.settings.JavaManageScreen
 import com.movtery.zalithlauncher.ui.screens.content.settings.LauncherSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.settings.RendererSettingsScreen
+import com.movtery.zalithlauncher.ui.screens.content.versions.ModsManagerScreen
 import com.movtery.zalithlauncher.ui.screens.navigateOnce
 import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
@@ -117,6 +121,8 @@ private val settingItems = listOf(
     CategoryItem(NormalNavKey.Settings.Renderer, { CategoryIcon(R.drawable.ic_video_settings, R.string.settings_tab_renderer) }, R.string.settings_tab_renderer),
     //DBR: Launcher en 2º puesto (ahí viven modpack, mods y log del juego).
     CategoryItem(NormalNavKey.Settings.Launcher, { CategoryIcon(R.drawable.ic_setting_launcher, R.string.settings_tab_launcher) }, R.string.settings_tab_launcher),
+    //DBR: gestor de mods como pestaña propia (instalar/borrar/desactivar .jar de la instancia DBR).
+    CategoryItem(NormalNavKey.Settings.ModsManager, { CategoryIcon(R.drawable.ic_extension_outlined, R.string.mods_manage) }, R.string.mods_manage),
     CategoryItem(NormalNavKey.Settings.Game, { CategoryIcon(R.drawable.ic_rocket_launch_filled, R.string.settings_tab_game) }, R.string.settings_tab_game),
     CategoryItem(NormalNavKey.Settings.Control, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control) }, R.string.settings_tab_control),
     CategoryItem(NormalNavKey.Settings.Gamepad, { CategoryIcon(R.drawable.ic_sports_esports_outlined, R.string.settings_tab_gamepad) }, R.string.settings_tab_gamepad),
@@ -232,6 +238,38 @@ private fun NavigationUI(
                         toHomePageEditor = toHomePageEditor,
                         submitError = submitError,
                     )
+                }
+                entry<NormalNavKey.Settings.ModsManager> {
+                    //DBR: gestor de mods de la instancia DBR, servido desde Ajustes.
+                    val versions by VersionsManager.versions.collectAsStateWithLifecycle()
+                    val dbrVersion = versions.firstOrNull {
+                        it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid()
+                    }
+                    if (dbrVersion != null) {
+                        ModsManagerScreen(
+                            mainScreenKey = mainScreenKey,
+                            versionsScreenKey = settingsScreenKey,
+                            version = dbrVersion,
+                            backToMainScreen = {},
+                            //Descargar mods desde la app está desactivado en DBR.
+                            swapToDownload = {},
+                            onSwapMoreInfo = { _, _ -> },
+                            eventViewModel = eventViewModel,
+                            submitError = submitError,
+                            parentKeyClass = NestedNavKey.Settings::class.java,
+                            screenKey = NormalNavKey.Settings.ModsManager
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.dbr_mods_import_no_instance),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
                 }
                 entry<NormalNavKey.Settings.JavaManager> {
                     JavaManageScreen(key, settingsScreenKey, mainScreenKey, eventViewModel, submitError)

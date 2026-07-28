@@ -560,7 +560,10 @@ fun ModsManagerScreen(
     swapToDownload: () -> Unit,
     onSwapMoreInfo: (id: String, Platform) -> Unit,
     eventViewModel: EventViewModel,
-    submitError: (ErrorViewModel.ThrowableMessage) -> Unit
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
+    //DBR: la pantalla también se muestra como pestaña de Ajustes, con otro padre y otra key.
+    parentKeyClass: Class<out TitledNavKey> = NestedNavKey.VersionSettings::class.java,
+    screenKey: TitledNavKey = NormalNavKey.Versions.ModsManager
 ) {
     val context = LocalContext.current
 
@@ -579,9 +582,9 @@ fun ModsManagerScreen(
 
     BaseScreen(
         levels1 = listOf(
-            Pair(NestedNavKey.VersionSettings::class.java, mainScreenKey)
+            Pair(parentKeyClass, mainScreenKey)
         ),
-        Triple(NormalNavKey.Versions.ModsManager, versionsScreenKey, false)
+        Triple(screenKey, versionsScreenKey, false)
     ) { isVisible ->
         val viewModel = rememberModsManageViewModel(version, modsDir)
         val updaterViewModel = rememberModsUpdaterViewModel(version, modsDir)

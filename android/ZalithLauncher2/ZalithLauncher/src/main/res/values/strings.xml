@@ -29,6 +29,10 @@ Esto puede tardar unos minutos…</string>
     <string name="dbr_auto_sync_title">Actualización automática de mods</string>
     <string name="dbr_auto_sync_summary_on">Al pulsar Jugar se descargan e instalan los últimos mods del servidor.</string>
     <string name="dbr_auto_sync_summary_off">Desactivada: se juega con los mods ya instalados, sin descargar cambios.</string>
+    <string name="dbr_mods_import_title">Instalar mod (.jar)</string>
+    <string name="dbr_mods_import_summary">Añade mods propios a la carpeta mods de DBR (para testear). El sync del servidor no los borra.</string>
+    <string name="dbr_mods_import_no_instance">Instala DBR primero (botón Instalar DBR)</string>
+    <string name="dbr_mods_import_done">Mod(s) instalados en la carpeta mods</string>
     <string name="dbr_game_log_title">Log del juego</string>
     <string name="dbr_game_log_summary">Ver, compartir o subir el log del último arranque de Minecraft.</string>
     <string name="dbr_game_log_missing">Todavía no hay log del juego</string>

@@ -97,6 +97,10 @@ sealed interface NormalNavKey : TitledNavKey {
         @Serializable data object Launcher : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_launcher)
         }
+        /** DBR: gestor de mods de la instancia DBR, como pestaña propia de Ajustes */
+        @Serializable data object ModsManager : Settings {
+            @Contextual override val title: AndroidStringText = androidText(R.string.mods_manage)
+        }
         /** Java管理屏幕 */
         @Serializable data object JavaManager : Settings {
             @Contextual override val title: AndroidStringText = androidText(R.string.settings_tab_java_manage)
