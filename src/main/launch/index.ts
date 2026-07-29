@@ -13,6 +13,7 @@ import { mergeVersions, type VersionJson } from './version'
 import { fetchVanilla, fetchForge } from './mojang'
 import { installLibraries } from './libraries'
 import { installAssets } from './assets'
+import { errMsg } from '../errors'
 import { ensureFile } from '../net'
 import { assetsDir, getGameDir, librariesDir, versionsDir } from './paths'
 
@@ -152,7 +153,7 @@ export function registerLaunch(): void {
       setTimeout(() => app.quit(), 2000)
       return { ok: true }
     } catch (err) {
-      const error = (err as Error).message
+      const error = errMsg(err)
       e.sender.send('launch:status', { state: 'error', error })
       return { ok: false, error }
     }

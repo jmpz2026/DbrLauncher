@@ -2,6 +2,7 @@ import { spawn } from 'child_process'
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { basename, join } from 'path'
 import type { JavaProgress } from '../../shared/java'
+import { httpRequest } from '../http'
 import { adoptiumUrl, type JrePlatform } from './platform'
 import { extractZip } from './zip'
 
@@ -13,21 +14,14 @@ export async function downloadArchive(
   destFile: string,
   onProgress: OnProgress
 ): Promise<void> {
-  const res = await fetch(adoptiumUrl(pl), { redirect: 'follow' })
-  if (!res.ok || !res.body) throw new Error(`Descarga de Java falló (${res.status}).`)
-  const total = Number(res.headers.get('content-length') ?? 0)
-
-  const reader = res.body.getReader()
-  const chunks: Uint8Array[] = []
-  let received = 0
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(value)
-    received += value.length
-    if (total > 0) onProgress({ phase: 'download', percent: Math.round((received / total) * 100) })
-  }
-  writeFileSync(destFile, Buffer.concat(chunks))
+  const url = adoptiumUrl(pl)
+  const res = await httpRequest(url, {
+    onProgress: (received, total) => {
+      if (total > 0) onProgress({ phase: 'download', percent: Math.round((received / total) * 100) })
+    }
+  })
+  if (!res.ok) throw new Error(`Descarga de Java falló (${res.status}).`)
+  writeFileSync(destFile, res.body)
 }
 
 /**

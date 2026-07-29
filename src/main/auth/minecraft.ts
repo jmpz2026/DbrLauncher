@@ -1,5 +1,6 @@
 // Cadena Xbox Live → XSTS → Minecraft services → perfil.
 // A partir del access token de Microsoft obtiene el perfil de Minecraft (uuid + nombre).
+import { httpRequest, readJson, readJsonOr } from '../http'
 
 interface XboxAuth {
   token: string
@@ -7,7 +8,7 @@ interface XboxAuth {
 }
 
 async function xblAuthenticate(msAccessToken: string): Promise<XboxAuth> {
-  const res = await fetch('https://user.auth.xboxlive.com/user/authenticate', {
+  const res = await httpRequest('https://user.auth.xboxlive.com/user/authenticate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
@@ -21,12 +22,12 @@ async function xblAuthenticate(msAccessToken: string): Promise<XboxAuth> {
     })
   })
   if (!res.ok) throw new Error('Fallo al autenticar con Xbox Live.')
-  const data = (await res.json()) as any
+  const data = readJson<any>(res, 'user.auth.xboxlive.com')
   return { token: data.Token, uhs: data.DisplayClaims.xui[0].uhs }
 }
 
 async function xstsAuthorize(xblToken: string): Promise<XboxAuth> {
-  const res = await fetch('https://xsts.auth.xboxlive.com/xsts/authorize', {
+  const res = await httpRequest('https://xsts.auth.xboxlive.com/xsts/authorize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
@@ -36,7 +37,7 @@ async function xstsAuthorize(xblToken: string): Promise<XboxAuth> {
     })
   })
   if (res.status === 401) {
-    const err = (await res.json().catch(() => ({}))) as any
+    const err = readJsonOr<any>(res, {})
     // Errores comunes de XSTS.
     switch (String(err.XErr)) {
       case '2148916233':
@@ -53,18 +54,18 @@ async function xstsAuthorize(xblToken: string): Promise<XboxAuth> {
     }
   }
   if (!res.ok) throw new Error('Fallo de autorización XSTS con Xbox Live.')
-  const data = (await res.json()) as any
+  const data = readJson<any>(res, 'xsts.auth.xboxlive.com')
   return { token: data.Token, uhs: data.DisplayClaims.xui[0].uhs }
 }
 
 async function loginWithXbox(uhs: string, xstsToken: string): Promise<string> {
-  const res = await fetch('https://api.minecraftservices.com/authentication/login_with_xbox', {
+  const res = await httpRequest('https://api.minecraftservices.com/authentication/login_with_xbox', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ identityToken: `XBL3.0 x=${uhs};${xstsToken}` })
   })
   if (!res.ok) throw new Error('Fallo al iniciar sesión en los servicios de Minecraft.')
-  const data = (await res.json()) as any
+  const data = readJson<any>(res, 'api.minecraftservices.com/authentication')
   return data.access_token as string
 }
 
@@ -75,14 +76,14 @@ export interface McProfile {
 }
 
 async function getProfile(mcAccessToken: string): Promise<Omit<McProfile, 'accessToken'>> {
-  const res = await fetch('https://api.minecraftservices.com/minecraft/profile', {
+  const res = await httpRequest('https://api.minecraftservices.com/minecraft/profile', {
     headers: { Authorization: `Bearer ${mcAccessToken}` }
   })
   if (res.status === 404) {
     throw new Error('Esta cuenta Microsoft no posee Minecraft: Java Edition.')
   }
   if (!res.ok) throw new Error('No se pudo obtener el perfil de Minecraft.')
-  const data = (await res.json()) as any
+  const data = readJson<any>(res, 'api.minecraftservices.com/minecraft/profile')
   const raw = String(data.id) // sin guiones
   const uuid = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`
   return { uuid, name: String(data.name) }

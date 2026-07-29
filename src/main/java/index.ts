@@ -5,6 +5,7 @@ import type { JavaInfo, JavaProgress, JavaResult } from '../../shared/java'
 import { currentPlatform } from './platform'
 import { installJava } from './install'
 import { getRuntimeDir, getRuntimeInfoFile } from './paths'
+import { errMsg } from '../errors'
 
 let cached: JavaInfo | null | undefined
 
@@ -44,7 +45,7 @@ export function registerJava(): void {
       const info = await ensureJava((p) => e.sender.send('java:progress', p))
       return { ok: true, info }
     } catch (err) {
-      return { ok: false, error: (err as Error).message }
+      return { ok: false, error: errMsg(err) }
     }
   })
 }

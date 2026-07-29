@@ -5,6 +5,7 @@ import { makePirataAccount } from './offline'
 import { requestDeviceCode, pollForToken, refreshToken } from './microsoft'
 import { fetchMinecraftProfile } from './minecraft'
 import { loadAccount, loadRefreshToken, saveAccount, clearAccount } from './store'
+import { errMsg } from '../errors'
 
 // Token de Minecraft en memoria de la sesión actual (para lanzar el juego en Fase 5).
 let currentMcToken: string | null = null
@@ -45,7 +46,7 @@ export function registerAuth(): void {
       currentMcToken = null
       return { ok: true, account }
     } catch (err) {
-      return { ok: false, error: (err as Error).message }
+      return { ok: false, error: errMsg(err) }
     }
   })
 
@@ -54,7 +55,7 @@ export function registerAuth(): void {
       const account = await loginPremium(e.sender)
       return { ok: true, account }
     } catch (err) {
-      return { ok: false, error: (err as Error).message }
+      return { ok: false, error: errMsg(err) }
     }
   })
 

@@ -4,6 +4,7 @@ import type { SyncResult } from '../../shared/sync'
 import { loadSettings, saveSettings } from '../settings'
 import { getGameDir, getManagedFile } from './paths'
 import { runSync } from './engine'
+import { errMsg } from '../errors'
 
 export { runSync } from './engine'
 
@@ -38,7 +39,7 @@ export function registerSync(): void {
       if (loadSettings().modpackSyncPending) saveSettings({ modpackSyncPending: false })
       return { ok: true, summary }
     } catch (err) {
-      return { ok: false, error: (err as Error).message }
+      return { ok: false, error: errMsg(err) }
     }
   })
 }

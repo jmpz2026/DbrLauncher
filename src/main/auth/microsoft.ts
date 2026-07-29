@@ -1,4 +1,5 @@
 import { CONFIG } from '../../shared/config'
+import { httpRequest, readJsonOr } from '../http'
 
 export interface MsToken {
   accessToken: string
@@ -18,12 +19,12 @@ const { azureClientId, scope, deviceCodeUrl, tokenUrl } = CONFIG.auth
 
 /** Paso 1: pedir un device code. El usuario abrirá la URL e introducirá userCode. */
 export async function requestDeviceCode(): Promise<DeviceCode> {
-  const res = await fetch(deviceCodeUrl, {
+  const res = await httpRequest(deviceCodeUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ client_id: azureClientId, scope })
   })
-  const data = (await res.json()) as Record<string, unknown>
+  const data = readJsonOr<Record<string, unknown>>(res, {})
   if (!res.ok) {
     throw new Error(`No se pudo iniciar el login de Microsoft: ${data.error_description ?? res.status}`)
   }
@@ -44,7 +45,7 @@ export async function pollForToken(dc: DeviceCode): Promise<MsToken> {
 
   while (Date.now() < deadline) {
     await sleep(intervalMs)
-    const res = await fetch(tokenUrl, {
+    const res = await httpRequest(tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -53,7 +54,7 @@ export async function pollForToken(dc: DeviceCode): Promise<MsToken> {
         device_code: dc.deviceCode
       })
     })
-    const data = (await res.json()) as Record<string, unknown>
+    const data = readJsonOr<Record<string, unknown>>(res, {})
 
     if (res.ok) {
       return { accessToken: String(data.access_token), refreshToken: String(data.refresh_token) }
@@ -78,7 +79,7 @@ export async function pollForToken(dc: DeviceCode): Promise<MsToken> {
 
 /** Renueva el access token usando el refresh token guardado. */
 export async function refreshToken(refresh: string): Promise<MsToken> {
-  const res = await fetch(tokenUrl, {
+  const res = await httpRequest(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -88,7 +89,7 @@ export async function refreshToken(refresh: string): Promise<MsToken> {
       scope
     })
   })
-  const data = (await res.json()) as Record<string, unknown>
+  const data = readJsonOr<Record<string, unknown>>(res, {})
   if (!res.ok) throw new Error('La sesión de Microsoft expiró. Vuelve a iniciar sesión.')
   return {
     accessToken: String(data.access_token),
