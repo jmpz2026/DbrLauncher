@@ -12,3 +12,7 @@ preview.png
 .env.local
 .ebcache
 .ebtmp
+
+# Sobras de build de Android. El proyecto vive en la rama android-zalith,
+# que trae su propio .gitignore; aqui en main solo queda basura de Gradle.
+android/
