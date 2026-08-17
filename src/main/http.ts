@@ -60,8 +60,8 @@ function toBuffer(body: HttpInit['body']): Buffer | null {
   return Buffer.from(typeof body === 'string' ? body : body.toString(), 'utf-8')
 }
 
-/** Petición HTTP(S) con redirecciones seguidas. Rechaza solo por fallo de red, no por status. */
-export function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
+/** Una sola petición, sin reintentos. Rechaza solo por fallo de red, no por status. */
+function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
   const { method = 'GET', headers = {}, onProgress } = init
   const payload = toBuffer(init.body)
   const hasType = Object.keys(headers).some((h) => h.toLowerCase() === 'content-type')
@@ -97,6 +97,50 @@ export function httpRequest(url: string, init: HttpInit = {}): Promise<HttpRespo
     if (payload) req.write(payload)
     req.end()
   })
+}
+
+// Fallos pasajeros del edge (Fastly/Varnish delante de raw.githubusercontent y de los CDN de
+// Mojang): "503 Backend.max_conn reached" cuando el POP no tiene el archivo en caché y el origen
+// rechaza la conexión. Sin reintento un 503 de un segundo tumbaba el launch completo.
+const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504])
+const RETRIES = 3
+const BACKOFF_MS = 700 // 700ms, 1.4s, 2.8s
+const MAX_RETRY_AFTER_MS = 10_000
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+/** Espera indicada por el servidor (`Retry-After`: segundos o fecha HTTP), acotada. */
+function retryAfterMs(res: HttpResponse): number | null {
+  const raw = res.headers['retry-after']
+  if (!raw) return null
+  const secs = Number(raw)
+  const ms = Number.isFinite(secs) ? secs * 1000 : Date.parse(raw) - Date.now()
+  if (!Number.isFinite(ms) || ms <= 0) return null
+  return Math.min(ms, MAX_RETRY_AFTER_MS)
+}
+
+/**
+ * Petición HTTP(S) con redirecciones seguidas y reintentos con backoff exponencial ante status
+ * pasajeros o cortes de red. Solo reintenta métodos idempotentes (GET/HEAD): los POST de auth
+ * tienen su propia lógica de polling. Rechaza solo por fallo de red, no por status.
+ *
+ * `onProgress` puede retroceder a 0 si hay reintento (empieza una descarga nueva).
+ */
+export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  const attempts = method === 'GET' || method === 'HEAD' ? RETRIES + 1 : 1
+
+  for (let attempt = 1; ; attempt++) {
+    const backoff = BACKOFF_MS * 2 ** (attempt - 1)
+    try {
+      const res = await requestOnce(url, init)
+      if (attempt >= attempts || !RETRY_STATUS.has(res.status)) return res
+      await sleep(retryAfterMs(res) ?? backoff)
+    } catch (e) {
+      if (attempt >= attempts) throw e
+      await sleep(backoff)
+    }
+  }
 }
 
 /** Cuerpo como JSON. Lanza si no es JSON válido (p. ej. el portal cautivo de un wifi). */
