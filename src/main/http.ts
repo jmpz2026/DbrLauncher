@@ -103,11 +103,15 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
 // Mojang): "503 Backend.max_conn reached" cuando el POP no tiene el archivo en caché y el origen
 // rechaza la conexión. Sin reintento un 503 de un segundo tumbaba el launch completo.
 const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504])
-const RETRIES = 3
-const BACKOFF_MS = 700 // 700ms, 1.4s, 2.8s
+const RETRIES = 5
+const BACKOFF_MS = 1000 // base: 1s, 2s, 4s, 8s, 16s (antes de aplicar el jitter)
 const MAX_RETRY_AFTER_MS = 10_000
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+// Jitter ±50%: sin él, las descargas paralelas del sync reintentan todas a la vez y vuelven a
+// golpear el mismo POP saturado en fase, así que los reintentos fallan en bloque.
+const jitter = (ms: number): number => Math.round(ms * (0.5 + Math.random()))
 
 /** Espera indicada por el servidor (`Retry-After`: segundos o fecha HTTP), acotada. */
 function retryAfterMs(res: HttpResponse): number | null {
@@ -131,7 +135,7 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
   const attempts = method === 'GET' || method === 'HEAD' ? RETRIES + 1 : 1
 
   for (let attempt = 1; ; attempt++) {
-    const backoff = BACKOFF_MS * 2 ** (attempt - 1)
+    const backoff = jitter(BACKOFF_MS * 2 ** (attempt - 1))
     try {
       const res = await requestOnce(url, init)
       if (attempt >= attempts || !RETRY_STATUS.has(res.status)) return res
