@@ -103,8 +103,8 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
 // Mojang): "503 Backend.max_conn reached" cuando el POP no tiene el archivo en caché y el origen
 // rechaza la conexión. Sin reintento un 503 de un segundo tumbaba el launch completo.
 const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504])
-const RETRIES = 5
-const BACKOFF_MS = 1000 // base: 1s, 2s, 4s, 8s, 16s (antes de aplicar el jitter)
+const RETRIES = 3
+const BACKOFF_MS = 1000 // base: 1s, 2s, 4s (antes de aplicar el jitter)
 const MAX_RETRY_AFTER_MS = 10_000
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
@@ -123,28 +123,64 @@ function retryAfterMs(res: HttpResponse): number | null {
   return Math.min(ms, MAX_RETRY_AFTER_MS)
 }
 
+// Cuando el POP de Fastly delante de raw.githubusercontent se cae (503 Backend.max_conn reached)
+// el corte dura minutos, mucho más que cualquier backoff, y tumbaba el launch entero aunque el
+// archivo estuviera perfectamente publicado. Estos CDNs sirven el MISMO repo/rama desde otra red,
+// así que un fallo regional de Fastly deja de ser un punto único de fallo. Solo se usan cuando el
+// origen ya agotó sus reintentos: cachean por nombre de rama y pueden ir unas horas desfasados.
+function mirrorsFor(url: string): string[] {
+  const m = /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/.exec(url)
+  if (!m) return []
+  const [, owner, repo, ref, path] = m
+  return [
+    `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${ref}/${path}`,
+    `https://cdn.statically.io/gh/${owner}/${repo}/${ref}/${path}`
+  ]
+}
+
 /**
  * Petición HTTP(S) con redirecciones seguidas y reintentos con backoff exponencial ante status
- * pasajeros o cortes de red. Solo reintenta métodos idempotentes (GET/HEAD): los POST de auth
- * tienen su propia lógica de polling. Rechaza solo por fallo de red, no por status.
+ * pasajeros o cortes de red; si el origen es raw.githubusercontent y sigue caído tras los
+ * reintentos, repite el ciclo contra los mirrors. Solo reintenta métodos idempotentes (GET/HEAD):
+ * los POST de auth tienen su propia lógica de polling. Rechaza solo por fallo de red, no por status.
  *
  * `onProgress` puede retroceder a 0 si hay reintento (empieza una descarga nueva).
  */
 export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
   const method = (init.method ?? 'GET').toUpperCase()
-  const attempts = method === 'GET' || method === 'HEAD' ? RETRIES + 1 : 1
+  const idempotent = method === 'GET' || method === 'HEAD'
+  const targets = idempotent ? [url, ...mirrorsFor(url)] : [url]
+  const attempts = idempotent ? RETRIES + 1 : 1
 
-  for (let attempt = 1; ; attempt++) {
-    const backoff = jitter(BACKOFF_MS * 2 ** (attempt - 1))
-    try {
-      const res = await requestOnce(url, init)
-      if (attempt >= attempts || !RETRY_STATUS.has(res.status)) return res
-      await sleep(retryAfterMs(res) ?? backoff)
-    } catch (e) {
-      if (attempt >= attempts) throw e
-      await sleep(backoff)
+  let lastRes: HttpResponse | undefined
+  let lastErr: unknown
+
+  for (const [i, target] of targets.entries()) {
+    const isMirror = i > 0
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const backoff = jitter(BACKOFF_MS * 2 ** (attempt - 1))
+      try {
+        const res = await requestOnce(target, init)
+        // Del mirror solo vale un 2xx: su 404 (archivo no cacheado, repo privado, jar de más de
+        // 20 MB) no dice nada del origen y no debe sustituir al status real de raw.
+        if (res.ok || (!isMirror && !RETRY_STATUS.has(res.status))) return res
+        if (!isMirror || !lastRes) lastRes = res
+        if (attempt < attempts && RETRY_STATUS.has(res.status)) {
+          await sleep(retryAfterMs(res) ?? backoff)
+        } else if (attempt < attempts) {
+          break // status definitivo del mirror: pasar al siguiente sin gastar reintentos
+        }
+      } catch (e) {
+        lastErr = e
+        if (attempt < attempts) await sleep(backoff)
+      }
     }
   }
+
+  // Agotados origen y mirrors: se devuelve el último status pasajero (el llamador lo reporta) y
+  // solo se lanza si nunca hubo respuesta, es decir si todo fueron fallos de red.
+  if (lastRes) return lastRes
+  throw lastErr
 }
 
 /** Cuerpo como JSON. Lanza si no es JSON válido (p. ej. el portal cautivo de un wifi). */
