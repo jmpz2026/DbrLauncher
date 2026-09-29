@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "4.0.0",
   "minecraft": "1.7.10",
   "forge": "10.13.4.1614",
   "files": [
@@ -418,10 +418,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-3.6.0.jar",
-      "sha1": "320ad53b59641eb6c60a38f28c5cca915d0609a0",
-      "size": 43268822,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-3.6.0.jar"
+      "path": "mods/DbrServerPack-4.0.0.jar",
+      "sha1": "6c12933bfdbea21863c501e3543b1822929f3f83",
+      "size": 44072719,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.0.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -467,21 +467,21 @@
     },
     {
       "path": "mods/NBArmors-1.0.0.jar",
-      "sha1": "bcab6ac9dd9e6ea0592ba2777ba172120203493f",
-      "size": 4786193,
+      "sha1": "ad7b0144ef6ab5b2ad6684c0acc20d47ac82c5fb",
+      "size": 5136960,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/NBArmors-1.0.0.jar"
     },
     {
       "path": "mods/ninjinentities-1.2.7.4.jar",
-      "sha1": "6dbb20394c667f92c5524faeaa46e0c6ecef4d5c",
-      "size": 1079622,
+      "sha1": "5c312d167d1059a87bddc5bbfe1dff035f8849a4",
+      "size": 5802067,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-1.1.5.jar",
-      "sha1": "9a1d5a2056bd467b39b3faf566f6774ab377d872",
-      "size": 4340154,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.5.jar"
+      "path": "mods/npcdbc-1.1.6.jar",
+      "sha1": "4d97fd07a335ab908610f7324091f2ec0fdb5d56",
+      "size": 4343225,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.6.jar"
     },
     {
       "path": "mods/OptifineComplemento.jar",
