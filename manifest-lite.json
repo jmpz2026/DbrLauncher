@@ -1,5 +1,5 @@
 {
-  "version": "4.0.0",
+  "version": "1.0.0",
   "minecraft": "1.7.10",
   "forge": "10.13.4.1614",
   "files": [
@@ -419,8 +419,8 @@
     },
     {
       "path": "mods/DbrServerPack-4.0.0.jar",
-      "sha1": "6c12933bfdbea21863c501e3543b1822929f3f83",
-      "size": 44072719,
+      "sha1": "da8a55adfdd10329bc3dfd0d1b9c7071b490b15c",
+      "size": 44073473,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.0.0.jar"
     },
     {
