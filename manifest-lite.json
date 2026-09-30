@@ -394,10 +394,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/UpdateCheckLib.cfg"
     },
     {
-      "path": "mods/+unimixins-all-1.7.10-0.1.22.jar",
-      "sha1": "047bb736c27fb9fe0f6ab6fd323140bab7748b71",
-      "size": 5259957,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/%2Bunimixins-all-1.7.10-0.1.22.jar"
+      "path": "mods/+unimixins-all-1.7.10-0.1.23.jar",
+      "sha1": "758ddc3f969d22f85da74fc8b1680d9ea822d8be",
+      "size": 5786196,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
       "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
