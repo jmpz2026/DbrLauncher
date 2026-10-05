@@ -425,12 +425,6 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-4.1.0.jar",
-      "sha1": "d2b9b74b0e9d24faef6b50a63e7ac6eee7ae9a1d",
-      "size": 69770300,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.1.0.jar"
-    },
-    {
       "path": "mods/DbrServerPack-4.2.0.jar",
       "sha1": "afc5b4038292ca92514abde6706886dd1a3ce3a0",
       "size": 41978469,
@@ -447,12 +441,6 @@
       "sha1": "4d5d2ae7016be49c0d47aa9e54adada8fc3f27ab",
       "size": 15187123,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DragonBlockC-v1.4.85.jar"
-    },
-    {
-      "path": "mods/etfuturum-2.6.59-dbr.3.jar",
-      "sha1": "885a1b06e3255de25284b0c4fc8006a2a7c366aa",
-      "size": 5424319,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/etfuturum-2.6.59-dbr.3.jar"
     },
     {
       "path": "mods/EtFuturumDbr-1.0.0.jar",
