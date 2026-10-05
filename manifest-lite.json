@@ -124,6 +124,13 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcombathud.cfg"
     },
     {
+      "path": "config/dbrcore/rendimiento.cfg",
+      "sha1": "d26194f06b42c594d19f7efb0c054093ddebdba6",
+      "size": 147,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcore/rendimiento.cfg"
+    },
+    {
       "path": "config/dbrshieldki.cfg",
       "sha1": "5a9441793c9c5471abd8babeaeaee38c7b20c5dc",
       "size": 631,

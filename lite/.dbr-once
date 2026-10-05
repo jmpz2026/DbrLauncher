@@ -15,6 +15,11 @@ options.txt
 optionsof.txt
 optionsshaders.txt
 
+# Modo de rendimiento del juego (DbrCore, core.perf). Siembra preferencia=ligero;
+# despues lo escriben el jugador, el mod y el launcher. Ver
+# DbrServerPack/docs/rendimiento/PLAN.md.
+config/dbrcore/rendimiento.cfg
+
 # Ejemplo de .cfg que quieras dejar que el jugador toque sin que la sync se lo
 # revierta (descomenta y ajusta):
 # config/ArmorStatusHUD.cfg
