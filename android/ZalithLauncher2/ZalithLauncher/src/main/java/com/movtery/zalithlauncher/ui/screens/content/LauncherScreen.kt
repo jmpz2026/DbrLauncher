@@ -162,6 +162,11 @@ private fun DbrHome(
     val typeName = account?.let { getAccountTypeName(it) } ?: ""
 
     DbrInstallDialog(dbrVm)
+    //DBR: propuesta de pasar a Lite en móviles justos (game/dbr/DbrPerf.kt).
+    DbrLiteProposalDialog(
+        allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
+            ?.getGameDir()
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         BlockBackground(modifier = Modifier.fillMaxSize())

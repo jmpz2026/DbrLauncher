@@ -71,6 +71,12 @@ object AllSettings : SettingsRegistry() {
      */
     val dbrModpackSyncPending = boolSetting("dbrModpackSyncPending", false)
 
+    /**
+     * DBR: respuesta a la propuesta de pasar a Lite por hardware (game/dbr/DbrPerf):
+     * none | accepted | rejected. Sale una sola vez.
+     */
+    val dbrLiteProposal = stringSetting("dbrLiteProposal", "none")
+
     //Renderer
     /**
      * 全局渲染器
