@@ -431,6 +431,12 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.1.0.jar"
     },
     {
+      "path": "mods/DbrServerPack-4.2.0.jar",
+      "sha1": "afc5b4038292ca92514abde6706886dd1a3ce3a0",
+      "size": 41978469,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.2.0.jar"
+    },
+    {
       "path": "mods/dbsparking-1.0.jar",
       "sha1": "28818e4260cd74f6c4b6b368ec5f1fbdc7d355e3",
       "size": 18062,
@@ -447,6 +453,12 @@
       "sha1": "885a1b06e3255de25284b0c4fc8006a2a7c366aa",
       "size": 5424319,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/etfuturum-2.6.59-dbr.3.jar"
+    },
+    {
+      "path": "mods/EtFuturumDbr-1.0.0.jar",
+      "sha1": "60f73368a1d66eba3ed58c3701439111ce55cf9a",
+      "size": 8834441,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/EtFuturumDbr-1.0.0.jar"
     },
     {
       "path": "mods/JBRA-Client-v1.6.52.jar",
@@ -492,8 +504,8 @@
     },
     {
       "path": "mods/npcdbc-1.1.6.jar",
-      "sha1": "e0e3d41e29ce1eff15051bcf52edcf63abe2ff2f",
-      "size": 4350612,
+      "sha1": "42d80f7a4daba12c096a99fa60af6b78c16d74f8",
+      "size": 4352491,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.6.jar"
     },
     {
