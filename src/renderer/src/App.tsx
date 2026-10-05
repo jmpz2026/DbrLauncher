@@ -8,6 +8,7 @@ import Login from './screens/Login'
 import UpdateOverlay from './components/UpdateOverlay'
 import FuseBanner from './components/FuseBanner'
 import GameLogModal from './components/GameLogModal'
+import LiteProposalModal from './components/LiteProposalModal'
 import { useStore } from './store'
 
 export default function App(): JSX.Element {
@@ -58,6 +59,7 @@ export default function App(): JSX.Element {
       <UpdateOverlay />
       <GameLogModal />
       <FuseBanner />
+      {ready && account && <LiteProposalModal />}
     </div>
   )
 }

@@ -1,3 +1,5 @@
+import type { LiteProposalAnswer } from './perf'
+
 // Variante del modpack a sincronizar (comparten Forge/MC, distinto set de mods).
 export type ModpackVariant = 'full' | 'lite'
 
@@ -18,6 +20,8 @@ export interface LauncherSettings {
   // el jugador tenga apagada la actualización automática de mods (si no, jugaría con los mods
   // de la otra variante). La sync lo consume.
   modpackSyncPending: boolean
+  // Respuesta a la propuesta de pasar a Lite por hardware (main/perf): sale una sola vez.
+  liteProposal: LiteProposalAnswer
 }
 
 /**
@@ -38,7 +42,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   modpackVariant: 'full',
   autoSyncMods: true,
   modpackSeedPending: false,
-  modpackSyncPending: false
+  modpackSyncPending: false,
+  liteProposal: 'none'
 }
 
 /** RAM mínima asignable al juego (GB). */

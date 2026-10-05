@@ -7,6 +7,7 @@ import type { LauncherSettings, RamLimits } from '../shared/settings'
 import type { ServerStatus } from '../shared/status'
 import type { UpdateStatus } from '../shared/update'
 import type { FuseStatus, FuseInstallResult } from '../shared/fuse'
+import type { LiteProposal } from '../shared/perf'
 
 const api = {
   platform: process.platform,
@@ -89,6 +90,12 @@ const api = {
   fuse: {
     status: (): Promise<FuseStatus> => ipcRenderer.invoke('fuse:status'),
     install: (): Promise<FuseInstallResult> => ipcRenderer.invoke('fuse:install')
+  },
+
+  perf: {
+    // ¿Proponer pasar a Lite? (hardware justo o marca del juego)
+    check: (): Promise<LiteProposal> => ipcRenderer.invoke('perf:check'),
+    answer: (accept: boolean): Promise<void> => ipcRenderer.invoke('perf:answer', accept)
   }
 }
 
