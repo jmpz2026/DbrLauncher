@@ -1,7 +1,7 @@
 {
-  "build": 8,
-  "versionName": "DbrLauncher Mobile android-v8",
-  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v8/DbrLauncherMobile-arm64.apk",
+  "build": 9,
+  "versionName": "DbrLauncher Mobile android-v9",
+  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v9/DbrLauncherMobile-arm64.apk",
   "mandatory": true,
-  "changelog": "Build 8"
+  "changelog": "Build 9"
 }
