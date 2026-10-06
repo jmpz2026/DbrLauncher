@@ -73,7 +73,10 @@ object DbrUpdater {
 
     private fun installApk(context: Context, apk: File) {
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", apk)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
+        // ACTION_INSTALL_PACKAGE solo lo atiende el instalador del sistema; con
+        // ACTION_VIEW el chooser podía ofrecer otras apps para la APK.
+        @Suppress("DEPRECATION")
+        val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
             setDataAndType(uri, "application/vnd.android.package-archive")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
