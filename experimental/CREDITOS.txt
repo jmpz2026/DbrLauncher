@@ -46,7 +46,7 @@ licencia (p. ej. SpongeMixins: GNU LGPL v3; Mixin de SpongePowered: MIT).
 Codigo fuente: https://github.com/LegacyModdingMC/UniMixins
 
 -----------------------------------------------------------------------------
-4. CustomNPC+ DBC Addon (npcdbc) 1.1.6-dbr.2  (npcdbc-1.1.6-dbr.2.jar)
+4. CustomNPC+ DBC Addon (npcdbc) 1.1.6-dbr.3  (npcdbc-1.1.6-dbr.3.jar)
 -----------------------------------------------------------------------------
 Autores originales: KAMKEEL (Kam), bigguy345 (Goatee), somehussar (Hussar)
 y contribuidores. Creditos adicionales: @PopsicleNate (texturas), @mtbarr
