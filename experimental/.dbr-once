@@ -33,3 +33,10 @@ config/dbrvoice.cfg
 # revierta (descomenta y ajusta):
 # config/ArmorStatusHUD.cfg
 # config/*Client*.cfg
+
+# Config grafica de Angelica/NotFine para Android (2026-10-07).
+# TEMPORAL: van GESTIONADAS (sin listar aqui) para forzarlas una vez a los que ya
+# probaron el experimental. Cuando los testers hayan dado Jugar, descomentar estas
+# dos lineas para que pasen a siembra y el jugador pueda cambiarlas:
+# config/angelica-options.json
+# optionsnf.txt
