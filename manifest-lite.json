@@ -31,8 +31,8 @@
     },
     {
       "path": "config/bspkrsCore.cfg",
-      "sha1": "2ebe991d0d15eb6e3d7b9b640caeffa4d6be10a5",
-      "size": 1388,
+      "sha1": "e72730ebf1193924af59ff3fa6b7a22cba2587bc",
+      "size": 1362,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/bspkrsCore.cfg"
     },
     {
@@ -506,8 +506,8 @@
     },
     {
       "path": "mods/OptifineComplemento.jar",
-      "sha1": "b591d7b526794c0b9d22d10e0a0b46636c10fce3",
-      "size": 198525,
+      "sha1": "0569484f2f1ac34393886a22faf00afab7be6509",
+      "size": 198667,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/OptifineComplemento.jar"
     },
     {
