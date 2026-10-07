@@ -5,13 +5,18 @@ import { httpRequest, readJson } from './http'
 import { rememberSha1, sha1FileCached } from './sync/hash'
 
 /** Descarga `url` a `dest` si falta o el sha1 no coincide. Devuelve true si descargó. */
-export async function ensureFile(dest: string, url: string, sha1?: string): Promise<boolean> {
+export async function ensureFile(
+  dest: string,
+  url: string,
+  sha1?: string,
+  onProgress?: (received: number, total: number) => void
+): Promise<boolean> {
   if (existsSync(dest)) {
     if (!sha1) return false
     if ((await sha1FileCached(dest)) === sha1.toLowerCase()) return false
   }
   mkdirSync(dirname(dest), { recursive: true })
-  const res = await httpRequest(url)
+  const res = await httpRequest(url, { onProgress })
   if (!res.ok) throw new Error(`Descarga falló (${res.status}): ${url}`)
   const buf = res.body
   if (sha1) {

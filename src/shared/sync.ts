@@ -25,6 +25,11 @@ export interface SyncProgress {
   file: string // ruta del archivo en curso ('' en 'done')
   done: number
   total: number
+  // Solo en 'download': cuántos archivos siguen bajando además de `file`, y el avance en bytes.
+  // Contar archivos terminados deja la barra quieta mientras bajan los jars grandes.
+  inFlight?: number
+  bytesDone?: number
+  bytesTotal?: number // 0 si algún archivo del manifest no trae `size`
 }
 
 export interface SyncSummary {

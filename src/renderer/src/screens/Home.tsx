@@ -177,12 +177,20 @@ function LaunchBar(): JSX.Element {
 
 function SyncBar(): JSX.Element {
   const p = useStore((s) => s.syncProgress)
-  const pct = p && p.total > 0 ? Math.round((p.done / p.total) * 100) : 0
+  // En descarga la barra va por bytes si el manifest trae tamaños; si no, por archivos.
+  const byBytes = p?.phase === 'download' && !!p.bytesTotal
+  const pct = byBytes
+    ? Math.round(((p.bytesDone ?? 0) / p.bytesTotal!) * 100)
+    : p && p.total > 0
+      ? Math.round((p.done / p.total) * 100)
+      : 0
   const file = p?.file ? p.file.split('/').pop() : ''
+  const others = p?.inFlight ? ` +${p.inFlight}` : ''
 
   let label = 'Preparando…'
   if (p?.phase === 'check') label = 'Comprobando archivos…'
-  else if (p?.phase === 'download') label = `Descargando ${file} — ${p.done}/${p.total}`
+  else if (p?.phase === 'download')
+    label = file ? `Descargando ${file}${others} — ${p.done}/${p.total}` : `Descargando — ${p.done}/${p.total}`
   else if (p?.phase === 'delete') label = `Limpiando ${p.done}/${p.total}`
   else if (p?.phase === 'done') label = 'Listo'
 

@@ -93,9 +93,46 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
 
   // 3) Descargar en paralelo (pool acotado). `done` es un contador compartido: como JS es
   // monohilo entre awaits, el ++ no compite; solo la barra ve el orden de finalización.
+  // La barra va por bytes (con el `size` del manifest) y el texto nombra el archivo que lleva
+  // más tiempo bajando: con solo archivos terminados, un jar lento en un POP frío del CDN
+  // dejaba la barra quieta y el nombre de un config de 1 KB que ya había acabado.
+  const bytesTotal = toDownload.every((f) => typeof f.size === 'number')
+    ? toDownload.reduce((s, f) => s + (f.size ?? 0), 0)
+    : 0
+  const received = new Map<string, number>() // bytes por archivo; un reintento lo devuelve a 0
+  const inFlight = new Set<string>() // orden de inserción = orden de arranque
+  let lastEmit = 0
+  const emit = (force = false): void => {
+    const now = Date.now()
+    if (!force && now - lastEmit < 100) return // no inundar el IPC con cada chunk
+    lastEmit = now
+    let bytesDone = 0
+    for (const n of received.values()) bytesDone += n
+    const current = inFlight.values().next().value ?? ''
+    onProgress({
+      phase: 'download',
+      file: current,
+      done,
+      total,
+      inFlight: Math.max(0, inFlight.size - 1),
+      bytesDone: Math.min(bytesDone, bytesTotal),
+      bytesTotal
+    })
+  }
   await pool(toDownload, CONCURRENCY, async (f) => {
-    await ensureFile(safeJoin(gameDir, f.path), f.url, f.sha1)
-    onProgress({ phase: 'download', file: f.path, done: ++done, total })
+    inFlight.add(f.path)
+    emit(true)
+    try {
+      await ensureFile(safeJoin(gameDir, f.path), f.url, f.sha1, (n) => {
+        received.set(f.path, n)
+        emit()
+      })
+    } finally {
+      inFlight.delete(f.path)
+    }
+    received.set(f.path, f.size ?? 0)
+    done++
+    emit(true)
   })
 
   // 4) Borrar obsoletos. Si uno no se puede borrar (en Windows, un jar abierto por un juego
