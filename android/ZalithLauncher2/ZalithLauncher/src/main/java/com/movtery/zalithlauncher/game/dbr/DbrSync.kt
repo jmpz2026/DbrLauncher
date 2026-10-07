@@ -72,12 +72,21 @@ object DbrSync {
     }
 
     /**
-     * raw.githubusercontent.com cachea cada URL unos 5 minutos: sin un parámetro distinto,
-     * quien da Jugar justo después de un despliegue recibe el manifest viejo, o un archivo
-     * viejo que no casa con el sha1 del nuevo.
+     * raw.githubusercontent.com cachea cada URL unos 5 minutos y la query no cuenta para la
+     * caché: quien daba Jugar justo después de un despliegue recibía el manifest viejo, o un
+     * archivo viejo que no casaba con el sha1 del nuevo. Con el sha del commit en vez del
+     * nombre de la rama la URL es inmutable y nunca sale vieja.
      */
-    private fun withQuery(url: String, key: String, value: String): String =
-        url + (if ('?' in url) "&" else "?") + key + "=" + value
+    private val RAW = Regex("""^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/""")
+
+    /** Sha del último commit de la rama, o null si la API no responde (límite de 60/h sin token). */
+    private fun headSha(owner: String, repo: String, branch: String): String? = runCatching {
+        val conn = URL("https://api.github.com/repos/$owner/$repo/commits/$branch").openConnection()
+        conn.setRequestProperty("Accept", "application/vnd.github.sha")
+        conn.connectTimeout = 10_000
+        conn.readTimeout = 10_000
+        conn.getInputStream().use { it.readBytes().toString(Charsets.UTF_8).trim() }
+    }.getOrNull()?.takeIf { Regex("^[0-9a-f]{40}$").matches(it) }
 
     /** Progreso reportado por callback. phase: check|download|delete|done */
     data class Progress(val phase: String, val done: Int, val total: Int, val file: String)
@@ -129,10 +138,22 @@ object DbrSync {
     ) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
-        val json = URL(withQuery(manifestUrl(), "t", System.currentTimeMillis().toString())).readText()
+        //Manifest y archivos de la misma rama, fijados al commit actual. Sin la API, por la rama.
+        val url = manifestUrl()
+        val raw = RAW.find(url)
+        val sha = raw?.let { headSha(it.groupValues[1], it.groupValues[2], it.groupValues[3]) }
+        val pin: (String) -> String = if (raw != null && sha != null) {
+            val branchBase = raw.value
+            val pinnedBase = "https://raw.githubusercontent.com/${raw.groupValues[1]}/${raw.groupValues[2]}/$sha/"
+            ({ u -> if (u.startsWith(branchBase)) pinnedBase + u.removePrefix(branchBase) else u })
+        } else {
+            { u -> u }
+        }
+
+        val json = URL(pin(url)).readText()
         val manifest = GSON.fromJson(json, Manifest::class.java)
             ?: error("No se pudo leer el manifest del modpack")
-        val files = filesForAndroid(manifest)
+        val files = filesForAndroid(manifest).map { it.copy(url = pin(it.url)) }
         if (files.isEmpty()) error("El manifest no contiene archivos")
 
         // 1) Qué hay que descargar (falta, tamaño distinto, o SHA-1 distinto).
@@ -172,9 +193,7 @@ object DbrSync {
         pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
-            //El sha1 en la URL hace única cada versión del archivo: el CDN no puede servir una vieja.
-            val url = if (f.sha1.isNullOrEmpty()) f.url else withQuery(f.url, "v", f.sha1)
-            URL(url).openStream().use { input ->
+            URL(f.url).openStream().use { input ->
                 dest.outputStream().use { output -> input.copyTo(output) }
             }
             if (!f.sha1.isNullOrEmpty() && !sha1(dest).equals(f.sha1, ignoreCase = true)) {
