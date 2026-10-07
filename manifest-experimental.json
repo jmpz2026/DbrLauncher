@@ -476,10 +476,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/EtFuturumDbr-1.0.0.jar"
     },
     {
-      "path": "mods/gtnhlib-0.11.36.jar",
-      "sha1": "7b795d58d2d36c08db9b0120bad808d6fb2cd3e2",
-      "size": 1384832,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/gtnhlib-0.11.36.jar"
+      "path": "mods/gtnhlib-0.11.36-dbr.1.jar",
+      "sha1": "58f78b7f15cd7d719f80dd49f7095acd77f3871f",
+      "size": 26572020,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/gtnhlib-0.11.36-dbr.1.jar"
     },
     {
       "path": "mods/JBRA-Client-v1.6.52.jar",

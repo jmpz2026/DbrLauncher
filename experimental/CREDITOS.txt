@@ -29,11 +29,18 @@ el README del proyecto). Entre ellos:
   - Archivos de Minecraft Forge: LGPL 2.1.
 
 -----------------------------------------------------------------------------
-2. GTNHLib 0.11.36  (gtnhlib-0.11.36.jar, sin modificar)
+2. GTNHLib 0.11.36-dbr.1  (gtnhlib-0.11.36-dbr.1.jar)
 -----------------------------------------------------------------------------
 Autores: GTNewHorizons.
-Licencia: GNU LGPL v3.
-Codigo fuente: https://github.com/GTNewHorizons/GTNHLib/releases/tag/0.11.36
+Licencia: GNU LGPL v3 (LICENCIAS/LGPL-3.0.txt + LICENCIAS/GPL-3.0.txt).
+Proyecto original: https://github.com/GTNewHorizons/GTNHLib
+
+ESTA ES UNA VERSION MODIFICADA. Codigo fuente de esta version exacta:
+  https://github.com/jmpz2026/GTNHLib/tree/0.11.36-dbr.1
+  (rama dbr/bundle-deps, basada en GTNewHorizons/GTNHLib 0.11.36)
+Cambios: solo de empaquetado. Las librerias de la seccion 5 van dentro del
+jar (META-INF/falsepatternlib_repo) para que el juego no las descargue al
+primer arranque. El codigo de GTNHLib no cambia.
 Incluye FalsePatternLib DepLoader (FalsePattern), GNU LGPL v3:
   https://github.com/FalsePattern/FalsePatternLib
 
@@ -62,15 +69,16 @@ como CurseForge o Modrinth. Todos los derechos de la obra original
 pertenecen a sus autores.
 
 -----------------------------------------------------------------------------
-5. Librerias que GTNHLib descarga solas al primer arranque
-   (desde Maven Central / libraries.minecraft.net; NO van en este zip)
+5. Librerias incluidas dentro de gtnhlib-0.11.36-dbr.1.jar, sin modificar
+   (jars oficiales de Maven Central y maven.wagyourtail.xyz; los textos de
+   licencia van tambien en META-INF/falsepatternlib_repo/licenses)
 -----------------------------------------------------------------------------
   - fastutil 8.5.18 - Sebastiano Vigna - Apache License 2.0
     (LICENCIAS/Apache-2.0.txt) - https://github.com/vigna/fastutil
-  - JOML 1.10.8 - Copyright (c) 2015-2026 JOML - MIT (LICENCIAS/MIT.txt)
+  - JOML 1.10.8 - Copyright (c) 2015-2024 JOML - MIT (LICENCIAS/MIT.txt)
     https://github.com/JOML-CI/JOML
   - Brigadier 1.0.18 - Copyright (c) Microsoft Corporation - MIT
     https://github.com/Mojang/brigadier
-  - JvmDowngrader java-api 1.3.5 - Copyright (C) 2024 William Gray -
-    GNU LGPL v2.1 (LICENCIAS/LGPL-2.1.txt)
-    https://github.com/unimined/JvmDowngrader
+  - JvmDowngrader java-api 1.3.5 (downgraded-8 y downgraded-17) -
+    Copyright (C) 2024 William Gray - GNU LGPL v2.1 (LICENCIAS/LGPL-2.1.txt)
+    Codigo fuente: https://github.com/unimined/JvmDowngrader/tree/1.3.5
