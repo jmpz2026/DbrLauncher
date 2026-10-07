@@ -203,6 +203,39 @@
         },
         {
           "text": {
+            "default": "Rueda formas",
+            "matchQueue": []
+          },
+          "uuid": "a1909cff6af4",
+          "position": {
+            "x": 7224,
+            "y": 174
+          },
+          "buttonSize": {
+            "type": "percentage",
+            "widthDp": 84,
+            "heightDp": 48,
+            "widthPercentage": 2137,
+            "heightPercentage": 1221,
+            "widthReference": "screen_height",
+            "heightReference": "screen_height"
+          },
+          "buttonStyle": "ff6681bef038",
+          "textAlignment": "Center",
+          "visibilityType": "in_game",
+          "clickEvents": [
+            {
+              "type": "key",
+              "key": "GLFW_KEY_Y"
+            }
+          ],
+          "isSwipple": false,
+          "isPenetrable": false,
+          "isToggleable": false,
+          "icon": "donut_large"
+        },
+        {
+          "text": {
             "default": "Transformar",
             "matchQueue": []
           },
@@ -226,7 +259,7 @@
           "clickEvents": [
             {
               "type": "key",
-              "key": "GLFW_KEY_Y"
+              "key": "GLFW_KEY_G"
             }
           ],
           "isSwipple": false,
@@ -771,71 +804,7 @@
           "clickEvents": [
             {
               "type": "key",
-              "key": "GLFW_KEY_L"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
-            "default": "Info",
-            "matchQueue": []
-          },
-          "uuid": "50617e79f8d8",
-          "position": {
-            "x": 5000,
-            "y": 1690
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_K"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
-            "default": "Interactuar",
-            "matchQueue": []
-          },
-          "uuid": "ab024dd3e174",
-          "position": {
-            "x": 5946,
-            "y": 1690
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_B"
+              "key": "GLFW_KEY_N"
             }
           ],
           "isSwipple": false,
@@ -849,7 +818,7 @@
           },
           "uuid": "4802668c9d65",
           "position": {
-            "x": 6893,
+            "x": 5000,
             "y": 1690
           },
           "buttonSize": {
@@ -876,13 +845,13 @@
         },
         {
           "text": {
-            "default": "Scouter",
+            "default": "Ki Sense\nScouter",
             "matchQueue": []
           },
-          "uuid": "45359347ce46",
+          "uuid": "d157a604c70e",
           "position": {
-            "x": 3107,
-            "y": 2930
+            "x": 5946,
+            "y": 1690
           },
           "buttonSize": {
             "type": "percentage",
@@ -913,8 +882,8 @@
           },
           "uuid": "ee33f6dc615a",
           "position": {
-            "x": 4054,
-            "y": 2930
+            "x": 6893,
+            "y": 1690
           },
           "buttonSize": {
             "type": "percentage",
@@ -945,7 +914,7 @@
           },
           "uuid": "23ebcb6dabbe",
           "position": {
-            "x": 5000,
+            "x": 3107,
             "y": 2930
           },
           "buttonSize": {
@@ -977,7 +946,7 @@
           },
           "uuid": "c403bf679916",
           "position": {
-            "x": 5946,
+            "x": 4054,
             "y": 2930
           },
           "buttonSize": {
@@ -1009,7 +978,7 @@
           },
           "uuid": "bcd457e8c961",
           "position": {
-            "x": 6893,
+            "x": 5000,
             "y": 2930
           },
           "buttonSize": {
@@ -1036,109 +1005,13 @@
         },
         {
           "text": {
-            "default": "Linaje +",
-            "matchQueue": []
-          },
-          "uuid": "58a0cce87a20",
-          "position": {
-            "x": 3107,
-            "y": 4169
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_G"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
-            "default": "Linaje -",
-            "matchQueue": []
-          },
-          "uuid": "ee05fc2cfe9d",
-          "position": {
-            "x": 4054,
-            "y": 4169
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_H"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
-            "default": "Inv. NPC",
-            "matchQueue": []
-          },
-          "uuid": "abe02fbda6ce",
-          "position": {
-            "x": 5000,
-            "y": 4169
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_N"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
             "default": "Hablar",
             "matchQueue": []
           },
           "uuid": "344401c52ed7",
           "position": {
             "x": 5946,
-            "y": 4169
+            "y": 2930
           },
           "buttonSize": {
             "type": "percentage",
@@ -1170,7 +1043,7 @@
           "uuid": "af5ab0ef8abb",
           "position": {
             "x": 6893,
-            "y": 4169
+            "y": 2930
           },
           "buttonSize": {
             "type": "percentage",
@@ -1196,45 +1069,13 @@
         },
         {
           "text": {
-            "default": "Zoom",
-            "matchQueue": []
-          },
-          "uuid": "34042575abaf",
-          "position": {
-            "x": 3107,
-            "y": 5408
-          },
-          "buttonSize": {
-            "type": "percentage",
-            "widthDp": 70,
-            "heightDp": 38,
-            "widthPercentage": 1781,
-            "heightPercentage": 967,
-            "widthReference": "screen_height",
-            "heightReference": "screen_height"
-          },
-          "buttonStyle": "96e3c5c78af9",
-          "textAlignment": "Center",
-          "visibilityType": "always",
-          "clickEvents": [
-            {
-              "type": "key",
-              "key": "GLFW_KEY_EQUAL"
-            }
-          ],
-          "isSwipple": false,
-          "isPenetrable": false,
-          "isToggleable": false
-        },
-        {
-          "text": {
             "default": "Alt",
             "matchQueue": []
           },
           "uuid": "4bc74fd7009d",
           "position": {
-            "x": 4054,
-            "y": 5408
+            "x": 3107,
+            "y": 4169
           },
           "buttonSize": {
             "type": "percentage",
@@ -1265,8 +1106,8 @@
           },
           "uuid": "2f782a3900c9",
           "position": {
-            "x": 5000,
-            "y": 5408
+            "x": 4054,
+            "y": 4169
           },
           "buttonSize": {
             "type": "percentage",
@@ -1297,8 +1138,8 @@
           },
           "uuid": "61dbb2a568dd",
           "position": {
-            "x": 5946,
-            "y": 5408
+            "x": 5000,
+            "y": 4169
           },
           "buttonSize": {
             "type": "percentage",
@@ -1329,8 +1170,8 @@
           },
           "uuid": "b2d9dd89adb8",
           "position": {
-            "x": 6893,
-            "y": 5408
+            "x": 5946,
+            "y": 4169
           },
           "buttonSize": {
             "type": "percentage",

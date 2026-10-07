@@ -95,8 +95,10 @@ juego = [
     # Columna izquierda, bajo el HUD de JRMCore.
     button('juego', 'Chat', 62, 166, 92, 40, [key('T')], MENU, icon='chat'),
     button('juego', 'Inventario', 62, 212, 92, 40, [key('E')], MENU, icon='backpack'),
-    # Fila superior derecha.
-    button('juego', 'Transformar', 702, 30, 80, 48, [key('Y')], icon='auto_awesome'),
+    # Fila superior derecha. Son de mantener: transformar (G) y la rueda de formas (Y) actuan
+    # mientras se mantienen, y en Acciones (X) se elige la opcion soltando.
+    button('juego', 'Rueda formas', 612, 30, 84, 48, [key('Y')], icon='donut_large'),
+    button('juego', 'Transformar', 702, 30, 80, 48, [key('G')], icon='auto_awesome'),
     button('juego', 'Acciones', 778, 30, 64, 48, [key('X')], icon='list'),
     # Pulgar izquierdo, al lado del joystick.
     button('juego', 'Cargar Ki', 290, 290, 58, 58, [key('C')], icon='flare'),
@@ -111,12 +113,12 @@ juego = [
     button('juego', 'Agacharse', 790, 345, 64, 52, [key('LEFT_SHIFT')], toggle=True, icon='keyboard_double_arrow_down'),
 ]
 
-# Rejilla 5x4 arriba al centro, entre el HUD y los botones de la derecha.
+# Rejilla de 5 columnas arriba al centro, entre el HUD y los botones de la derecha.
+# Escudo Ki = O: KeyBindings de DbrShieldKi (DbrServerPack).
 MAS_KEYS = [
-    ('Estadísticas', [key('V')]), ('Misiones', [key('L')]), ('Info', [key('K')]), ('Interactuar', [key('B')]),
-    ('Escudo Ki', [key('O')]), ('Scouter', [key('F4')]), ('Soltar', [key('Q')]), ('Cámara', [key('F5')]),
-    ('Jugadores', [key('TAB')]), ('Calendario', [key('U')]), ('Linaje +', [key('G')]), ('Linaje -', [key('H')]),
-    ('Inv. NPC', [key('N')]), ('Hablar', [key('J')]), ('Armario', [key('P')]), ('Zoom', [key('EQUAL')]),
+    ('Estadísticas', [key('V')]), ('Misiones', [key('N')]), ('Escudo Ki', [key('O')]),
+    ('Ki Sense\nScouter', [key('F4')]), ('Soltar', [key('Q')]), ('Cámara', [key('F5')]),
+    ('Jugadores', [key('TAB')]), ('Calendario', [key('U')]), ('Hablar', [key('J')]), ('Armario', [key('P')]),
     ('Alt', [key('LEFT_ALT')]), ('Captura', [key('F2')]), ('Debug', [key('F3')]),
     ('Teclado', [event('launcher.event.switch_ime')]),
 ]

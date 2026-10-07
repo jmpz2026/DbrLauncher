@@ -14,6 +14,7 @@ object ButtonIcons {
         "backpack" to R.drawable.ctl_icon_backpack,
         "chat" to R.drawable.ctl_icon_chat,
         "directions_run" to R.drawable.ctl_icon_directions_run,
+        "donut_large" to R.drawable.ctl_icon_donut_large,
         "expand_more" to R.drawable.ctl_icon_expand_more,
         "flare" to R.drawable.ctl_icon_flare,
         "flight" to R.drawable.ctl_icon_flight,
