@@ -148,6 +148,52 @@ fun AboutInfoScreen(
                 }
             }
 
+            //DBR: créditos y permisos de terceros (evidencias de KAMKEEL y JinGames)
+            animatedItem(scope) { yOffset ->
+                ChunkLayout(
+                    modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
+                    title = "Créditos y permisos"
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ButtonIconItem(
+                            icon = painterResource(R.drawable.ic_github),
+                            title = "CustomNPC+ DBC Addon (npcdbc)",
+                            text = "Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y " +
+                                    "somehussar (Hussar), por permitirnos distribuir a los jugadores, a través de " +
+                                    "este launcher, nuestra versión modificada (un fork no oficial) con los créditos " +
+                                    "a sus autores. Concedido el 05/10/2026.",
+                            button = {
+                                Button(
+                                    onClick = { openLink("https://github.com/KAMKEEL/CustomNPC-DBC-Addon") }
+                                ) {
+                                    Text(text = "Original")
+                                }
+                                Button(
+                                    onClick = { openLink("https://github.com/jmpz2026/CustomNPC-DBC-Addon") }
+                                ) {
+                                    Text(text = "Fork")
+                                }
+                            }
+                        )
+                        LinkIconItem(
+                            icon = painterResource(R.drawable.ic_link),
+                            title = "JinGames · Dragon Block C",
+                            text = "Gracias a Benjámin Nagy (Ben), de JinGames, autores de Dragon Block C, JRMCore, " +
+                                    "JBRA Client, Family C y Years C, por permitirnos crear y usar addons que " +
+                                    "extienden sus mods. Concedido el 06/10/2026. Sus mods se usan sin modificar.",
+                            openLink = { openLink("https://main.jingames.net") },
+                            useImage = false
+                        )
+                        Text(
+                            modifier = Modifier.alpha(0.7f),
+                            text = "Dragon Block Resurrection es un proyecto independiente: no está afiliado a " +
+                                    "JinGames ni a KAMKEEL.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
             animatedItem(scope) { yOffset ->
                 ChunkLayout(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
