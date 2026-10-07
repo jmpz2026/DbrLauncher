@@ -14,6 +14,9 @@
 // configuración (options.txt, optionsof.txt, .cfg que quieras dejar tocar). Las rutas
 // exactas listadas ahí se incluyen aunque estén fuera de `--include` (p.ej. options.txt,
 // que vive en la raíz del pack).
+//
+// Preset de Android: si el pack tiene una carpeta `android/`, sus archivos salen en
+// `androidFiles` (ver buildAndroidFiles). Solo los usa el launcher móvil.
 
 import { createHash } from 'crypto'
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
@@ -116,7 +119,35 @@ export function buildManifest({
     f.url = baseUrl + f.path.split('/').map(encodeURIComponent).join('/')
   }
 
-  return { version, minecraft, ...(forge ? { forge } : {}), files }
+  const androidFiles = buildAndroidFiles(dir, baseUrl)
+
+  return {
+    version,
+    minecraft,
+    ...(forge ? { forge } : {}),
+    files,
+    ...(androidFiles.length ? { androidFiles } : {})
+  }
+}
+
+/**
+ * Preset de Android: lo que haya en `<pack>/android/` sustituye, solo en el launcher móvil,
+ * a la entrada de `files` con la misma ruta (o se añade). La ruta en el juego es la relativa
+ * a `android/`: `android/options.txt` siembra `options.txt`. Siempre son de siembra (`once`):
+ * es configuración del jugador y solo la reciben las instalaciones nuevas.
+ * Va en una lista aparte para que los launchers de PC, que no la conocen, la ignoren.
+ */
+function buildAndroidFiles(dir, baseUrl) {
+  const root = join(dir, 'android')
+  if (!existsSync(root)) return []
+  const out = []
+  walk(root, root, out)
+  out.sort((a, b) => a.path.localeCompare(b.path))
+  for (const f of out) {
+    f.once = true
+    f.url = baseUrl + 'android/' + f.path.split('/').map(encodeURIComponent).join('/')
+  }
+  return out
 }
 
 // ---- CLI ----
@@ -148,6 +179,9 @@ function main() {
   writeFileSync(out, JSON.stringify(manifest, null, 2), 'utf-8')
   const totalMb = (manifest.files.reduce((s, f) => s + f.size, 0) / 1e6).toFixed(1)
   console.log(`✅ ${out}: ${manifest.files.length} archivos, ${totalMb} MB (v${manifest.version})`)
+  if (manifest.androidFiles) {
+    console.log(`   preset Android: ${manifest.androidFiles.map((f) => f.path).join(', ')}`)
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) main()
