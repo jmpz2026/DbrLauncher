@@ -415,6 +415,12 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
+      "path": "mods/bspkrsCore-6.16.1.jar",
+      "sha1": "850dd81e6b34da40399f8f3079579e11204dd5a0",
+      "size": 198655,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/bspkrsCore-6.16.1.jar"
+    },
+    {
       "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
       "sha1": "e7751986fec3ca3ce871ebde56ad9672032946f2",
       "size": 2196921,
@@ -433,10 +439,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-4.2.0.jar",
-      "sha1": "afc5b4038292ca92514abde6706886dd1a3ce3a0",
-      "size": 41978469,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.2.0.jar"
+      "path": "mods/DbrServerPack-4.3.0.jar",
+      "sha1": "685a915347aeb0dd2222f63785d6fd9961bfe480",
+      "size": 42043468,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-4.3.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -499,16 +505,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-1.1.6.jar",
-      "sha1": "42d80f7a4daba12c096a99fa60af6b78c16d74f8",
-      "size": 4352491,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.6.jar"
-    },
-    {
-      "path": "mods/OptifineComplemento.jar",
-      "sha1": "0569484f2f1ac34393886a22faf00afab7be6509",
-      "size": 198667,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/OptifineComplemento.jar"
+      "path": "mods/npcdbc-1.1.7.jar",
+      "sha1": "5e701c3d51848451399816a541350618bbb34c79",
+      "size": 4352522,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-1.1.7.jar"
     },
     {
       "path": "mods/OptifinePrincipal.jar",

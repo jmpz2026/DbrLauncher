@@ -422,10 +422,16 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
-      "path": "mods/angelica-2.2.29-dbr.15.jar",
-      "sha1": "01b80beb2d6eaadc05449a3f697efc3a0b75c4ed",
-      "size": 11871771,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.29-dbr.15.jar"
+      "path": "mods/angelica-2.2.30.jar",
+      "sha1": "0f6a23dfc855a01d2cced56aa8feaa30f3f67124",
+      "size": 11871676,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.30.jar"
+    },
+    {
+      "path": "mods/bspkrsCore-6.16.1.jar",
+      "sha1": "850dd81e6b34da40399f8f3079579e11204dd5a0",
+      "size": 198655,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/bspkrsCore-6.16.1.jar"
     },
     {
       "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
@@ -446,10 +452,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-4.2.0.jar",
-      "sha1": "547125b5aa8ef027bb80358152ccfdfb97f436c5",
-      "size": 41978987,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-4.2.0.jar"
+      "path": "mods/DbrServerPack-4.3.0.jar",
+      "sha1": "685a915347aeb0dd2222f63785d6fd9961bfe480",
+      "size": 42043468,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-4.3.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -518,16 +524,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-1.1.6-dbr.8.jar",
-      "sha1": "3978d691bfc4c1a4c5504b875d3a330e0cc708ce",
-      "size": 4352528,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.6-dbr.8.jar"
-    },
-    {
-      "path": "mods/OptifineComplemento.jar",
-      "sha1": "0569484f2f1ac34393886a22faf00afab7be6509",
-      "size": 198667,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/OptifineComplemento.jar"
+      "path": "mods/npcdbc-1.1.7.jar",
+      "sha1": "5e701c3d51848451399816a541350618bbb34c79",
+      "size": 4352522,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.7.jar"
     },
     {
       "path": "options.txt",
