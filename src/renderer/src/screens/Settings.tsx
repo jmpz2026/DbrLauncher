@@ -66,6 +66,63 @@ export default function Settings(): JSX.Element {
 
       {/* Diagnóstico */}
       <DiagnosticsPanel />
+
+      {/* Créditos y permisos de terceros */}
+      <CreditsPanel />
+    </div>
+  )
+}
+
+// Permisos archivados en la documentación del proyecto (evidencias de KAMKEEL y JinGames).
+const CREDITS = [
+  {
+    title: 'CustomNPC+ DBC Addon (npcdbc)',
+    text:
+      'Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y somehussar (Hussar), ' +
+      'por permitirnos distribuir a los jugadores, a través de este launcher, nuestra versión ' +
+      'modificada (un fork no oficial) con los créditos a sus autores. Concedido el 05/10/2026.',
+    links: [
+      { label: 'Proyecto original', href: 'https://github.com/KAMKEEL/CustomNPC-DBC-Addon' },
+      { label: 'Nuestro fork', href: 'https://github.com/jmpz2026/CustomNPC-DBC-Addon' }
+    ]
+  },
+  {
+    title: 'JinGames · Dragon Block C',
+    text:
+      'Gracias a Benjámin Nagy (Ben), de JinGames, autores de Dragon Block C, JRMCore, JBRA Client, ' +
+      'Family C y Years C, por permitirnos crear y usar addons que extienden sus mods. Concedido el ' +
+      '06/10/2026. Sus mods se usan sin modificar.',
+    links: [{ label: 'JinGames', href: 'https://main.jingames.net' }]
+  }
+]
+
+function CreditsPanel(): JSX.Element {
+  return (
+    <div className="mc-panel space-y-4 p-5">
+      <span className="text-sm font-semibold uppercase tracking-wider">Créditos y permisos</span>
+      {CREDITS.map((c) => (
+        <div key={c.title} className="space-y-1.5">
+          <span className="mc-text-sm block text-sm font-bold text-gold">{c.title}</span>
+          <p className="text-xs leading-relaxed text-muted">{c.text}</p>
+          <div className="flex flex-wrap gap-2">
+            {c.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noreferrer"
+                className="mc-btn px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+      <p className="text-xs leading-relaxed text-muted">
+        Dragon Block Resurrection es un proyecto independiente: no está afiliado a JinGames ni a
+        KAMKEEL.
+      </p>
     </div>
   )
 }
