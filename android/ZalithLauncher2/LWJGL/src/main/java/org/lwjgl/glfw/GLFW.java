@@ -1010,13 +1010,19 @@ public class GLFW
         mGLFWInitialTime = System.nanoTime() - (long) time;
     }
 
+    // DBR: monotonic. lwjglx's Sys.getTime() (Minecraft.getSystemTime() in 1.7.10) reads this with a fixed
+    // resolution of 1000, so it has to be milliseconds. System.currentTimeMillis() jumps whenever Android adjusts
+    // the wall clock, and the timers built on it (Minecraft's tick timer, GUI animations) then stall or explode.
+    // Same epoch origin as before, steps from System.nanoTime().
+    private static final long TIMER_EPOCH_MILLIS = System.currentTimeMillis();
+    private static final long TIMER_EPOCH_NANOS = System.nanoTime();
+
     public static long glfwGetTimerValue() {
-        return System.currentTimeMillis();
+        return TIMER_EPOCH_MILLIS + (System.nanoTime() - TIMER_EPOCH_NANOS) / 1_000_000L;
     }
 
     public static long glfwGetTimerFrequency() {
-        // FIXME set correct value!!
-        return 60;
+        return 1000;
     }
 
     // GLFW Window functions

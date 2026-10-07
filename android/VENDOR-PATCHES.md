@@ -59,3 +59,14 @@ ZalithLauncher no trae LTW.
 - `game/renderer/renderers/LTWRenderer.kt` (`opengles3_ltw`, librería y EGL `libltw.so`),
   registrado en `Renderers.init`.
 - `GameLauncher.setRendererEnv`: LTW queda fuera de las variables de Mesa/Zink, igual que GL4ES.
+
+## 5) Reloj monótono para LWJGL 2 (2026-10-07)
+**Motivo:** `Sys.getTime()` de lwjglx (lo que usa `Minecraft.getSystemTime()` en 1.7.10) lee
+`GLFW.glfwGetTimerValue()`, que devolvía `System.currentTimeMillis()`: la hora del sistema, que
+Android ajusta a saltos. Con un salto, el timer de ticks de Minecraft se frenaba y las animaciones
+de GUI se disparaban (la rueda de formas de npcdbc quedaba trabada como una capa negra).
+
+- `LWJGL/src/main/java/org/lwjgl/glfw/GLFW.java`: `glfwGetTimerValue()` devuelve milisegundos
+  monótonos (origen en la hora del sistema al cargar la clase, avance con `System.nanoTime()`);
+  `glfwGetTimerFrequency()` devuelve 1000 (antes 60, marcado como FIXME en upstream).
+- Recompilado `assets/components/lwjgl3/lwjgl-glfw-classes.jar` (`./gradlew LWJGL:jar`, JDK 17+).
