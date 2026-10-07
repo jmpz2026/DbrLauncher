@@ -216,6 +216,7 @@ class LaunchArgs(
             Logger.info(TAG, msg)
             argsList.add("-javaagent:${File(lwjgl2Dir, "dbr-lwjgl2-bridge.jar").absolutePath}")
             argsList.add("-Dorg.lwjgl.librarypath=${PathManager.DIR_NATIVE_LIB}")
+            argsList.add("-Dorg.lwjgl.util.Debug=true")
         }
 
         val configFilePath = version.getVersionPath().child("log4j2.xml")

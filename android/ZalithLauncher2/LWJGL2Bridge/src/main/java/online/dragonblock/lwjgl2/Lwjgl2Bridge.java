@@ -10,6 +10,17 @@ public final class Lwjgl2Bridge {
     public static void premain(String args) {
         System.loadLibrary("pojavexec");
         System.loadLibrary("glfw");
+        // Load LWJGL 2's native here too: if it fails, org.lwjgl.Sys silently falls back to "lwjgl", which on Android
+        // is LWJGL 3's core library, and the real reason is lost.
+        final String dir = System.getProperty("org.lwjgl.librarypath");
+        final String path = dir + "/liblwjgl64.so";
+        try {
+            System.load(path);
+            System.out.println("DBR-GLFW: loaded " + path);
+        } catch (Throwable t) {
+            System.out.println("DBR-GLFW: could not load " + path + ": " + t);
+            t.printStackTrace(System.out);
+        }
         System.out.println("DBR-GLFW: LWJGL 2 bridge loaded");
     }
 
