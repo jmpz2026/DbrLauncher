@@ -157,6 +157,24 @@ class LaunchArgs(
             ?.joinToString(":") { it.absolutePath }
             ?: ""
 
+    /**
+     * DBR: versions built on LWJGL 2 (1.7.10) run on native LWJGL 2.9.4 (MojoLauncher/lwjgl2-glfw) instead of
+     * LWJGL 3 + lwjglx, the same LWJGL 2 code path as on the PC. Its liblwjgl64.so links against libglfw.so, which
+     * implements GLFW over the pojavexec bridges (jni/glfw_shim).
+     */
+    private val usesLwjgl2: Boolean = gameManifest.libraries?.any { library ->
+        library.name?.startsWith("org.lwjgl.lwjgl:lwjgl:2.") == true
+    } == true
+
+    private val lwjgl2Dir: File get() = File(PathManager.DIR_COMPONENTS, "lwjgl2")
+
+    private fun getLWJGL2ClassPath(): String =
+        listOf("lwjgl.jar", "lwjgl_util.jar")
+            .map { File(lwjgl2Dir, it) }
+            .joinToString(":") { it.absolutePath }
+
+    private fun getLWJGLClassPath(): String = if (usesLwjgl2) getLWJGL2ClassPath() else getLWJGL3ClassPath()
+
     private fun getJavaArgs(): List<String> {
         val argsList: MutableList<String> = ArrayList()
 
@@ -192,6 +210,14 @@ class LaunchArgs(
 
         argsList.addAll(getCacioJavaArgs(runtime.javaVersion == 8))
 
+        if (usesLwjgl2) {
+            val msg = "Using native LWJGL 2.9.4 (lwjgl2-glfw)"
+            LoggerBridge.append(msg)
+            Logger.info(TAG, msg)
+            argsList.add("-javaagent:${File(lwjgl2Dir, "dbr-lwjgl2-bridge.jar").absolutePath}")
+            argsList.add("-Dorg.lwjgl.librarypath=${PathManager.DIR_NATIVE_LIB}")
+        }
+
         val configFilePath = version.getVersionPath().child("log4j2.xml")
         if (!configFilePath.exists()) {
             val is7 = (version.getVersionInfo()?.minecraftVersion ?: "0.0").isLowerTo("1.12")
@@ -223,7 +249,7 @@ class LaunchArgs(
 //        }
 
         val varArgMap: MutableMap<String, String> = android.util.ArrayMap()
-        val launchClassPath = "${getLWJGL3ClassPath()}:${generateLaunchClassPath(gameManifest)}"
+        val launchClassPath = "${getLWJGLClassPath()}:${generateLaunchClassPath(gameManifest)}"
         var hasClasspath = false //是否已经在jvm参数中包含 ${classpath} 配置
 
         varArgMap["classpath_separator"] = ":"

@@ -36,8 +36,13 @@ jobs:
             TAG="${GITHUB_REF_NAME}"
             N="${TAG#android-v}"
           fi
+          # Tags de prueba "android-vN-rcM": se publica el APK pero no se toca version.json, asi que los
+          # celulares no se actualizan solos; se instala a mano desde la release para probar.
+          RC=false
+          case "$N" in *-rc*) RC=true; N="${N%%-rc*}";; esac
           echo "n=${N}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "rc=${RC}" >> "$GITHUB_OUTPUT"
           echo "vcode=$((200033 + N))" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 17
@@ -89,6 +94,7 @@ jobs:
       # entiende los archivos de siembra (`once`) del manifest y pisaria la configuracion
       # grafica del jugador en cada Jugar.
       - name: Actualizar version.json (auto-updater)
+        if: steps.ver.outputs.rc != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

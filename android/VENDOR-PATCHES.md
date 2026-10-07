@@ -97,3 +97,23 @@ juego móvil. ZL2 solo pintaba texto.
 - `LayerController/.../layout/Buttons.kt` (`TextButton`): si el botón tiene icono, lo pinta encima
   del texto, con el color del contenido y a escala del botón.
 - Layout: `android/tools/dbr-layout.py` escribe `assets/default_layout.json`.
+
+## 7) LWJGL 2.9.4 nativo para 1.7.10 (2026-10-07)
+**Motivo:** con LWJGL 3 + lwjglx (capa que imita LWJGL 2) aparecieron muchos fallos propios de la capa
+(buffers empaquetados, ventana destruida que queda "creada", servicios de Celeritas en bucle). 1.7.10 y sus
+mods estan escritos para LWJGL 2; ahora corren sobre LWJGL 2.9.4 real, el mismo camino que en PC.
+
+- `assets/components/lwjgl2/`: `lwjgl.jar` y `lwjgl_util.jar` de MojoLauncher/lwjgl2-glfw (release vv8m,
+  licencia BSD en `LICENSE-lwjgl2.txt`), y `dbr-lwjgl2-bridge.jar` (modulo `LWJGL2Bridge`, se genera con
+  `./gradlew LWJGL2Bridge:jar`): `-javaagent` que carga `pojavexec` y `glfw` en la JVM del juego y trae la clase
+  `org.lwjgl.glfw.GLFW` minima que pide el `JNI_OnLoad` de pojavexec. Componente nuevo `Components.LWJGL2`.
+- `jniLibs/{arm64-v8a,x86_64}/liblwjgl64.so`: nativos de lwjgl2-glfw vv8m. Los de 32 bits (`liblwjgl.so`) no se
+  incluyen: chocan de nombre con el nativo de LWJGL 3.
+- `jni/glfw_shim/glfw_shim.c` -> `libglfw.so` (modulo `glfw` en `Android.mk`): las 38 funciones GLFW que importa
+  `liblwjgl64.so`, sobre el puente EGL y la cola de input de pojavexec. Fuerza la cola de eventos (los callbacks
+  de lwjgl2-glfw usan el JNIEnv del hilo del juego), cursor virtual con offset para el modo captura, y entrega
+  tamano/foco/visibilidad iniciales en el primer poll.
+- `LaunchArgs.kt`: si el manifest trae `org.lwjgl.lwjgl:lwjgl:2.*`, el classpath usa `components/lwjgl2` en vez
+  de `components/lwjgl3`, y se anaden `-javaagent:.../dbr-lwjgl2-bridge.jar` y `-Dorg.lwjgl.librarypath`.
+- Compilar en Windows: ndk-build no acepta rutas con espacios; copiar `ZalithLauncher2` a una ruta sin espacios.
+- CI: los tags `android-vN-rcM` publican el APK como prerelease sin tocar `version.json` (para probar a mano).

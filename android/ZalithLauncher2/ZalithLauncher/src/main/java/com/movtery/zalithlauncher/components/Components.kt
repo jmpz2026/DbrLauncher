@@ -25,5 +25,7 @@ enum class Components(val component: String, val displayName: String, val summar
     CACIOCAVALLO("caciocavallo", "caciocavallo", R.string.unpack_screen_cacio),
     CACIOCAVALLO17("caciocavallo17", "caciocavallo 17", R.string.unpack_screen_cacio),
     LWJGL3("lwjgl3", "LWJGL 3.3.6", R.string.unpack_screen_lwjgl),
+    // DBR: native LWJGL 2.9.4 (lwjgl2-glfw) for 1.7.10, plus the -javaagent bridge jar. See LaunchArgs.
+    LWJGL2("lwjgl2", "LWJGL 2.9.4", R.string.unpack_screen_lwjgl),
     LAUNCHER("launcher", "Launcher Components", R.string.unpack_screen_launcher)
 }

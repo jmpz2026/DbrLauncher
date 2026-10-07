@@ -43,6 +43,16 @@ endif
 include $(BUILD_SHARED_LIBRARY)
 
 
+# DBR: libglfw.so for native LWJGL 2.9.4 (lwjgl2-glfw). Implements the GLFW functions liblwjgl64.so imports
+# over the pojavexec bridges. See glfw_shim/glfw_shim.c.
+include $(CLEAR_VARS)
+LOCAL_MODULE := glfw
+LOCAL_SHARED_LIBRARIES := pojavexec
+LOCAL_LDLIBS := -ldl -llog
+LOCAL_C_INCLUDES := $(HERE_PATH)
+LOCAL_SRC_FILES := glfw_shim/glfw_shim.c
+include $(BUILD_SHARED_LIBRARY)
+
 include $(CLEAR_VARS)
 LOCAL_LDLIBS := -ldl -llog
 LOCAL_MODULE := vulkan_check
