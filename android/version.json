@@ -1,7 +1,7 @@
 {
-  "build": 19,
-  "versionName": "DbrLauncher Mobile android-v19",
-  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v19/DbrLauncherMobile-arm64.apk",
+  "build": 20,
+  "versionName": "DbrLauncher Mobile android-v20",
+  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v20/DbrLauncherMobile-arm64.apk",
   "mandatory": true,
-  "changelog": "Build 19"
+  "changelog": "Build 20"
 }
