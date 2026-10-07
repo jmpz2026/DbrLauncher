@@ -98,19 +98,30 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     onProgress({ phase: 'download', file: f.path, done: ++done, total })
   })
 
-  // 4) Borrar obsoletos.
+  // 4) Borrar obsoletos. Si uno no se puede borrar (en Windows, un jar abierto por un juego
+  // que sigue corriendo) se queda en el índice para reintentarlo en la próxima sync. Antes el
+  // fallo se tragaba y el archivo salía del índice: quedaba huérfano para siempre, y un mod
+  // viejo junto al nuevo (o sin sus dependencias, tras cambiar de variante) tumba el arranque.
+  const pending: string[] = []
   for (const p of toDelete) {
     onProgress({ phase: 'delete', file: p, done, total })
+    const dest = safeJoin(gameDir, p)
     try {
-      rmSync(safeJoin(gameDir, p))
+      rmSync(dest)
     } catch {
-      /* si ya no existe, no pasa nada */
+      if (existsSync(dest)) pending.push(p)
     }
     done++
   }
 
-  saveManaged(managedFile, managedPaths)
+  saveManaged(managedFile, [...managedPaths, ...pending])
   flushHashCache()
+  if (pending.length) {
+    // Lanzar con el mod viejo todavía en la carpeta rompe el arranque: mejor parar aquí.
+    throw new Error(
+      `No se pudo borrar ${pending.join(', ')}. Cierra Minecraft si sigue abierto y vuelve a intentarlo.`
+    )
+  }
   onProgress({ phase: 'done', file: '', done: total, total })
   return { updated: toDownload.length, removed: toDelete.length, version: manifest.version }
 }
