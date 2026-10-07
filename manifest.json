@@ -554,8 +554,8 @@
     },
     {
       "path": "options.txt",
-      "sha1": "db0316f6a715619e30a170e248bec1de58722f9e",
-      "size": 2567,
+      "sha1": "85085e3827e1e369b4db9862daaac92636d415a6",
+      "size": 2447,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/options.txt"
     },
