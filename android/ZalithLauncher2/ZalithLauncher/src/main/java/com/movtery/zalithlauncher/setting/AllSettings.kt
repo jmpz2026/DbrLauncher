@@ -103,7 +103,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 分辨率
      */
-    val resolutionRatio = intSetting("resolutionRatio", 75, 25..300) //DBR: 75% por defecto (rendimiento en móvil)
+    val resolutionRatio = intSetting("resolutionRatio", 50, 25..300) //DBR: 50% por defecto (rendimiento en móvil)
 
     /**
      * 游戏页面全屏化
