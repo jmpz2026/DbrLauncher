@@ -26,7 +26,8 @@ object ButtonIcons {
         "my_location" to R.drawable.ctl_icon_my_location,
         "speed" to R.drawable.ctl_icon_speed,
         "swords" to R.drawable.ctl_icon_swords,
-        "touch_app" to R.drawable.ctl_icon_touch_app
+        "touch_app" to R.drawable.ctl_icon_touch_app,
+        "undo" to R.drawable.ctl_icon_undo
     )
 
     val ids: Set<String> get() = icons.keys

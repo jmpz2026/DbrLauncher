@@ -95,11 +95,12 @@ juego = [
     # Columna izquierda, bajo el HUD de JRMCore.
     button('juego', 'Chat', 62, 166, 92, 40, [key('T')], MENU, icon='chat'),
     button('juego', 'Inventario', 62, 212, 92, 40, [key('E')], MENU, icon='backpack'),
-    # Fila superior derecha. Son de mantener: transformar (G) y la rueda de formas (Y) actuan
-    # mientras se mantienen, y en Acciones (X) se elige la opcion soltando.
+    # Fila superior derecha. La rueda de formas (Y) actua mientras se mantiene; transformar (G) y
+    # Acciones (X) quedan pulsados hasta volver a tocarlos, como Agacharse. Destransformar (H) es un toque.
+    button('juego', 'Destransformar', 518, 30, 96, 48, [key('H')], icon='undo'),
     button('juego', 'Rueda formas', 612, 30, 84, 48, [key('Y')], icon='donut_large'),
-    button('juego', 'Transformar', 702, 30, 80, 48, [key('G')], icon='auto_awesome'),
-    button('juego', 'Acciones', 778, 30, 64, 48, [key('X')], icon='list'),
+    button('juego', 'Transformar', 702, 30, 80, 48, [key('G')], toggle=True, icon='auto_awesome'),
+    button('juego', 'Acciones', 778, 30, 64, 48, [key('X')], toggle=True, icon='list'),
     # Pulgar izquierdo, al lado del joystick.
     button('juego', 'Cargar Ki', 290, 290, 58, 58, [key('C')], icon='flare'),
     # Pulgar derecho.

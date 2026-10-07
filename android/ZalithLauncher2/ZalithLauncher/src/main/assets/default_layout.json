@@ -203,6 +203,39 @@
         },
         {
           "text": {
+            "default": "Destransformar",
+            "matchQueue": []
+          },
+          "uuid": "93ac9c68e314",
+          "position": {
+            "x": 6049,
+            "y": 174
+          },
+          "buttonSize": {
+            "type": "percentage",
+            "widthDp": 96,
+            "heightDp": 48,
+            "widthPercentage": 2443,
+            "heightPercentage": 1221,
+            "widthReference": "screen_height",
+            "heightReference": "screen_height"
+          },
+          "buttonStyle": "ff6681bef038",
+          "textAlignment": "Center",
+          "visibilityType": "in_game",
+          "clickEvents": [
+            {
+              "type": "key",
+              "key": "GLFW_KEY_H"
+            }
+          ],
+          "isSwipple": false,
+          "isPenetrable": false,
+          "isToggleable": false,
+          "icon": "undo"
+        },
+        {
+          "text": {
             "default": "Rueda formas",
             "matchQueue": []
           },
@@ -264,7 +297,7 @@
           ],
           "isSwipple": false,
           "isPenetrable": false,
-          "isToggleable": false,
+          "isToggleable": true,
           "icon": "auto_awesome"
         },
         {
@@ -297,7 +330,7 @@
           ],
           "isSwipple": false,
           "isPenetrable": false,
-          "isToggleable": false,
+          "isToggleable": true,
           "icon": "list"
         },
         {
