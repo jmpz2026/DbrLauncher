@@ -54,6 +54,7 @@ import com.movtery.layer_controller.layout.TextButton
 import com.movtery.layer_controller.observable.ObservableButtonStyle
 import com.movtery.layer_controller.observable.ObservableControlLayer
 import com.movtery.layer_controller.observable.ObservableControlLayout
+import com.movtery.layer_controller.observable.ObservableNormalData
 import com.movtery.layer_controller.observable.ObservableWidget
 import com.movtery.layer_controller.observable.TouchProcessor
 import com.movtery.layer_controller.observable.TouchSession
@@ -274,7 +275,7 @@ private fun ControlsRendererLayer(
                         allStyles = styles,
                         screenSize = screenSize,
                         isDark = isDark,
-                        visible = layerVisibility && checkVisibility(isCursorGrabbing, data.visibilityType),
+                        visible = layerVisibility && checkButtonVisibility(isCursorGrabbing, data),
                         getOtherWidgets = { emptyList() }, //不需要计算吸附
                         snapThresholdValue = 4.dp,
                         eventHandler = eventHandler,
@@ -350,11 +351,22 @@ private fun collectVisibleWidgets(
             layer.normalButtons.value.reversed()
         }
         .filter { widget ->
-            widget.canTouch() && checkVisibility(
-                isCursorGrabbing = isCursorGrabbing,
-                visibilityType = widget.onCheckVisibilityType()
-            )
+            widget.canTouch() && checkButtonVisibility(isCursorGrabbing, widget)
         }
+}
+
+/**
+ * DBR: un botón que se mantiene pulsado sigue visible hasta que se suelta el dedo, aunque cambie
+ * el modo del cursor. Si no, al abrir una pantalla mientras se mantiene (la rueda de formas de DBC
+ * con Y) el botón sale de la composición, [ObservableNormalData.onCompositionDispose] suelta la
+ * tecla y la pantalla se cierra al instante. Los conmutables no cuentan: se quedan pulsados sin dedo.
+ */
+private fun checkButtonVisibility(
+    isCursorGrabbing: Boolean,
+    widget: ObservableWidget
+): Boolean {
+    if (widget is ObservableNormalData && widget.isPressed && !widget.isToggleable) return true
+    return checkVisibility(isCursorGrabbing, widget.onCheckVisibilityType())
 }
 
 private fun checkLayerVisibility(

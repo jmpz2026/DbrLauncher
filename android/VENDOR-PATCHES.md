@@ -117,3 +117,12 @@ mods estan escritos para LWJGL 2; ahora corren sobre LWJGL 2.9.4 real, el mismo 
   de `components/lwjgl3`, y se anaden `-javaagent:.../dbr-lwjgl2-bridge.jar` y `-Dorg.lwjgl.librarypath`.
 - Compilar en Windows: ndk-build no acepta rutas con espacios; copiar `ZalithLauncher2` a una ruta sin espacios.
 - CI: los tags `android-vN-rcM` publican el APK como prerelease sin tocar `version.json` (para probar a mano).
+
+## 8) Un botón mantenido no se esconde al cambiar el cursor (2026-10-07)
+**Motivo:** la rueda de formas de DBC (Y) se abre mientras se mantiene la tecla y es una pantalla:
+al abrirse el cursor se libera y los botones `in_game` se esconden. El botón salía de la composición,
+`ObservableNormalData.onCompositionDispose` soltaba la tecla y la rueda se cerraba al instante.
+
+- `LayerController/.../Layout.kt` (`checkButtonVisibility`): un botón pulsado y no conmutable sigue
+  visible y tocable hasta que se suelta el dedo; después se esconde según su `visibilityType`.
+  Los conmutables (Transformar, Agacharse...) no cambian: siguen soltándose al abrir un menú.
