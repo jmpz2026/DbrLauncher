@@ -48,6 +48,9 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_game_log_title">Log del juego</string>
     <string name="dbr_game_log_summary">Ver, compartir o subir el log del último arranque de Minecraft.</string>
     <string name="dbr_game_log_missing">Todavía no hay log del juego</string>
+    <string name="dbr_crash_log_title">Último crash</string>
+    <string name="dbr_crash_log_summary">Ver, compartir o subir el último reporte de crash de Minecraft (crash-reports).</string>
+    <string name="dbr_crash_log_missing">Todavía no hay reportes de crash</string>
     <string name="dbr_login_button">Iniciar sesión</string>
     <string name="dbr_login_not_available">Inicio de sesión no disponible por ahora</string>
     <string name="unofficial_modified_version">Unofficial Modified Version</string>

@@ -12,6 +12,7 @@
  * - The Android side sends an accumulated absolute cursor position. In grab mode LWJGL 2 resets the cursor to (0, 0)
  *   every poll and reads deltas, so the cursor seen by LWJGL 2 is the Android one minus an offset.
  * - pojavexec's runtime JNI_OnLoad needs the stub class org.lwjgl.glfw.GLFW (bridge jar, loaded as -javaagent).
+ * - Everything is logged with the "DBR-GLFW:" prefix to stdout, which pojavexec copies into latest_game.log.
  */
 
 #include <dlfcn.h>
@@ -21,17 +22,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "environ/environ.h"
 
 #define API __attribute__((visibility("default")))
 
+/* Flushed so the last line before a native crash is not lost. */
+#define DBG(...) do { printf("DBR-GLFW: " __VA_ARGS__); printf("\n"); fflush(stdout); } while (0)
+
 #define GLFW_TRUE 1
 #define GLFW_FALSE 0
 #define GLFW_FOCUSED 0x00020001
 #define GLFW_ICONIFIED 0x00020002
-#define GLFW_RESIZABLE 0x00020003
 #define GLFW_VISIBLE 0x00020004
 #define GLFW_HOVERED 0x0002000B
 #define GLFW_CLIENT_API 0x00022001
@@ -74,6 +79,7 @@ extern void* (*eglGetProcAddress_p)(const char* procname);
 static JavaVM* g_vm;
 static char* g_gl_libname;
 static void* g_gl_handle;
+static bool g_gl_handle_tried;
 static bool g_initialized;
 static __thread void* g_current;
 static int g_monitor;
@@ -83,6 +89,8 @@ static bool g_grabbed;
 static bool g_initial_events_sent;
 static bool g_pumping;
 static struct timespec g_start;
+static unsigned long g_polls, g_swaps, g_proc_lookups, g_proc_misses;
+static double g_last_report;
 
 static GLFWwindowposfun g_cb_pos;
 static GLFWwindowclosefun g_cb_close;
@@ -94,14 +102,15 @@ static atomic_int g_pending_focus = -1;
 static atomic_int g_pending_iconify = -1;
 static atomic_bool g_pending_size = false;
 
-static void shim_log(const char* message) {
-    printf("DBR-GLFW: %s\n", message);
+static long thread_id(void) {
+    return (long) syscall(SYS_gettid);
 }
 
 /* Native of the stub org.lwjgl.glfw.GLFW.glfwSetWindowAttrib(), called by pojavexec on lifecycle changes. */
 static void JNICALL nDbrWindowAttrib(JNIEnv* env, jclass clazz, jint attrib, jint value) {
     (void) env;
     (void) clazz;
+    DBG("Android lifecycle: %s = %d", attrib == GLFW_FOCUSED ? "focused" : attrib == GLFW_ICONIFIED ? "iconified" : "other attrib", value);
     if (attrib == GLFW_FOCUSED) atomic_store(&g_pending_focus, value);
     else if (attrib == GLFW_ICONIFIED) atomic_store(&g_pending_iconify, value);
 }
@@ -109,13 +118,20 @@ static void JNICALL nDbrWindowAttrib(JNIEnv* env, jclass clazz, jint attrib, jin
 API jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     (void) reserved;
     g_vm = vm;
+    DBG("JNI_OnLoad (game JVM) on thread %ld", thread_id());
     JNIEnv* env = NULL;
-    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION_1_4) != JNI_OK || env == NULL) return JNI_VERSION_1_4;
+    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION_1_4) != JNI_OK || env == NULL) {
+        DBG("WARNING: no JNIEnv in JNI_OnLoad");
+        return JNI_VERSION_1_4;
+    }
 
     jclass glfw = (*env)->FindClass(env, "org/lwjgl/glfw/GLFW");
     if (glfw != NULL) {
         JNINativeMethod methods[] = {{"nDbrWindowAttrib", "(II)V", (void*) nDbrWindowAttrib}};
-        if ((*env)->RegisterNatives(env, glfw, methods, 1) != 0) shim_log("could not register the window attrib native");
+        if ((*env)->RegisterNatives(env, glfw, methods, 1) != 0) DBG("WARNING: could not register the window attrib native");
+        else DBG("window attrib native registered on org.lwjgl.glfw.GLFW");
+    } else {
+        DBG("WARNING: stub class org.lwjgl.glfw.GLFW not found; Android focus changes will not reach LWJGL 2");
     }
     if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
 
@@ -131,6 +147,10 @@ API jint JNI_OnLoad(JavaVM* vm, void* reserved) {
         }
     }
     if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
+    DBG("GL library (org.lwjgl.opengl.libname): %s", g_gl_libname ? g_gl_libname : "(not set)");
+    DBG("pojavexec state: runtime JVM %s, input stack queue %d, Android surface %p",
+        pojav_environ->runtimeJavaVMPtr ? "registered" : "NOT registered", pojav_environ->isUseStackQueueCall,
+        (void*) pojav_environ->pojavWindow);
     return JNI_VERSION_1_4;
 }
 
@@ -144,13 +164,23 @@ static void update_video_mode(void) {
 }
 
 static void set_grabbing(bool grab) {
+    DBG("mouse %s", grab ? "grabbed (camera mode)" : "released (menu mode)");
     pojav_environ->isGrabbing = grab;
     JavaVM* dvm = pojav_environ->dalvikJavaVMPtr;
-    if (dvm == NULL || pojav_environ->bridgeClazz == NULL || pojav_environ->method_onGrabStateChanged == NULL) return;
+    if (dvm == NULL || pojav_environ->bridgeClazz == NULL || pojav_environ->method_onGrabStateChanged == NULL) {
+        DBG("WARNING: cannot tell the Android UI about the grab state");
+        return;
+    }
     JNIEnv* dalvikEnv = NULL;
-    if ((*dvm)->AttachCurrentThread(dvm, &dalvikEnv, NULL) != JNI_OK || dalvikEnv == NULL) return;
+    if ((*dvm)->AttachCurrentThread(dvm, &dalvikEnv, NULL) != JNI_OK || dalvikEnv == NULL) {
+        DBG("WARNING: could not attach to the Android VM for the grab state");
+        return;
+    }
     (*dalvikEnv)->CallStaticVoidMethod(dalvikEnv, pojav_environ->bridgeClazz, pojav_environ->method_onGrabStateChanged, (jboolean) grab);
-    if ((*dalvikEnv)->ExceptionCheck(dalvikEnv)) (*dalvikEnv)->ExceptionClear(dalvikEnv);
+    if ((*dalvikEnv)->ExceptionCheck(dalvikEnv)) {
+        DBG("WARNING: onGrabStateChanged threw");
+        (*dalvikEnv)->ExceptionClear(dalvikEnv);
+    }
     (*dvm)->DetachCurrentThread(dvm);
 }
 
@@ -159,11 +189,17 @@ static void set_grabbing(bool grab) {
 API int glfwInit(void) {
     if (g_initialized) return GLFW_TRUE;
     clock_gettime(CLOCK_MONOTONIC, &g_start);
+    const char* renderer = getenv("POJAV_RENDERER");
+    DBG("glfwInit on thread %ld, POJAV_RENDERER=%s, Android surface %p", thread_id(), renderer ? renderer : "(unset)",
+        (void*) pojav_environ->pojavWindow);
+    if (pojav_environ->pojavWindow == NULL) DBG("WARNING: no Android surface yet (pojavWindow is NULL)");
     pojavInit();
     pojav_environ->isUseStackQueueCall = true;
     update_video_mode();
     g_initialized = true;
-    shim_log("initialized (LWJGL 2 over the pojavexec bridge)");
+    DBG("initialized: surface %dx%d, renderer config %d, input stack queue forced on, eglGetProcAddress %s",
+        pojav_environ->savedWidth, pojav_environ->savedHeight, pojav_environ->config_renderer,
+        eglGetProcAddress_p ? "available" : "NOT available");
     return GLFW_TRUE;
 }
 
@@ -193,6 +229,7 @@ API void* glfwGetPrimaryMonitor(void) {
 API const GLFWvidmode* glfwGetVideoMode(void* monitor) {
     (void) monitor;
     update_video_mode();
+    DBG("glfwGetVideoMode -> %dx%d", g_mode.width, g_mode.height);
     return &g_mode;
 }
 
@@ -215,22 +252,23 @@ API void glfwWindowHint(int hint, int value) {
 }
 
 API void* glfwCreateWindow(int width, int height, const char* title, void* monitor, void* share) {
-    (void) width;
-    (void) height;
-    (void) title;
     (void) monitor;
     pojavSetWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     void* window = pojavCreateContext(share);
-    if (window == NULL) shim_log("pojavCreateContext returned NULL");
+    DBG("glfwCreateWindow(%dx%d, \"%s\", share=%p) -> context %p on thread %ld", width, height, title ? title : "",
+        share, window, thread_id());
+    if (window == NULL) DBG("ERROR: pojavCreateContext returned NULL");
     return window;
 }
 
 API void glfwDestroyWindow(void* window) {
+    DBG("glfwDestroyWindow(%p)%s", window, (void*) pojav_environ->showingWindow == window ? " (the visible window)" : "");
     if (g_current == window) g_current = NULL;
     if ((void*) pojav_environ->showingWindow == window) pojav_environ->showingWindow = 0;
 }
 
 API void glfwMakeContextCurrent(void* window) {
+    if (g_current != window) DBG("glfwMakeContextCurrent(%p) on thread %ld", window, thread_id());
     pojavMakeCurrent(window);
     g_current = window;
 }
@@ -241,36 +279,46 @@ API void* glfwGetCurrentContext(void) {
 
 API void glfwSwapBuffers(void* window) {
     (void) window;
+    if (g_swaps++ == 0) DBG("first glfwSwapBuffers on thread %ld", thread_id());
     pojavSwapBuffers();
 }
 
 API void glfwSwapInterval(int interval) {
+    DBG("glfwSwapInterval(%d)", interval);
     pojavSwapInterval(interval);
 }
 
 API GLFWglproc glfwGetProcAddress(const char* name) {
-    if (g_gl_handle == NULL && g_gl_libname != NULL) {
-        g_gl_handle = dlopen(g_gl_libname, RTLD_NOW | RTLD_NOLOAD);
-        if (g_gl_handle == NULL) g_gl_handle = dlopen(g_gl_libname, RTLD_NOW);
+    if (!g_gl_handle_tried) {
+        g_gl_handle_tried = true;
+        if (g_gl_libname != NULL) {
+            g_gl_handle = dlopen(g_gl_libname, RTLD_NOW | RTLD_NOLOAD);
+            if (g_gl_handle == NULL) g_gl_handle = dlopen(g_gl_libname, RTLD_NOW);
+        }
+        DBG("GL library handle for %s: %p%s", g_gl_libname ? g_gl_libname : "(none)", g_gl_handle,
+            g_gl_handle ? "" : " (falling back to eglGetProcAddress and the global namespace)");
     }
     void* symbol = g_gl_handle ? dlsym(g_gl_handle, name) : NULL;
     if (symbol == NULL && eglGetProcAddress_p != NULL) symbol = eglGetProcAddress_p(name);
     if (symbol == NULL) symbol = dlsym(RTLD_DEFAULT, name);
+    g_proc_lookups++;
+    if (symbol == NULL && ++g_proc_misses <= 40) DBG("GL function not found: %s", name);
     return (GLFWglproc) symbol;
 }
 
 API void glfwShowWindow(void* window) {
+    DBG("glfwShowWindow(%p): this is the visible window", window);
     pojav_environ->showingWindow = (long) window;
     g_initial_events_sent = false;
 }
 
 API void glfwHideWindow(void* window) {
-    (void) window;
+    DBG("glfwHideWindow(%p)", window);
 }
 
 API void glfwSetWindowTitle(void* window, const char* title) {
     (void) window;
-    (void) title;
+    DBG("window title: %s", title ? title : "");
 }
 
 API void glfwSetWindowShouldClose(void* window, int value) {
@@ -301,13 +349,11 @@ API void glfwSetWindowAttrib(void* window, int attrib, int value) {
 
 API void glfwSetWindowMonitor(void* window, void* monitor, int x, int y, int width, int height, int refreshRate) {
     (void) window;
-    (void) monitor;
     (void) x;
     (void) y;
-    (void) width;
-    (void) height;
     (void) refreshRate;
-    /* The window is always the whole surface: report its real size again. */
+    DBG("glfwSetWindowMonitor(%s, %dx%d): ignored, the window is always the whole surface", monitor ? "fullscreen" : "windowed",
+        width, height);
     atomic_store(&g_pending_size, true);
 }
 
@@ -339,6 +385,7 @@ API void glfwSetCursorPos(void* window, double xpos, double ypos) {
 API TYPE glfwSet##NAME##Callback(void* window, TYPE callback) { \
     (void) window; \
     TYPE previous = (TYPE) pojav_environ->GLFW_invoke_##NAME; \
+    if ((void*) previous != (void*) callback) DBG("%s callback %s", #NAME, callback ? "set" : "cleared"); \
     pojav_environ->GLFW_invoke_##NAME = (GLFW_invoke_##NAME##_func*) callback; \
     return previous; \
 }
@@ -357,6 +404,7 @@ SET_BRIDGE_CALLBACK(WindowSize, GLFWwindowsizefun)
 API TYPE glfwSet##NAME##Callback(void* window, TYPE callback) { \
     (void) window; \
     TYPE previous = FIELD; \
+    if ((void*) previous != (void*) callback) DBG("%s callback %s", #NAME, callback ? "set" : "cleared"); \
     FIELD = callback; \
     return previous; \
 }
@@ -377,6 +425,7 @@ static void send_window_size(void* window) {
 API void glfwPollEvents(void) {
     void* window = (void*) pojav_environ->showingWindow;
     if (window == NULL) return;
+    if (g_polls++ == 0) DBG("first glfwPollEvents on thread %ld", thread_id());
     if (!pojav_environ->isInputReady) pojav_environ->isInputReady = true;
     /* UI elements may redraw (and poll) while an event is being handled; never pump re-entrantly. */
     if (g_pumping) return;
@@ -384,20 +433,35 @@ API void glfwPollEvents(void) {
 
     if (!g_initial_events_sent && pojav_environ->GLFW_invoke_WindowSize != NULL) {
         g_initial_events_sent = true;
+        update_video_mode();
+        DBG("initial events: size %dx%d, focused, visible, cursor inside", g_mode.width, g_mode.height);
         send_window_size(window);
         if (g_cb_focus) g_cb_focus(window, GLFW_TRUE);
         if (g_cb_iconify) g_cb_iconify(window, GLFW_FALSE);
         GLFWcursorenterfun enter = (GLFWcursorenterfun) pojav_environ->GLFW_invoke_CursorEnter;
         if (enter) enter(window, GLFW_TRUE);
     }
-    if (atomic_exchange(&g_pending_size, false)) send_window_size(window);
+    if (atomic_exchange(&g_pending_size, false)) {
+        update_video_mode();
+        DBG("re-sending window size %dx%d", g_mode.width, g_mode.height);
+        send_window_size(window);
+    }
     int focus = atomic_exchange(&g_pending_focus, -1);
     if (focus != -1 && g_cb_focus) g_cb_focus(window, focus);
     int iconify = atomic_exchange(&g_pending_iconify, -1);
     if (iconify != -1 && g_cb_iconify) g_cb_iconify(window, iconify);
 
+    size_t queued = atomic_load(&pojav_environ->eventCounter);
     pojavStartPumping();
     pojavPumpEvents(window);
     pojavStopPumping();
     g_pumping = false;
+
+    double now = glfwGetTime();
+    if (now - g_last_report >= 30.0) {
+        g_last_report = now;
+        DBG("status: %lu polls, %lu swaps, %zu events queued, size %dx%d, grabbed=%d, cursor=(%.0f,%.0f) offset=(%.0f,%.0f), GL lookups %lu (%lu missing)",
+            g_polls, g_swaps, queued, pojav_environ->savedWidth, pojav_environ->savedHeight, g_grabbed,
+            pojav_environ->cursorX, pojav_environ->cursorY, g_offset_x, g_offset_y, g_proc_lookups, g_proc_misses);
+    }
 }

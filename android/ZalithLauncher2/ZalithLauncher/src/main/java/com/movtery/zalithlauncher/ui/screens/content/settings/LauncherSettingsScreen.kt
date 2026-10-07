@@ -310,7 +310,7 @@ fun LauncherSettingsScreen(
 
                     SettingsCard(
                         modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
+                        position = CardPosition.Middle,
                         title = stringResource(R.string.dbr_game_log_title),
                         summary = stringResource(R.string.dbr_game_log_summary),
                         onClick = {
@@ -324,6 +324,28 @@ fun LauncherSettingsScreen(
                                 )
                             } else {
                                 eventViewModel.sendToast(androidText(R.string.dbr_game_log_missing))
+                            }
+                        }
+                    )
+
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        title = stringResource(R.string.dbr_crash_log_title),
+                        summary = stringResource(R.string.dbr_crash_log_summary),
+                        onClick = {
+                            //DBR: el crash-report más reciente de la instancia DBR (carpeta crash-reports).
+                            val crashFile = VersionsManager.versions.value
+                                .firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
+                                ?.let { version -> File(version.getGameDir(), "crash-reports") }
+                                ?.listFiles { file -> file.isFile && file.name.endsWith(".txt") }
+                                ?.maxByOrNull { it.lastModified() }
+                            if (crashFile != null) {
+                                eventViewModel.sendEvent(
+                                    EventViewModel.Event.LogShare.ShareGameLog(crashFile)
+                                )
+                            } else {
+                                eventViewModel.sendToast(androidText(R.string.dbr_crash_log_missing))
                             }
                         }
                     )
