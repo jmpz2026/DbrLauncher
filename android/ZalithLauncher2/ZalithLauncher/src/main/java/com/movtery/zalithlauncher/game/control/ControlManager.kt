@@ -26,7 +26,6 @@ import com.movtery.layer_controller.layout.loadLayoutFromString
 import com.movtery.layer_controller.observable.ObservableControlLayout
 import com.movtery.layer_controller.utils.newRandomFileName
 import com.movtery.layer_controller.utils.saveToFile
-import com.movtery.zalithlauncher.context.copyAssetFile
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.file.readString
@@ -43,6 +42,7 @@ import kotlinx.serialization.SerializationException
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.InputStream
+import java.security.MessageDigest
 
 private const val TAG = "ControlManager"
 
@@ -77,9 +77,25 @@ object ControlManager {
     /** DBR: nombre fijo del layout de controles curado (DBC). */
     private const val DBR_LAYOUT_FILE = "dbr_layout.json"
 
+    /** DBR: SHA-1 de la última versión de `default_layout.json` que se instaló como [DBR_LAYOUT_FILE]. */
+    private const val DBR_LAYOUT_HASH_FILE = "dbr_layout.sha1"
+
+    /**
+     * DBR: SHA-1 de las versiones de `default_layout.json` que instalaban los launchers anteriores
+     * a [DBR_LAYOUT_HASH_FILE] (lo pisaban en cada arranque). Si el archivo del jugador coincide
+     * con una, no lo ha tocado y se puede actualizar. Incluye las variantes CRLF de los builds locales.
+     */
+    private val DBR_LEGACY_LAYOUT_HASHES = setOf(
+        "c52e57878639c1a3330a3d760f24e7a822e8b515",
+        "c6d2a8e7b3bdf9fcbe63dce69fb6f3b2d4b5a1de",
+        "b56052dcd304ef3c4ffeef350f91c797d93c62d5",
+        "0cbf201bde2ad0b12b938f48cdfe442fcc445473",
+        "8b899cd425accb576b7b432cdeecf6ed9eab9a29"
+    )
+
     fun checkDefaultAndRefresh(context: Context) {
         scope.launch(Dispatchers.IO) {
-            //DBR: asegura el layout DBC actualizado (se sobrescribe con el del bundle) y lo deja seleccionado.
+            //DBR: instala o actualiza el layout DBC, sin tocarlo nunca si el jugador lo modificó.
             unpackDefaultControl(context)
             refresh()
         }
@@ -147,20 +163,51 @@ object ControlManager {
 
     /**
      * 解压默认控制布局
+     *
+     * DBR: el layout curado vive en un archivo fijo. Se instala si no está y se actualiza solo
+     * mientras siga idéntico a una versión que instaló el launcher: si el jugador lo editó (o lo
+     * borró después de instalarlo) no se toca nunca. Solo se selecciona al instalarlo por primera
+     * vez; después manda la elección del jugador.
      */
     private suspend fun unpackDefaultControl(
         context: Context
     ) = withContext(Dispatchers.IO) {
         try {
-            //DBR: archivo fijo + sobrescribir para propagar actualizaciones del layout curado,
-            //y dejarlo como layout seleccionado.
             val file = File(PathManager.DIR_CONTROL_LAYOUTS, DBR_LAYOUT_FILE)
-            context.copyAssetFile(fileName = "default_layout.json", output = file, overwrite = true)
-            AllSettings.controlLayout.save(DBR_LAYOUT_FILE)
+            val hashFile = File(PathManager.DIR_FILES_PRIVATE, DBR_LAYOUT_HASH_FILE)
+            val bundled = context.assets.open("default_layout.json").use { it.readBytes() }
+            val bundledHash = sha1(bundled)
+            val installedHash = hashFile.takeIf { it.exists() }?.readText()?.trim()
+
+            when {
+                !file.exists() -> {
+                    //Ya se instaló una vez y el jugador lo borró: respetarlo.
+                    if (installedHash != null) return@withContext
+                    file.parentFile?.mkdirs()
+                    file.writeBytes(bundled)
+                    AllSettings.controlLayout.save(DBR_LAYOUT_FILE)
+                }
+                else -> {
+                    val current = sha1(file.readBytes())
+                    if (current == bundledHash) {
+                        //Ya está al día.
+                    } else if (current == installedHash || (installedHash == null && current in DBR_LEGACY_LAYOUT_HASHES)) {
+                        file.writeBytes(bundled)
+                    } else {
+                        //Modificado por el jugador: no se toca.
+                        Logger.info(TAG, "DBR control layout modified by the player, keeping it")
+                        return@withContext
+                    }
+                }
+            }
+            hashFile.writeText(bundledHash)
         } catch (e: Exception) {
             Logger.warning(TAG, "Failed to unpack default control layout", e)
         }
     }
+
+    private fun sha1(bytes: ByteArray): String =
+        MessageDigest.getInstance("SHA-1").digest(bytes).joinToString("") { "%02x".format(it) }
 
     /**
      * 选择控制布局

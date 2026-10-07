@@ -597,7 +597,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 是否在游戏中启用摇杆移动组件
      */
-    val enableJoystickControl = boolSetting("enableJoystickControl", true) //DBR: joystick de movimiento por defecto
+    val enableJoystickControl = boolSetting("enableJoystickControl", false) //DBR: apagado, el layout por defecto trae cruceta
 
     /**
      * 游戏中摇杆移动组件的 X 坐标 0~10000
