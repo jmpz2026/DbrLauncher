@@ -54,7 +54,7 @@ def event(e):
 LMB, RMB = event('GLFW_MOUSE_BUTTON_LEFT'), event('GLFW_MOUSE_BUTTON_RIGHT')
 
 
-def button(layer, text, cx, cy, w, h, events, st=NORMAL, vis='in_game', toggle=False, icon=None):
+def button(layer, text, cx, cy, w, h, events, st=NORMAL, vis='in_game', toggle=False, icon=None, keep=False):
     left, top = cx - w / 2, cy - h / 2
     assert 0 <= left and left + w <= W and 0 <= top and top + h <= H, text
     return {
@@ -74,6 +74,8 @@ def button(layer, text, cx, cy, w, h, events, st=NORMAL, vis='in_game', toggle=F
         'isToggleable': toggle,
         # DBR: icono encima del texto; ids en LayerController/.../data/ButtonIcons.kt
         **({'icon': icon} if icon else {}),
+        # DBR: conmutable que sigue visible pulsado aunque se abra un menu (ver Layout.kt checkButtonVisibility).
+        **({'keepWhileToggled': True} if keep else {}),
     }
 
 
@@ -97,10 +99,11 @@ juego = [
     button('juego', 'Inventario', 62, 212, 92, 40, [key('E')], MENU, icon='backpack'),
     # Fila superior derecha. La rueda de formas (Y) actua mientras se mantiene; transformar (G) y
     # Acciones (X) quedan pulsados hasta volver a tocarlos, como Agacharse. Destransformar (H) es un toque.
+    # Y y X abren un menu de DBC: el boton sigue visible en ese menu para poder soltarlo.
     button('juego', 'Destransformar', 518, 30, 96, 48, [key('H')], icon='undo'),
     button('juego', 'Rueda formas', 612, 30, 84, 48, [key('Y')], icon='donut_large'),
     button('juego', 'Transformar', 702, 30, 80, 48, [key('G')], toggle=True, icon='auto_awesome'),
-    button('juego', 'Acciones', 778, 30, 64, 48, [key('X')], toggle=True, icon='list'),
+    button('juego', 'Acciones', 778, 30, 64, 48, [key('X')], toggle=True, icon='list', keep=True),
     # Pulgar izquierdo, al lado del joystick.
     button('juego', 'Cargar Ki', 290, 290, 58, 58, [key('C')], icon='flare'),
     # Pulgar derecho.

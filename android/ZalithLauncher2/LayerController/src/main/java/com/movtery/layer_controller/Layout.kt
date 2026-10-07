@@ -359,13 +359,17 @@ private fun collectVisibleWidgets(
  * DBR: un botón que se mantiene pulsado sigue visible hasta que se suelta el dedo, aunque cambie
  * el modo del cursor. Si no, al abrir una pantalla mientras se mantiene (la rueda de formas de DBC
  * con Y) el botón sale de la composición, [ObservableNormalData.onCompositionDispose] suelta la
- * tecla y la pantalla se cierra al instante. Los conmutables no cuentan: se quedan pulsados sin dedo.
+ * tecla y la pantalla se cierra al instante. Un conmutable pulsado solo sigue visible si lo pide
+ * con `keepWhileToggled` (Acciones con X): al resto, como Agacharse, conviene soltarlo al abrir un menú.
  */
 private fun checkButtonVisibility(
     isCursorGrabbing: Boolean,
     widget: ObservableWidget
 ): Boolean {
-    if (widget is ObservableNormalData && widget.isPressed && !widget.isToggleable) return true
+    if (
+        widget is ObservableNormalData && widget.isPressed &&
+        (!widget.isToggleable || widget.keepWhileToggled)
+    ) return true
     return checkVisibility(isCursorGrabbing, widget.onCheckVisibilityType())
 }
 

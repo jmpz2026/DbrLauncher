@@ -32,6 +32,7 @@ import kotlinx.serialization.Serializable
  * @param isPenetrable 是否允许将触摸事件向下穿透
  * @param isToggleable 是否用开关的形式切换按下状态
  * @param icon DBR: id del icono que se pinta encima del texto (ver [ButtonIcons]), null = solo texto
+ * @param keepWhileToggled DBR: si es conmutable y está pulsado, sigue visible aunque se abra un menú
  */
 @Serializable
 data class NormalData(
@@ -64,7 +65,9 @@ data class NormalData(
     @SerialName("isToggleable")
     val isToggleable: Boolean,
     @SerialName("icon")
-    val icon: String? = null
+    val icon: String? = null,
+    @SerialName("keepWhileToggled")
+    val keepWhileToggled: Boolean = false
 ): Widget, Modifiable<NormalData> {
     val clickEvents: List<ClickEvent> get() = _clickEvents
 
@@ -87,7 +90,8 @@ data class NormalData(
                 this.isSwipple != other.isSwipple ||
                 this.isPenetrable != other.isPenetrable ||
                 this.isToggleable != other.isToggleable ||
-                this.icon != other.icon
+                this.icon != other.icon ||
+                this.keepWhileToggled != other.keepWhileToggled
     }
 }
 
@@ -128,5 +132,6 @@ fun NormalData.cloneNew(): NormalData = NormalData(
     isSwipple = isSwipple,
     isPenetrable = isPenetrable,
     isToggleable = isToggleable,
-    icon = icon
+    icon = icon,
+    keepWhileToggled = keepWhileToggled
 )

@@ -125,4 +125,6 @@ al abrirse el cursor se libera y los botones `in_game` se esconden. El botón sa
 
 - `LayerController/.../Layout.kt` (`checkButtonVisibility`): un botón pulsado y no conmutable sigue
   visible y tocable hasta que se suelta el dedo; después se esconde según su `visibilityType`.
-  Los conmutables (Transformar, Agacharse...) no cambian: siguen soltándose al abrir un menú.
+  Los conmutables (Transformar, Agacharse...) siguen soltándose al abrir un menú, salvo los que llevan
+  el campo opcional `keepWhileToggled` (`NormalData`/`ObservableNormalData`): Acciones (X) abre su menú
+  con un toque y se suelta con otro, así que tiene que seguir visible en ese menú.

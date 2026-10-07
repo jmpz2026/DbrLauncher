@@ -331,7 +331,8 @@
           "isSwipple": false,
           "isPenetrable": false,
           "isToggleable": true,
-          "icon": "list"
+          "icon": "list",
+          "keepWhileToggled": true
         },
         {
           "text": {
