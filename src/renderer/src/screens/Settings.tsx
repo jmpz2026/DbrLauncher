@@ -156,14 +156,24 @@ function ModpackPanel(): JSX.Element {
   // Variante que el jugador acaba de pulsar, pendiente de confirmar si aplica también la
   // configuración recomendada de esa variante (gráficos y .cfg marcados como `once`).
   const [pending, setPending] = useState<ModpackVariant | null>(null)
+  // La experimental exige marcar que se entiende que no sirve para el servidor.
+  const [ackExperimental, setAckExperimental] = useState(false)
 
-  const options = [
-    { id: 'full' as const, label: 'Completo', desc: 'Todos los mods (recomendado)' },
-    { id: 'lite' as const, label: 'Lite', desc: 'Menos mods, para equipos justos' }
+  const options: { id: ModpackVariant; label: string; desc: string }[] = [
+    { id: 'full', label: 'Completo', desc: 'Todos los mods (recomendado)' },
+    { id: 'lite', label: 'Lite', desc: 'Menos mods, para equipos justos' },
+    { id: 'experimental', label: 'Experimental', desc: 'Mods en pruebas, no para el servidor' }
   ]
+  const labelOf = (id: ModpackVariant): string => options.find((o) => o.id === id)?.label ?? id
+  const blocked = pending === 'experimental' && !ackExperimental
+
+  const choose = (id: ModpackVariant): void => {
+    setAckExperimental(false)
+    setPending(id)
+  }
 
   const apply = (seed: boolean): void => {
-    if (!pending) return
+    if (!pending || blocked) return
     void setSetting({ modpackVariant: pending, ...(seed ? { modpackSeedPending: true } : {}) })
     setPending(null)
   }
@@ -176,7 +186,7 @@ function ModpackPanel(): JSX.Element {
           <button
             key={o.id}
             onClick={() => {
-              if (o.id !== variant) setPending(o.id)
+              if (o.id !== variant) choose(o.id)
             }}
             className={`mc-btn flex-1 px-4 py-3 text-left ${variant === o.id ? 'mc-btn-on' : ''}`}
           >
@@ -199,9 +209,29 @@ function ModpackPanel(): JSX.Element {
             <div className="flex items-center gap-3">
               <span className="h-5 w-2 bg-gold" />
               <h2 className="mc-text text-lg font-bold uppercase tracking-wide text-gold">
-                Cambiar a {pending === 'lite' ? 'Lite' : 'Completo'}
+                Cambiar a {labelOf(pending)}
               </h2>
             </div>
+            {pending === 'experimental' && (
+              <div className="mc-inset space-y-2 !border-red-600 p-3">
+                <p className="text-xs font-semibold leading-relaxed text-red-300">
+                  Esta versión NO está diseñada para jugar en el servidor.
+                </p>
+                <p className="text-xs leading-relaxed text-muted">
+                  Trae mods en pruebas para que los testees. Puede fallar, perder datos de tu
+                  configuración o no dejarte entrar al servidor. Para jugar normal, vuelve a
+                  Completo o Lite.
+                </p>
+                <label className="flex cursor-pointer items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={ackExperimental}
+                    onChange={(e) => setAckExperimental(e.target.checked)}
+                  />
+                  Entiendo que no es para jugar en el servidor
+                </label>
+              </div>
+            )}
             <p className="text-xs leading-relaxed text-muted">
               ¿Quieres aplicar también la configuración recomendada de esta versión (opciones
               gráficas y ajustes de mods)? Sobrescribe la configuración que tengas ahora.
@@ -209,13 +239,15 @@ function ModpackPanel(): JSX.Element {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => apply(true)}
-                className="mc-btn mc-btn-gold px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+                disabled={blocked}
+                className="mc-btn mc-btn-gold px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
               >
                 Sí, aplicarla
               </button>
               <button
                 onClick={() => apply(false)}
-                className="mc-btn px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+                disabled={blocked}
+                className="mc-btn px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
               >
                 Conservar la mía
               </button>

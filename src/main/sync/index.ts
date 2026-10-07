@@ -8,9 +8,16 @@ import { errMsg } from '../errors'
 
 export { runSync } from './engine'
 
-/** URL del manifest según la variante elegida en ajustes (lite comparte Forge/MC con full). */
+/** URL del manifest según la variante elegida en ajustes (todas comparten Forge/MC). */
 function manifestUrlForVariant(): string {
-  return loadSettings().modpackVariant === 'lite' ? CONFIG.manifestUrlLite : CONFIG.manifestUrl
+  switch (loadSettings().modpackVariant) {
+    case 'lite':
+      return CONFIG.manifestUrlLite
+    case 'experimental':
+      return CONFIG.manifestUrlExperimental
+    default:
+      return CONFIG.manifestUrl
+  }
 }
 
 /** Registra el handler IPC de sincronización. Llamar una vez al arrancar. */

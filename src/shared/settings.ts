@@ -1,7 +1,8 @@
 import type { LiteProposalAnswer } from './perf'
 
 // Variante del modpack a sincronizar (comparten Forge/MC, distinto set de mods).
-export type ModpackVariant = 'full' | 'lite'
+// 'experimental' = mods en pruebas para que los jugadores los testeen; no es para el servidor.
+export type ModpackVariant = 'full' | 'lite' | 'experimental'
 
 // Ajustes del launcher (persistidos en userData/settings.json).
 export interface LauncherSettings {
@@ -11,7 +12,7 @@ export interface LauncherSettings {
   fullscreen: boolean
   jvmArgs: string // argumentos JVM extra separados por espacios
   jvmArgsMigrated: boolean // true tras aplicar (una vez) los flags GC por defecto a usuarios viejos
-  modpackVariant: ModpackVariant // 'full' (por defecto) | 'lite'
+  modpackVariant: ModpackVariant // 'full' (por defecto) | 'lite' | 'experimental'
   autoSyncMods: boolean // sincronizar/actualizar mods al dar Jugar (por defecto true)
   // Aplicar la configuración recomendada (archivos `once` del manifest) en la próxima sync.
   // Lo activa el jugador al cambiar de variante si acepta el aviso; la sync lo consume.

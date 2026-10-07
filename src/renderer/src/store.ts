@@ -88,7 +88,7 @@ interface State {
   height: number
   fullscreen: boolean
   jvmArgs: string
-  modpackVariant: ModpackVariant // 'full' | 'lite'
+  modpackVariant: ModpackVariant // 'full' | 'lite' | 'experimental'
   autoSyncMods: boolean // sincronizar mods al dar Jugar
   modpackSeedPending: boolean // aplicar la config recomendada en la próxima sync
   modpackSyncPending: boolean // cambio de variante sin sincronizar todavía

@@ -9,6 +9,7 @@ export default function Home(): JSX.Element {
   const gameRunning = useStore((s) => s.gameRunning)
   const play = useStore((s) => s.play)
   const ping = useStore((s) => s.ping)
+  const experimental = useStore((s) => s.modpackVariant === 'experimental')
 
   useEffect(() => {
     void ping()
@@ -54,6 +55,13 @@ export default function Home(): JSX.Element {
             {label}
           </button>
         </div>
+
+        {experimental && (
+          <div className="mc-panel !border-red-600 max-w-lg px-4 py-2 text-center text-xs text-red-300">
+            Modpack experimental activo: no está diseñado para jugar en el servidor. Cámbialo en
+            Ajustes para jugar normal.
+          </div>
+        )}
 
         <StatusArea ram={ram} />
       </div>
