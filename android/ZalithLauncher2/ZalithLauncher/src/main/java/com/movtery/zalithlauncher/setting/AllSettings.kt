@@ -118,7 +118,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 持续性能模式
      */
-    val sustainedPerformance = boolSetting("sustainedPerformance", false)
+    val sustainedPerformance = boolSetting("sustainedPerformance", true)
 
     /**
      * 使用系统的 Vulkan 驱动
