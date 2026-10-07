@@ -650,10 +650,24 @@ public class GLFW
         memPutInt(mGLFWVideoMode.address() + (long) mGLFWVideoMode.HEIGHT, mGLFWWindowHeight);
     }
 
+    // DBR: an unknown window pointer no longer throws. lwjglx's Display.destroy() removes the window here but keeps
+    // its handle and stays "created", so a later Display.create() is a no-op and the game keeps calling GLFW with a
+    // pointer this map no longer has ("No window pointer found" on the first mouse grab). The game only ever has
+    // one window: fall back to the main one, or re-register the pointer with default properties.
+    private static boolean mWarnedUnknownWindow;
+
     public static GLFWWindowProperties internalGetWindow(long window) {
         GLFWWindowProperties win = mGLFWWindowMap.get(window);
+        if (win != null) return win;
+        if (!mWarnedUnknownWindow) {
+            mWarnedUnknownWindow = true;
+            System.out.println("GLFW: Warning: unknown window pointer " + window + ", using the main window");
+        }
+        win = mGLFWWindowMap.get(mainContext);
+        if (win == null && mGLFWWindowMap.size() > 0) win = mGLFWWindowMap.valueAt(mGLFWWindowMap.size() - 1);
         if (win == null) {
-            throw new IllegalArgumentException("No window pointer found: " + window);
+            win = newWindowProperties("Game");
+            mGLFWWindowMap.put(window, win);
         }
         return win;
     }
@@ -1042,6 +1056,22 @@ public class GLFW
         // Create an ACTUAL EGL context
         long ptr = nglfwCreateContext(share);
         //nativeEglMakeCurrent(ptr);
+        GLFWWindowProperties win = newWindowProperties(title);
+
+        mGLFWWindowMap.put(ptr, win);
+        mainContext = ptr;
+
+        if(mGLFWWindowVisibleOnCreation || monitor != 0) {
+            // Show window by default if GLFW_VISIBLE hint is specified on creation or
+            // if the monitor is nonnull (fullscreen requested)
+            glfwShowWindow(ptr);
+        }
+
+        return ptr;
+        //Return our context
+    }
+
+    private static GLFWWindowProperties newWindowProperties(CharSequence title) {
         GLFWWindowProperties win = new GLFWWindowProperties();
         // win.width = width;
         // win.height = height;
@@ -1079,28 +1109,15 @@ public class GLFW
         }
         win.windowAttribs.put(GLFW_CONTEXT_VERSION_MAJOR, glMajor);
         win.windowAttribs.put(GLFW_CONTEXT_VERSION_MINOR, glMinor);
-
-        mGLFWWindowMap.put(ptr, win);
-        mainContext = ptr;
-
-        if(mGLFWWindowVisibleOnCreation || monitor != 0) {
-            // Show window by default if GLFW_VISIBLE hint is specified on creation or
-            // if the monitor is nonnull (fullscreen requested)
-            glfwShowWindow(ptr);
-        }
-
-        return ptr;
-        //Return our context
+        return win;
     }
 
     public static void glfwDestroyWindow(long window) {
-        // Check window exists
-        try {
-            internalGetWindow(window);
+        // Check window exists (not through internalGetWindow, which falls back to the main window)
+        if (mGLFWWindowMap.containsKey(window)) {
             mGLFWWindowMap.remove(window);
-        } catch (IllegalArgumentException e) {
+        } else {
             System.out.println("GLFW: Warning: failed to remove window " + window);
-            e.printStackTrace();
         }
         nglfwSetShowingWindow(mGLFWWindowMap.size() == 0 ? 0 : mGLFWWindowMap.keyAt(mGLFWWindowMap.size() - 1));
     }

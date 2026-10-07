@@ -70,3 +70,16 @@ de GUI se disparaban (la rueda de formas de npcdbc quedaba trabada como una capa
   monótonos (origen en la hora del sistema al cargar la clase, avance con `System.nanoTime()`);
   `glfwGetTimerFrequency()` devuelve 1000 (antes 60, marcado como FIXME en upstream).
 - Recompilado `assets/components/lwjgl3/lwjgl-glfw-classes.jar` (`./gradlew LWJGL:jar`, JDK 17+).
+
+## 6) GLFW tolera punteros de ventana desconocidos (2026-10-07)
+**Motivo:** `Display.destroy()` de lwjglx quita la ventana del mapa de GLFW pero conserva
+`Display$Window.handle` y deja el display como creado: el `Display.create()` siguiente no hace
+nada y el juego sigue llamando a GLFW con un puntero que ya no está ("No window pointer found"
+al capturar el ratón). Lo provocaba el sondeo de versiones GL de Angelica en el primer arranque.
+
+- `LWJGL/src/main/java/org/lwjgl/glfw/GLFW.java`: `internalGetWindow()` ya no lanza con un
+  puntero desconocido; usa la ventana principal (`mainContext`), o la última registrada, o
+  registra el puntero con las propiedades por defecto (`newWindowProperties()`, extraído de
+  `mglfwCreateWindow`). Avisa una vez por stdout. `glfwDestroyWindow()` comprueba con
+  `containsKey` para no borrar la ventana principal por el fallback.
+- Recompilado `assets/components/lwjgl3/lwjgl-glfw-classes.jar`.
