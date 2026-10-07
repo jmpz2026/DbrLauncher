@@ -531,8 +531,8 @@
     },
     {
       "path": "options.txt",
-      "sha1": "e155464feb7c57d8ab6a50d5dd8ff3ce466caeeb",
-      "size": 2446,
+      "sha1": "76184c33f2247af8c0375ac9f55cdb15866c6d0f",
+      "size": 2565,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/options.txt"
     },
