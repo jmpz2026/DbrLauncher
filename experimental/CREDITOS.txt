@@ -1,17 +1,17 @@
-CREDITOS Y LICENCIAS - Paquete Angelica para Dragon Block Resurrection (dbr.10)
+CREDITOS Y LICENCIAS - Paquete Angelica para Dragon Block Resurrection (dbr.11)
 =============================================================================
 
 Los textos completos de cada licencia estan en la carpeta LICENCIAS.
 
 -----------------------------------------------------------------------------
-1. Angelica 2.2.29-dbr.10  (angelica-2.2.29-dbr.10.jar)
+1. Angelica 2.2.29-dbr.11  (angelica-2.2.29-dbr.11.jar)
 -----------------------------------------------------------------------------
 Autores: GTNewHorizons y contribuidores de Angelica.
 Licencia: GNU LGPL v3 (LICENCIAS/LGPL-3.0.txt + LICENCIAS/GPL-3.0.txt).
 Proyecto original: https://github.com/GTNewHorizons/Angelica
 
 ESTA ES UNA VERSION MODIFICADA. Codigo fuente de esta version exacta:
-  https://github.com/jmpz2026/Angelica/tree/2.2.29-dbr.10
+  https://github.com/jmpz2026/Angelica/tree/2.2.29-dbr.11
   (rama dbr/npcdbc-compat, basada en GTNewHorizons/Angelica master 21a054a4)
 Cambios: compatibilidad de perfil core para mods con varios draw buffers y
 depth compartido, vaciado de geometria diferida en glClear, colorMask en el
