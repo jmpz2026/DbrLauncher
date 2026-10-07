@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join, normalize, sep } from 'path'
 import type { ManifestFile, SyncProgress, SyncSummary } from '../../shared/sync'
 import { flushHashCache, sha1FileCached } from './hash'
-import { fetchManifest, withQuery } from './manifest'
+import { fetchManifest } from './manifest'
 import { ensureFile } from '../net'
 
 export interface SyncOptions {
@@ -94,9 +94,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   // 3) Descargar en paralelo (pool acotado). `done` es un contador compartido: como JS es
   // monohilo entre awaits, el ++ no compite; solo la barra ve el orden de finalización.
   await pool(toDownload, CONCURRENCY, async (f) => {
-    // El sha1 en la URL hace única cada versión del archivo: el CDN no puede servir una vieja.
-    const url = f.sha1 ? withQuery(f.url, 'v', f.sha1) : f.url
-    await ensureFile(safeJoin(gameDir, f.path), url, f.sha1)
+    await ensureFile(safeJoin(gameDir, f.path), f.url, f.sha1)
     onProgress({ phase: 'download', file: f.path, done: ++done, total })
   })
 
