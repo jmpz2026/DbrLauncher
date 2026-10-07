@@ -7,6 +7,7 @@
       "path": "config/angelica-options.json",
       "sha1": "c1251c74d4a6c8d7d12c562fbb2265650ef8dd53",
       "size": 1326,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/angelica-options.json"
     },
     {
