@@ -35,8 +35,11 @@ config/dbrvoice.cfg
 # config/*Client*.cfg
 
 # Config grafica de Angelica/NotFine para Android (2026-10-07).
-# TEMPORAL: van GESTIONADAS (sin listar aqui) para forzarlas una vez a los que ya
-# probaron el experimental. Cuando los testers hayan dado Jugar, descomentar estas
-# dos lineas para que pasen a siembra y el jugador pueda cambiarlas:
+# optionsnf.txt (NotFine) es siembra: los archivos de la raiz solo entran al manifest
+# si estan listados aqui, asi que no se puede forzar.
+optionsnf.txt
+# TEMPORAL: config/angelica-options.json va GESTIONADA (sin listar aqui) para
+# forzarla una vez a los que ya probaron el experimental. Cuando los testers hayan
+# dado Jugar, descomentar la linea para que pase a siembra y el jugador pueda
+# cambiarla desde el menu de video:
 # config/angelica-options.json
-# optionsnf.txt

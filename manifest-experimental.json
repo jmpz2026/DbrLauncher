@@ -536,6 +536,13 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/options.txt"
     },
     {
+      "path": "optionsnf.txt",
+      "sha1": "eeb2c72dc44c758ec311ceba43702191ac14b791",
+      "size": 866,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/optionsnf.txt"
+    },
+    {
       "path": "optionsof.txt",
       "sha1": "2d704e74e65bdd0c917d53dca45d60fc770b1b5e",
       "size": 1339,
