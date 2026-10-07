@@ -54,8 +54,30 @@ object DbrSync {
 
     data class Manifest(
         val version: String = "",
-        val files: List<ManifestFile> = emptyList()
+        val files: List<ManifestFile> = emptyList(),
+        /**
+         * Preset de Android: sustituye a la entrada de [files] con la misma ruta, o se añade.
+         * Siempre de siembra. Sale de la carpeta `android/` de cada variante en el repo de
+         * assets; los launchers de PC no lo conocen y lo ignoran.
+         */
+        val androidFiles: List<ManifestFile>? = null
     )
+
+    /** [Manifest.files] con el preset de Android aplicado encima. */
+    private fun filesForAndroid(manifest: Manifest): List<ManifestFile> {
+        val overrides = manifest.androidFiles.orEmpty().associateBy { it.path }
+        if (overrides.isEmpty()) return manifest.files
+        val base = manifest.files.filter { it.path !in overrides }
+        return base + overrides.values.map { it.copy(once = true) }
+    }
+
+    /**
+     * raw.githubusercontent.com cachea cada URL unos 5 minutos: sin un parámetro distinto,
+     * quien da Jugar justo después de un despliegue recibe el manifest viejo, o un archivo
+     * viejo que no casa con el sha1 del nuevo.
+     */
+    private fun withQuery(url: String, key: String, value: String): String =
+        url + (if ('?' in url) "&" else "?") + key + "=" + value
 
     /** Progreso reportado por callback. phase: check|download|delete|done */
     data class Progress(val phase: String, val done: Int, val total: Int, val file: String)
@@ -107,10 +129,10 @@ object DbrSync {
     ) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
-        val json = URL(manifestUrl()).readText()
+        val json = URL(withQuery(manifestUrl(), "t", System.currentTimeMillis().toString())).readText()
         val manifest = GSON.fromJson(json, Manifest::class.java)
             ?: error("No se pudo leer el manifest del modpack")
-        val files = manifest.files
+        val files = filesForAndroid(manifest)
         if (files.isEmpty()) error("El manifest no contiene archivos")
 
         // 1) Qué hay que descargar (falta, tamaño distinto, o SHA-1 distinto).
@@ -150,7 +172,9 @@ object DbrSync {
         pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
-            URL(f.url).openStream().use { input ->
+            //El sha1 en la URL hace única cada versión del archivo: el CDN no puede servir una vieja.
+            val url = if (f.sha1.isNullOrEmpty()) f.url else withQuery(f.url, "v", f.sha1)
+            URL(url).openStream().use { input ->
                 dest.outputStream().use { output -> input.copyTo(output) }
             }
             if (!f.sha1.isNullOrEmpty() && !sha1(dest).equals(f.sha1, ignoreCase = true)) {
