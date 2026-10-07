@@ -2,13 +2,13 @@ import { createHash } from 'crypto'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
 import { httpRequest, readJson } from './http'
-import { sha1File } from './sync/hash'
+import { rememberSha1, sha1FileCached } from './sync/hash'
 
 /** Descarga `url` a `dest` si falta o el sha1 no coincide. Devuelve true si descargó. */
 export async function ensureFile(dest: string, url: string, sha1?: string): Promise<boolean> {
   if (existsSync(dest)) {
     if (!sha1) return false
-    if ((await sha1File(dest)).toLowerCase() === sha1.toLowerCase()) return false
+    if ((await sha1FileCached(dest)) === sha1.toLowerCase()) return false
   }
   mkdirSync(dirname(dest), { recursive: true })
   const res = await httpRequest(url)
@@ -19,6 +19,7 @@ export async function ensureFile(dest: string, url: string, sha1?: string): Prom
     if (got.toLowerCase() !== sha1.toLowerCase()) throw new Error(`SHA1 no coincide: ${url}`)
   }
   writeFileSync(dest, buf)
+  if (sha1) rememberSha1(dest, sha1)
   return true
 }
 

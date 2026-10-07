@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join, normalize, sep } from 'path'
 import type { ManifestFile, SyncProgress, SyncSummary } from '../../shared/sync'
-import { sha1File } from './hash'
+import { flushHashCache, sha1FileCached } from './hash'
 import { fetchManifest } from './manifest'
 import { ensureFile } from '../net'
 
@@ -73,7 +73,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
       needs = f.once
         ? reseed
         : f.sha1
-          ? (await sha1File(dest)).toLowerCase() !== f.sha1.toLowerCase()
+          ? (await sha1FileCached(dest)) !== f.sha1.toLowerCase()
           : false
     }
     needed[i] = needs
@@ -110,6 +110,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   }
 
   saveManaged(managedFile, managedPaths)
+  flushHashCache()
   onProgress({ phase: 'done', file: '', done: total, total })
   return { updated: toDownload.length, removed: toDelete.length, version: manifest.version }
 }

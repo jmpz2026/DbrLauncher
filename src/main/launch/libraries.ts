@@ -1,4 +1,5 @@
-import { join } from 'path'
+import { existsSync, writeFileSync } from 'fs'
+import { basename, join } from 'path'
 import type { LaunchProgress } from '../../shared/launch'
 import { extractArchive } from '../java/install'
 import type { Library } from './version'
@@ -31,9 +32,15 @@ export async function installLibraries(
     // Natives: descargar el jar del classifier y extraerlo al nativesDir.
     const native = resolveNative(lib)
     if (native) {
+      // Se extrae solo si el jar es nuevo o nunca se extrajo: antes se re-extraía en cada
+      // launch. La marca vive dentro del nativesDir, así que borrarlo fuerza la extracción.
       const nativeJar = join(librariesDir, native.path)
-      await ensureFile(nativeJar, native.url, native.sha1)
-      await extractArchive(nativeJar, nativesDir, native.exclude)
+      const downloaded = await ensureFile(nativeJar, native.url, native.sha1)
+      const marker = join(nativesDir, `.${basename(nativeJar)}.extracted`)
+      if (downloaded || !existsSync(marker)) {
+        await extractArchive(nativeJar, nativesDir, native.exclude)
+        writeFileSync(marker, native.sha1 ?? '')
+      }
     }
 
     // Artefacto principal: presente si tiene downloads.artifact o si no es una lib solo-natives.

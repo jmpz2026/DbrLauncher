@@ -15,6 +15,7 @@ import { installLibraries } from './libraries'
 import { installAssets } from './assets'
 import { errMsg } from '../errors'
 import { ensureFile } from '../net'
+import { flushHashCache } from '../sync/hash'
 import { assetsDir, getGameDir, librariesDir, versionsDir } from './paths'
 
 type OnProgress = (p: LaunchProgress) => void
@@ -52,6 +53,7 @@ async function prepare(onProgress: OnProgress): Promise<Prepared> {
   classpath.push(clientJar)
 
   if (version.assetIndex) await installAssets(version.assetIndex, assetsDir(), onProgress)
+  flushHashCache()
 
   return { version, classpath, nativesDir }
 }
