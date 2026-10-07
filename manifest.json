@@ -543,5 +543,28 @@
       "size": 4323579,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/resourcepacks/DbrTexture%20v6.zip"
     }
+  ],
+  "androidFiles": [
+    {
+      "path": "config/dbrcore/rendimiento.cfg",
+      "sha1": "d26194f06b42c594d19f7efb0c054093ddebdba6",
+      "size": 147,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/config/dbrcore/rendimiento.cfg"
+    },
+    {
+      "path": "options.txt",
+      "sha1": "db0316f6a715619e30a170e248bec1de58722f9e",
+      "size": 2567,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/options.txt"
+    },
+    {
+      "path": "optionsof.txt",
+      "sha1": "83439bb45ef6ddb625f0d8430890da77d3b5feed",
+      "size": 1339,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/optionsof.txt"
+    }
   ]
 }
