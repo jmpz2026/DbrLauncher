@@ -8,7 +8,7 @@ import type { FuseStatus, FuseInstallResult } from '../../shared/fuse'
  * el doble-click no arranca. Cuando la app SÍ logra abrir sin fuse (modo extract-and-run),
  * este chequeo permite avisar al jugador y ofrecerle instalarla con un clic (pkexec).
  *
- * En Windows/Mac no hace nada: `fuse:status` devuelve missing:false.
+ * En Windows/Mac y en el .deb no hace nada: `fuse:status` devuelve missing:false.
  */
 
 // Rutas típicas de libfuse.so.2 por si `ldconfig` no está disponible.
@@ -63,6 +63,8 @@ function installCmdFor(id: string, like: string): string {
 export function registerFuse(): void {
   ipcMain.handle('fuse:status', async (): Promise<FuseStatus> => {
     if (process.platform !== 'linux') return { missing: false, canAutoInstall: false }
+    // Solo el AppImage depende de FUSE; su runtime define APPIMAGE (el .deb no).
+    if (!process.env.APPIMAGE) return { missing: false, canAutoInstall: false }
     if (await hasFuse()) return { missing: false, canAutoInstall: false }
 
     const { id, like } = readDistro()

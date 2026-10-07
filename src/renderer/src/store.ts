@@ -106,7 +106,7 @@ interface State {
   // Auto-actualización
   updateStatus: UpdateStatus | null
   setUpdateStatus: (s: UpdateStatus) => void
-  installUpdate: () => void
+  installUpdate: () => Promise<boolean>
 }
 
 export const useStore = create<State>((set, get) => ({
@@ -337,5 +337,5 @@ export const useStore = create<State>((set, get) => ({
 
   updateStatus: null,
   setUpdateStatus: (updateStatus) => set({ updateStatus }),
-  installUpdate: () => void window.dbr?.update?.install()
+  installUpdate: async () => (await window.dbr?.update?.install()) ?? false
 }))

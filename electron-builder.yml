@@ -24,9 +24,18 @@ mac:
   category: public.app-category.games
   artifactName: ${productName}-${version}.${ext}
 linux:
-  target: AppImage
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
   category: Game
+  maintainer: Dbr <jmpz2026@users.noreply.github.com> # el .deb exige un mantenedor con email
   artifactName: ${productName}-${version}.${ext}
+deb:
+  artifactName: dbr-launcher_${version}_${arch}.${ext} # convención Debian, sin espacios
 nsis:
   oneClick: false
   perMachine: false

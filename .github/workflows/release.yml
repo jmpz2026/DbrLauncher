@@ -52,7 +52,7 @@ jobs:
     needs: create-release
     if: ${{ !failure() && !cancelled() }}
     permissions:
-      contents: write # crear el release y subir el AppImage
+      contents: write # crear el release y subir el AppImage y el .deb
     steps:
       - uses: actions/checkout@v4
 
@@ -66,7 +66,7 @@ jobs:
       - name: Compilar app
         run: npm run build
 
-      - name: Empaquetar y publicar (.AppImage + latest-linux.yml)
+      - name: Empaquetar y publicar (.AppImage + .deb + latest-linux.yml)
         run: npx electron-builder --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
