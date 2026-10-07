@@ -15,7 +15,15 @@ export interface HttpInit {
   body?: string | Buffer | URLSearchParams
   /** Progreso por bytes. `total` vale 0 si el servidor no manda content-length. */
   onProgress?: (received: number, total: number) => void
+  /** Ms sin recibir nada (ni cabeceras ni datos) antes de abortar. Por defecto IDLE_TIMEOUT_MS. */
+  idleTimeoutMs?: number
 }
+
+// `net.request` de Electron no trae timeout: una conexión que se queda colgada (wifi que
+// pierde paquetes, POP saturado que acepta y no responde) dejaba el launch esperando para
+// siempre. Es de inactividad y no total: un jar de 40 MB en una conexión lenta tarda, pero
+// nunca pasa 20 s sin recibir un byte.
+const IDLE_TIMEOUT_MS = 20_000
 
 /** Respuesta ya buferizada (todas nuestras descargas caben en memoria). */
 export interface HttpResponse {
@@ -68,6 +76,23 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
 
   return new Promise((resolve, reject) => {
     const req = net.request({ method, url, redirect: 'follow' })
+    const idleMs = init.idleTimeoutMs ?? IDLE_TIMEOUT_MS
+    let settled = false
+    let timer: NodeJS.Timeout | undefined
+    const finish = (fn: () => void): void => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      fn()
+    }
+    const arm = (): void => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        finish(() => reject(describe(url, new Error(`net::ERR_TIMED_OUT (${idleMs / 1000}s sin respuesta)`))))
+        req.abort()
+      }, idleMs)
+    }
+    arm()
     for (const [k, v] of Object.entries(headers)) req.setHeader(k, v)
     if (payload && !hasType && init.body instanceof URLSearchParams) {
       req.setHeader('Content-Type', 'application/x-www-form-urlencoded')
@@ -77,7 +102,9 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
       const total = Number(res.headers['content-length'] ?? 0)
       const chunks: Buffer[] = []
       let received = 0
+      arm()
       res.on('data', (chunk: Buffer) => {
+        arm()
         chunks.push(chunk)
         received += chunk.length
         onProgress?.(received, total)
@@ -88,11 +115,13 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
           norm[k.toLowerCase()] = Array.isArray(v) ? v.join(', ') : String(v)
         }
         const status = res.statusCode
-        resolve({ status, ok: status >= 200 && status < 300, headers: norm, body: Buffer.concat(chunks) })
+        finish(() =>
+          resolve({ status, ok: status >= 200 && status < 300, headers: norm, body: Buffer.concat(chunks) })
+        )
       })
-      res.on('error', (e: Error) => reject(describe(url, e)))
+      res.on('error', (e: Error) => finish(() => reject(describe(url, e))))
     })
-    req.on('error', (e) => reject(describe(url, e)))
+    req.on('error', (e) => finish(() => reject(describe(url, e))))
 
     if (payload) req.write(payload)
     req.end()
