@@ -49,3 +49,13 @@ Version" en arranque, conservar avisos de copyright).
   - Microsoft → muestra Toast `dbr_login_not_available` ("Inicio de sesión no disponible por ahora"),
     no inicia el flujo (falta OAuth client id; se implementará después).
   - Ocultada la columna de servidores de autenticación externos (solo 2 opciones).
+
+## 4) Renderizador LTW integrado (2026-10-07)
+**Motivo:** el modpack experimental lleva Angelica, que en Android solo arranca con LTW, y
+ZalithLauncher no trae LTW.
+
+- `jniLibs/<abi>/libltw.so`: LTW sin modificar (LGPL-3.0), origen y receta en
+  `android/third_party/LTW/README.md`.
+- `game/renderer/renderers/LTWRenderer.kt` (`opengles3_ltw`, librería y EGL `libltw.so`),
+  registrado en `Renderers.init`.
+- `GameLauncher.setRendererEnv`: LTW queda fuera de las variables de Mesa/Zink, igual que GL4ES.

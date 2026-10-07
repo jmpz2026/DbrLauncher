@@ -46,7 +46,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -87,6 +90,7 @@ import com.movtery.zalithlauncher.contract.extensionToMimeType
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.game.dbr.DbrExperimental
 import com.movtery.zalithlauncher.game.dbr.DbrInstall
 import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
@@ -167,6 +171,8 @@ fun LauncherSettingsScreen(
     val backgroundViewModel = LocalBackgroundViewModel.current
     //DBR: aviso tras cambiar de variante (¿aplicar también su configuración recomendada?).
     var askSeed by remember { mutableStateOf(false) }
+    //DBR: la variante experimental exige confirmar que no es para el servidor antes de guardarse.
+    var askExperimental by remember { mutableStateOf(false) }
 
     //DBR: importar mods propios (.jar) a la carpeta mods de la instancia DBR.
     //El sync nunca los borra: solo borra rutas que estaban en su índice de gestionados.
@@ -226,6 +232,17 @@ fun LauncherSettingsScreen(
         )
     }
 
+    if (askExperimental) {
+        DbrExperimentalDialog(
+            onConfirm = {
+                DbrExperimental.enable()
+                askExperimental = false
+                askSeed = true
+            },
+            onDismiss = { askExperimental = false }
+        )
+    }
+
     BaseScreen(
         Triple(key, mainScreenKey, false),
         Triple(NormalNavKey.Settings.Launcher, settingsScreenKey, false)
@@ -245,16 +262,23 @@ fun LauncherSettingsScreen(
                     EnumSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Top,
-                        unit = AllSettings.dbrModpackVariant,
+                        value = AllSettings.dbrModpackVariant.state,
                         entries = DbrModpackVariant.entries,
                         title = stringResource(R.string.dbr_modpack_variant_title),
                         summary = stringResource(R.string.dbr_modpack_variant_summary),
                         getRadioEnable = { true },
                         getRadioText = { variant -> stringResource(variant.textRes) },
-                        onValueChange = {
-                            //La variante cambió: hay que re-sincronizar sí o sí.
-                            AllSettings.dbrModpackSyncPending.save(true)
-                            askSeed = true
+                        onRadioClick = { variant ->
+                            val current = AllSettings.dbrModpackVariant.state
+                            if (variant == DbrModpackVariant.EXPERIMENTAL) {
+                                if (current != variant) askExperimental = true
+                            } else if (variant != current) {
+                                if (current == DbrModpackVariant.EXPERIMENTAL) DbrExperimental.onLeave()
+                                AllSettings.dbrModpackVariant.save(variant)
+                                //La variante cambió: hay que re-sincronizar sí o sí.
+                                AllSettings.dbrModpackSyncPending.save(true)
+                                askSeed = true
+                            }
                         }
                     )
 
@@ -1116,4 +1140,49 @@ private fun BackgroundOperation(
             }
         }
     }
+}
+
+/** DBR: aviso del modpack experimental; "Activar" solo se habilita tras marcar la casilla. */
+@Composable
+private fun DbrExperimentalDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var understood by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.dbr_modpack_experimental_title),
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = stringResource(R.string.dbr_modpack_experimental_text))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { understood = !understood },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = understood, onCheckedChange = { understood = it })
+                    Text(
+                        text = stringResource(R.string.dbr_modpack_experimental_check),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onConfirm, enabled = understood) {
+                Text(text = stringResource(R.string.dbr_modpack_experimental_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.generic_cancel))
+            }
+        }
+    )
 }

@@ -105,6 +105,10 @@ import com.movtery.zalithlauncher.game.dbr.DbrInstall
 import com.movtery.zalithlauncher.game.dbr.DbrSync
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.text.style.TextAlign
 import com.movtery.zalithlauncher.ui.dbr.BlockBackground
 import com.movtery.zalithlauncher.ui.dbr.GoldButton
 import com.movtery.zalithlauncher.ui.dbr.stonePanel
@@ -234,6 +238,20 @@ private fun DbrHome(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            //DBR: recordatorio permanente mientras el modpack experimental esté activo.
+            if (AllSettings.dbrModpackVariant.state == DbrModpackVariant.EXPERIMENTAL) {
+                Text(
+                    modifier = Modifier
+                        .widthIn(max = 420.dp)
+                        .border(width = 2.dp, color = Color(0xFFE0603A))
+                        .background(Color(0xCC191614))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    text = stringResource(R.string.dbr_modpack_experimental_banner),
+                    color = Color(0xFFFFB4A0),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(text = stringResource(R.string.dbr_mods_ok), dot = Color(0xFF5FA838))
                 RendererChip()
@@ -301,7 +319,7 @@ private fun InfoChip(
 private fun RendererChip() {
     val renderers = remember { Renderers.getRenderers() }
     if (renderers.isEmpty()) return
-    var selectedId by remember { mutableStateOf(AllSettings.renderer.getValue()) }
+    val selectedId = AllSettings.renderer.state
     var expanded by remember { mutableStateOf(false) }
     val name = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
         ?: renderers.first().getRendererName()
@@ -316,8 +334,7 @@ private fun RendererChip() {
                 DropdownMenuItem(
                     text = { Text(text = r.getRendererName(), style = MaterialTheme.typography.labelMedium) },
                     onClick = {
-                        selectedId = r.getUniqueIdentifier()
-                        AllSettings.renderer.save(selectedId)
+                        AllSettings.renderer.save(r.getUniqueIdentifier())
                         expanded = false
                     }
                 )
@@ -889,7 +906,7 @@ private fun DbrInstallDialog(
 private fun RendererPicker(modifier: Modifier = Modifier) {
     val renderers = remember { Renderers.getRenderers() }
     if (renderers.isEmpty()) return
-    var selectedId by remember { mutableStateOf(AllSettings.renderer.getValue()) }
+    val selectedId = AllSettings.renderer.state
     var expanded by remember { mutableStateOf(false) }
     val currentName = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
         ?: renderers.first().getRendererName()
@@ -949,8 +966,7 @@ private fun RendererPicker(modifier: Modifier = Modifier) {
                         }
                     },
                     onClick = {
-                        selectedId = r.getUniqueIdentifier()
-                        AllSettings.renderer.save(selectedId)
+                        AllSettings.renderer.save(r.getUniqueIdentifier())
                         expanded = false
                     }
                 )

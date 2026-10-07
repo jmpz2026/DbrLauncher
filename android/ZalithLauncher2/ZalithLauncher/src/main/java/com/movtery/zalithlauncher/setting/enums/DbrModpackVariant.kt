@@ -18,5 +18,10 @@ enum class DbrModpackVariant(@StringRes val textRes: Int, val manifestUrl: Strin
     LITE(
         R.string.dbr_modpack_lite,
         "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-lite.json"
+    ),
+    /** Mods en pruebas para que los jugadores los testeen. No es para jugar en el servidor. */
+    EXPERIMENTAL(
+        R.string.dbr_modpack_experimental,
+        "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-experimental.json"
     )
 }

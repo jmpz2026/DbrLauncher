@@ -207,6 +207,16 @@ fun AboutInfoScreen(
                             text = "Launcher base sobre el que se construye DbrLauncher Mobile (fork no oficial, GPL-3.0).",
                             openLink = { openLink("https://github.com/ZalithLauncher/ZalithLauncher2") }
                         )
+                        //DBR: LTW va dentro del APK (libltw.so sin modificar, LGPL-3.0).
+                        LinkIconItem(
+                            icon = painterResource(R.drawable.ic_github),
+                            title = "LTW (Large Thin Wrapper)",
+                            text = "Motor de render que usa el modpack experimental. De artDev, SerpentSpirale, " +
+                                    "CADIndie y colaboradores (MojoLauncher). Se incluye sin modificar, compilado " +
+                                    "del commit 9dc80cb.",
+                            openLicense = { openLicense(R.raw.lgpl_3_license) },
+                            openLink = { openLink("https://github.com/MojoLauncher/LTW") }
+                        )
                         ButtonIconItem(
                             icon = painterResource(R.drawable.img_avatar_bangbang93),
                             title = "bangbang93",

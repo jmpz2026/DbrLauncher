@@ -19,9 +19,17 @@
 Esto puede tardar unos minutos…</string>
     <string name="dbr_install_error_title">Error al instalar DBR</string>
     <string name="dbr_modpack_variant_title">Variante del modpack</string>
-    <string name="dbr_modpack_variant_summary">Full y Lite comparten Minecraft y Forge. Al cambiar, el próximo Jugar re-sincroniza los mods.</string>
+    <string name="dbr_modpack_variant_summary">Full, Lite y Experimental comparten Minecraft y Forge. Al cambiar, el próximo Jugar re-sincroniza los mods.</string>
     <string name="dbr_modpack_full">Full</string>
     <string name="dbr_modpack_lite">Lite</string>
+    <string name="dbr_modpack_experimental">Experimental</string>
+    <string name="dbr_modpack_experimental_title">Modpack experimental</string>
+    <string name="dbr_modpack_experimental_text">Esta versión NO está diseñada para jugar en el servidor. Trae mods en pruebas para que los testees: puede fallar o no dejarte entrar al servidor. Para jugar normal, vuelve a Full o Lite.
+
+Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que necesita. Puedes cambiarlo después en la pantalla de inicio.</string>
+    <string name="dbr_modpack_experimental_check">Entiendo que no es para jugar en el servidor</string>
+    <string name="dbr_modpack_experimental_confirm">Activar</string>
+    <string name="dbr_modpack_experimental_banner">Modpack experimental activo: no está diseñado para jugar en el servidor.</string>
     <string name="dbr_modpack_seed_title">Configuración recomendada</string>
     <string name="dbr_modpack_seed_text">¿Aplicar también la configuración recomendada de esta versión (opciones gráficas y ajustes de mods)? Sobrescribe la configuración que tengas ahora. Se aplica al pulsar Jugar.</string>
     <string name="dbr_modpack_seed_apply">Aplicarla</string>

@@ -72,6 +72,13 @@ object AllSettings : SettingsRegistry() {
     val dbrModpackSyncPending = boolSetting("dbrModpackSyncPending", false)
 
     /**
+     * DBR: al activar el modpack experimental se cambia el motor de render a LTW. Estos dos
+     * guardan el motor de antes para restaurarlo al salir (game/dbr/DbrExperimental).
+     */
+    val dbrExperimentalSwitchedRenderer = boolSetting("dbrExperimentalSwitchedRenderer", false)
+    val dbrRendererBeforeExperimental = stringSetting("dbrRendererBeforeExperimental", "")
+
+    /**
      * DBR: respuesta a la propuesta de pasar a Lite por hardware (game/dbr/DbrPerf):
      * none | accepted | rejected. Sale una sola vez.
      */
