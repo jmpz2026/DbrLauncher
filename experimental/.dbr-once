@@ -18,6 +18,17 @@ optionsshaders.txt
 # DbrServerPack/docs/rendimiento/PLAN.md.
 config/dbrcore/rendimiento.cfg
 
+# Config de cliente que el jugador cambia desde el juego (menu V de JRMCore,
+# HUDs, preferencias visuales). Gestionadas se revertian en cada Jugar.
+config/jingames/jrmc/client_settings.cfg
+config/jingames/jrmc/client_notifications.cfg
+config/CustomNpcPlus/client.cfg
+config/CustomNpcPlus/dbc/client.cfg
+config/armourersWorkshop/client.cfg
+config/ArmorStatusHUD.cfg
+config/dbrcombathud.cfg
+config/dbrvoice.cfg
+
 # Ejemplo de .cfg que quieras dejar que el jugador toque sin que la sync se lo
 # revierta (descomenta y ajusta):
 # config/ArmorStatusHUD.cfg

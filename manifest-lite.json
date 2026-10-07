@@ -7,12 +7,14 @@
       "path": "config/ArmorStatusHUD.cfg",
       "sha1": "5bbf51edf6c723541e823ac9533107f5448df0d2",
       "size": 4730,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/ArmorStatusHUD.cfg"
     },
     {
       "path": "config/armourersWorkshop/client.cfg",
       "sha1": "fc0230fb1672468b60c6b005c7e193352c103dd5",
       "size": 4447,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/armourersWorkshop/client.cfg"
     },
     {
@@ -43,6 +45,7 @@
       "path": "config/CustomNpcPlus/client.cfg",
       "sha1": "f7cdc499e805d8615ae765ac0392f1f5682aedcf",
       "size": 2467,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/client.cfg"
     },
     {
@@ -55,6 +58,7 @@
       "path": "config/CustomNpcPlus/dbc/client.cfg",
       "sha1": "a13711e852a885e242e642805584fedf7406ca42",
       "size": 1804,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/CustomNpcPlus/dbc/client.cfg"
     },
     {
@@ -121,6 +125,7 @@
       "path": "config/dbrcombathud.cfg",
       "sha1": "c762277eeb644c758cdba3a96b7261890a6736f8",
       "size": 1239,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcombathud.cfg"
     },
     {
@@ -146,6 +151,7 @@
       "path": "config/dbrvoice.cfg",
       "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
       "size": 0,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrvoice.cfg"
     },
     {
@@ -290,12 +296,14 @@
       "path": "config/jingames/jrmc/client_notifications.cfg",
       "sha1": "8ed06583db31346b1ef2b034772e200bc976097b",
       "size": 600,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/client_notifications.cfg"
     },
     {
       "path": "config/jingames/jrmc/client_settings.cfg",
       "sha1": "54b42520ba7b6ba0a231fc904cdb0b082cd9285e",
       "size": 9739,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/jingames/jrmc/client_settings.cfg"
     },
     {

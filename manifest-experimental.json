@@ -7,12 +7,14 @@
       "path": "config/ArmorStatusHUD.cfg",
       "sha1": "5bbf51edf6c723541e823ac9533107f5448df0d2",
       "size": 4730,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/ArmorStatusHUD.cfg"
     },
     {
       "path": "config/armourersWorkshop/client.cfg",
       "sha1": "93d7a96f973073a91c058a785b46585eb9c499ce",
       "size": 4451,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/armourersWorkshop/client.cfg"
     },
     {
@@ -43,6 +45,7 @@
       "path": "config/CustomNpcPlus/client.cfg",
       "sha1": "f7cdc499e805d8615ae765ac0392f1f5682aedcf",
       "size": 2467,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/CustomNpcPlus/client.cfg"
     },
     {
@@ -55,6 +58,7 @@
       "path": "config/CustomNpcPlus/dbc/client.cfg",
       "sha1": "95b5641e4014324bb494daf1049ab45330cadc8f",
       "size": 1801,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/CustomNpcPlus/dbc/client.cfg"
     },
     {
@@ -121,6 +125,7 @@
       "path": "config/dbrcombathud.cfg",
       "sha1": "c762277eeb644c758cdba3a96b7261890a6736f8",
       "size": 1239,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrcombathud.cfg"
     },
     {
@@ -146,6 +151,7 @@
       "path": "config/dbrvoice.cfg",
       "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
       "size": 0,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrvoice.cfg"
     },
     {
@@ -290,12 +296,14 @@
       "path": "config/jingames/jrmc/client_notifications.cfg",
       "sha1": "8ed06583db31346b1ef2b034772e200bc976097b",
       "size": 600,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/jingames/jrmc/client_notifications.cfg"
     },
     {
       "path": "config/jingames/jrmc/client_settings.cfg",
       "sha1": "54b42520ba7b6ba0a231fc904cdb0b082cd9285e",
       "size": 9739,
+      "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/jingames/jrmc/client_settings.cfg"
     },
     {
@@ -407,10 +415,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
-      "path": "mods/angelica-2.2.29-dbr.12.jar",
-      "sha1": "148123ac31d5c8ab75218af096d042d419929663",
-      "size": 11871020,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.29-dbr.12.jar"
+      "path": "mods/angelica-2.2.29-dbr.13.jar",
+      "sha1": "a742a11829acc7ace8837743ead3d21df455b56e",
+      "size": 11871362,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.29-dbr.13.jar"
     },
     {
       "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
@@ -503,10 +511,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-1.1.6-dbr.5.jar",
-      "sha1": "92ed3cf04dfed8903e369a0a8205ec583b1987e7",
-      "size": 4349644,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.6-dbr.5.jar"
+      "path": "mods/npcdbc-1.1.6-dbr.6.jar",
+      "sha1": "94540c9306d9da8649c8ed7e0f538bf5864cbcb8",
+      "size": 4349730,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.6-dbr.6.jar"
     },
     {
       "path": "mods/OptifineComplemento.jar",
