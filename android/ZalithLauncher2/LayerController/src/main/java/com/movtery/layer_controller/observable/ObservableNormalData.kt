@@ -49,6 +49,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
     var isSwipple by mutableStateOf(data.isSwipple)
     var isPenetrable by mutableStateOf(data.isPenetrable)
     var isToggleable by mutableStateOf(data.isToggleable)
+    var icon by mutableStateOf(data.icon)
 
     override val behavior: InteractionBehavior
         get() = InteractionBehavior.from(
@@ -222,7 +223,8 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
             _clickEvents = clickEvents.filterValidEvent(),
             isSwipple = isSwipple,
             isPenetrable = isPenetrable,
-            isToggleable = isToggleable
+            isToggleable = isToggleable,
+            icon = icon
         )
     }
 }

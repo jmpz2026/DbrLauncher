@@ -83,3 +83,17 @@ al capturar el ratón). Lo provocaba el sondeo de versiones GL de Angelica en el
   `mglfwCreateWindow`). Avisa una vez por stdout. `glfwDestroyWindow()` comprueba con
   `containsKey` para no borrar la ventana principal por el fallback.
 - Recompilado `assets/components/lwjgl3/lwjgl-glfw-classes.jar`.
+
+## 7) Iconos en los botones de control (2026-10-07)
+**Motivo:** el layout por defecto de DBR usa botones con icono y nombre, como los controles de un
+juego móvil. ZL2 solo pintaba texto.
+
+- `LayerController/.../data/NormalData.kt` y `observable/ObservableNormalData.kt`: campo opcional
+  `icon` (id de icono, `null` por defecto). Los layouts sin `icon` no cambian, y un launcher viejo
+  ignora el campo (`ignoreUnknownKeys`). El editor no permite elegir icono, pero lo conserva al guardar.
+- `LayerController/.../data/ButtonIcons.kt`: mapa id → drawable. Un id desconocido se ignora.
+- `LayerController/src/main/res/drawable/ctl_icon_*.xml`: Material Symbols Outlined (Apache 2.0),
+  convertidos desde los SVG de `google/material-design-icons`. El id es el nombre del símbolo.
+- `LayerController/.../layout/Buttons.kt` (`TextButton`): si el botón tiene icono, lo pinta encima
+  del texto, con el color del contenido y a escala del botón.
+- Layout: `android/tools/dbr-layout.py` escribe `assets/default_layout.json`.

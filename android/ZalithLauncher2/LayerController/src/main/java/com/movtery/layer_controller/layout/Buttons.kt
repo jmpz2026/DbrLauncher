@@ -19,8 +19,14 @@
 package com.movtery.layer_controller.layout
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -28,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -35,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.movtery.layer_controller.data.ButtonIcons
 import com.movtery.layer_controller.data.TextAlignment
 import com.movtery.layer_controller.event.EventHandler
 import com.movtery.layer_controller.observable.DefaultObservableButtonStyle
@@ -149,18 +157,46 @@ internal fun TextButton(
                 )
                 else -> error("Unknown widget type")
             }
-            RtLText(
-                text = buttonTextStyle.text.translate(locale),
-                color = color,
-                fontSize = fontSize.sp,
-                textAlign = buttonTextStyle.textAlignment.textAlign,
-                fontWeight = if (buttonTextStyle.textBold) FontWeight.Bold else null,
-                fontStyle = if (buttonTextStyle.textItalic) FontStyle.Italic else null,
-                textDecoration = if (buttonTextStyle.textUnderline) TextDecoration.Underline else null,
-                style = LocalTextStyle.current.copy(
-                    lineHeight = (fontSize * 1.1).sp
+            val text = buttonTextStyle.text.translate(locale)
+            val label = @Composable {
+                RtLText(
+                    text = text,
+                    color = color,
+                    fontSize = fontSize.sp,
+                    textAlign = buttonTextStyle.textAlignment.textAlign,
+                    fontWeight = if (buttonTextStyle.textBold) FontWeight.Bold else null,
+                    fontStyle = if (buttonTextStyle.textItalic) FontStyle.Italic else null,
+                    textDecoration = if (buttonTextStyle.textUnderline) TextDecoration.Underline else null,
+                    style = LocalTextStyle.current.copy(
+                        lineHeight = (fontSize * 1.1).sp
+                    )
                 )
-            )
+            }
+
+            //DBR: icono encima del texto, a escala del botón
+            val icon = ButtonIcons.resolve((data as? ObservableNormalData)?.icon)
+            if (icon != null) {
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val iconSize = if (text.isBlank()) minOf(maxWidth, maxHeight) * 0.6f else minOf(maxWidth, maxHeight * 0.75f) * 0.45f
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(icon),
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier.size(iconSize)
+                        )
+                        if (text.isNotBlank()) label()
+                    }
+                }
+            } else {
+                label()
+            }
 
             DisposableEffect(Unit) {
                 data.onCompositionStart(eventHandler)

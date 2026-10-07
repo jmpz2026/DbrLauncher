@@ -604,22 +604,22 @@ object AllSettings : SettingsRegistry() {
     /**
      * 是否在游戏中启用摇杆移动组件
      */
-    val enableJoystickControl = boolSetting("enableJoystickControl", false) //DBR: apagado, el layout por defecto trae cruceta
+    val enableJoystickControl = boolSetting("enableJoystickControl", true) //DBR: el layout por defecto deja su sitio libre (cruceta de respaldo)
 
     /**
      * 游戏中摇杆移动组件的 X 坐标 0~10000
      */
-    val joystickControlX = intSetting("joystickControlX", 1800, POSITION_RANGE) //DBR: abajo-izquierda
+    val joystickControlX = intSetting("joystickControlX", 1507, POSITION_RANGE) //DBR: centro en (170, 275) dp de 873x393, ver tools/dbr-layout.py
 
     /**
      * 游戏中摇杆移动组件的 Y 坐标 0~10000
      */
-    val joystickControlY = intSetting("joystickControlY", 7200, POSITION_RANGE) //DBR: abajo-izquierda
+    val joystickControlY = intSetting("joystickControlY", 7774, POSITION_RANGE) //DBR: centro en (170, 275) dp de 873x393, ver tools/dbr-layout.py
 
     /**
      * 游戏中摇杆移动组件的大小 Dp
      */
-    val joystickControlSize = intSetting("joystickControlSize", 120, 80..180)
+    val joystickControlSize = intSetting("joystickControlSize", 110, 80..180) //DBR
 
     /**
      * 游戏中摇杆移动组件是否使用控制布局提供的样式
