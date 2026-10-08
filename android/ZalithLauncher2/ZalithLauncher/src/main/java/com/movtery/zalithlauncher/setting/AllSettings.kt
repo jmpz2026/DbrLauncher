@@ -84,6 +84,11 @@ object AllSettings : SettingsRegistry() {
      */
     val dbrLiteProposal = stringSetting("dbrLiteProposal", "none")
 
+    /**
+     * DBR: último paso de migración de ajustes aplicado (game/dbr/DbrSettingsMigration).
+     */
+    val dbrSettingsRevision = intSetting("dbrSettingsRevision", 0, min = 0)
+
     //Renderer
     /**
      * 全局渲染器

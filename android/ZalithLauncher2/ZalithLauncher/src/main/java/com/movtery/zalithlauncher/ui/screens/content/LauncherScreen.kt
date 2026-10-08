@@ -143,6 +143,13 @@ fun LauncherScreen(
                     screenKey = NormalNavKey.AccountManager(FirstLoginMenu.NONE)
                 )
             },
+            toRendererSettings = {
+                backStackViewModel.settingsScreen.navigateOnce(NormalNavKey.Settings.Renderer)
+                backStackViewModel.mainScreen.removeAndNavigateTo(
+                    removes = backStackViewModel.clearBeforeNavKeys,
+                    screenKey = backStackViewModel.settingsScreen
+                )
+            },
             onExit = { (context as? Activity)?.finish() }
         )
     }
@@ -153,6 +160,7 @@ fun LauncherScreen(
 private fun DbrHome(
     onLaunchGame: (Version?) -> Unit,
     toAccountManageScreen: () -> Unit,
+    toRendererSettings: () -> Unit,
     onExit: () -> Unit
 ) {
     val account by AccountsManager.currentAccountFlow.collectAsStateWithLifecycle()
@@ -254,7 +262,7 @@ private fun DbrHome(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoChip(text = stringResource(R.string.dbr_mods_ok), dot = Color(0xFF5FA838))
-                RendererChip()
+                RendererChip(onClick = toRendererSettings)
                 val serverState = serverVm.state
                 val serverDot = when (serverState) {
                     is DbrServerViewModel.State.Online -> Color(0xFF5FA838)
@@ -314,407 +322,17 @@ private fun InfoChip(
     }
 }
 
-/** Chip de motor de render con desplegable (máxima compatibilidad). */
+/** Chip con el motor de render actual; el motor se cambia en Ajustes > Renderizador. */
 @Composable
-private fun RendererChip() {
+private fun RendererChip(onClick: () -> Unit) {
     val renderers = remember { Renderers.getRenderers() }
     if (renderers.isEmpty()) return
     val selectedId = AllSettings.renderer.state
-    var expanded by remember { mutableStateOf(false) }
     val name = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
         ?: renderers.first().getRendererName()
-    Box {
-        InfoChip(text = "Motor: $name", onClick = { expanded = true })
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            shape = MaterialTheme.shapes.large
-        ) {
-            renderers.forEach { r ->
-                DropdownMenuItem(
-                    text = { Text(text = r.getRendererName(), style = MaterialTheme.typography.labelMedium) },
-                    onClick = {
-                        AllSettings.renderer.save(r.getUniqueIdentifier())
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
+    InfoChip(text = "Motor: $name", onClick = onClick)
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun ContentMenu(
-    isVisible: Boolean,
-    onHomePageEvent: (MarkdownBlock.Button.Event) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val yOffset by swapAnimateDpAsState(
-        targetValue = (-40).dp,
-        swapIn = isVisible
-    )
-
-    val homePageViewModel = LocalHomePageViewModel.current
-    val pageState by homePageViewModel.pageState.collectAsStateWithLifecycle()
-    val richTextStyle = defaultRichTextStyle()
-
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
-        contentPadding = PaddingValues(all = 12.dp)
-    ) {
-        if (BuildConfig.DEBUG) {
-            item {
-                //debug版本关不掉的警告，防止有人把测试版当正式版用 XD
-                BackgroundCard(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.generic_warning),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = stringResource(R.string.launcher_version_debug_warning, BuildKeys.LAUNCHER_NAME),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            modifier = Modifier
-                                .alpha(0.8f)
-                                .align(Alignment.End),
-                            text = stringResource(R.string.launcher_version_debug_warning_cant_close),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            }
-        }
-
-        when (val state = pageState) {
-            is HomePageState.Blank -> {}
-            is HomePageState.Loading -> {
-                item(key = "homepage_loading_box") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(all = 24.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            LoadingIndicator()
-                            Text(
-                                text = stringResource(R.string.settings_launcher_home_page_loading),
-                                style = MaterialTheme.typography.labelMedium,
-                            )
-                        }
-                    }
-                }
-            }
-            is HomePageState.None -> {
-                customHomePage(
-                    blocks = state.page,
-                    richTextStyle = richTextStyle,
-                    onEvent = onHomePageEvent
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RightMenuContent(
-    modifier: Modifier = Modifier,
-    onLaunchGame: (Version?) -> Unit,
-    toAccountManageScreen: () -> Unit,
-    toVersionManageScreen: () -> Unit,
-    toVersionSettingsScreen: () -> Unit,
-    launchButton: @Composable (
-        innerModifier: Modifier,
-        onClick: () -> Unit,
-        text: @Composable RowScope.() -> Unit
-    ) -> Unit,
-) {
-    val account by AccountsManager.currentAccountFlow.collectAsStateWithLifecycle()
-    val version by VersionsManager.currentVersion.collectAsStateWithLifecycle()
-    val isRefreshing by VersionsManager.isRefreshing.collectAsStateWithLifecycle()
-    val allVersions by VersionsManager.versions.collectAsStateWithLifecycle()
-    //DBR: ¿ya existe la instancia DBR válida? Si no, el botón "Jugar" pasa a "Instalar DBR".
-    val hasDbr = allVersions.any { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
-    val dbrInstallViewModel = rememberDbrInstallViewModel()
-    val context = LocalContext.current
-
-    DbrInstallDialog(dbrInstallViewModel)
-
-    ConstraintLayout(
-        modifier = modifier
-    ) {
-        val (accountAvatar, versionManagerLayout, launchButton) = createRefs()
-
-        AccountAvatar(
-            modifier = Modifier
-                .constrainAs(accountAvatar) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(launchButton.top, margin = 32.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            account = account,
-            onClick = toAccountManageScreen
-        )
-
-        var showList by remember { mutableStateOf(false) }
-        var versionManagerRow by remember { mutableStateOf<LayoutCoordinates?>(null) }
-        Box(
-            modifier = Modifier.constrainAs(versionManagerLayout) {
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                bottom.linkTo(launchButton.top)
-            },
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .onGloballyPositioned { coordinates ->
-                            versionManagerRow = coordinates
-                        }
-                ) {
-                    VersionManagerLayout(
-                        isRefreshing = isRefreshing,
-                        version = version,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth(),
-                        swapToVersionManage = toVersionManageScreen,
-                        openListMenu = { showList = true },
-                    )
-                }
-                version?.takeIf { !isRefreshing && it.isValid() }?.let {
-                    IconButton(
-                        modifier = Modifier.padding(end = 8.dp),
-                        onClick = toVersionSettingsScreen
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_settings_filled),
-                            contentDescription = stringResource(R.string.versions_manage_settings)
-                        )
-                    }
-                }
-            }
-            RendererPicker(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
-            }
-
-            val menuAnchor = versionManagerRow
-            val menuAnchorBounds = menuAnchor?.boundsInParent()
-            val menuAnchorX = menuAnchorBounds?.left ?: 0f
-            val menuAnchorHeight = menuAnchorBounds?.height ?: 0f
-
-            DropdownMenu(
-                expanded = showList && menuAnchor != null,
-                onDismissRequest = { showList = false },
-                modifier = Modifier.width(260.dp),
-                offset = DpOffset(
-                    x = with(LocalDensity.current) { menuAnchorX.toDp() },
-                    y = with(LocalDensity.current) { (-menuAnchorHeight).toDp() } - 8.dp
-                ),
-                shape = MaterialTheme.shapes.extraLarge
-            ) {
-                val versions by VersionsManager.versions.collectAsStateWithLifecycle()
-                versions.forEach { version0 ->
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CommonVersionInfoLayout(
-                                    modifier = Modifier.weight(1f),
-                                    version = version0,
-                                    iconSize = 28.dp
-                                )
-                                IconButton(
-                                    onClick = {
-                                        onLaunchGame(version0)
-                                        showList = false
-                                    }
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.ic_play_arrow_filled),
-                                        contentDescription = stringResource(R.string.main_launch_game),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (version == version0) return@DropdownMenuItem
-                            VersionsManager.saveVersion(version0)
-                            showList = false
-                        }
-                    )
-                }
-            }
-        }
-
-        launchButton(
-            Modifier
-                .fillMaxWidth()
-                .constrainAs(launchButton) {
-                    bottom.linkTo(parent.bottom, margin = 8.dp)
-                }
-                .padding(PaddingValues(horizontal = 12.dp)),
-            {
-                //DBR: sin instancia → instalar; con instancia → sincronizar modpack (obligatorio) y lanzar.
-                if (hasDbr) {
-                    val dbrVersion = allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
-                    if (dbrVersion != null) {
-                        dbrInstallViewModel.syncThenLaunch(dbrVersion) { onLaunchGame(null) }
-                    } else {
-                        onLaunchGame(null)
-                    }
-                } else {
-                    dbrInstallViewModel.install(context)
-                }
-            },
-            {
-                MarqueeText(
-                    text = stringResource(
-                        if (hasDbr) R.string.main_launch_game else R.string.dbr_install_button
-                    )
-                )
-            }
-        )
-    }
-}
-
-@Composable
-private fun RightMenu(
-    isVisible: Boolean,
-    onLaunchGame: (Version?) -> Unit,
-    modifier: Modifier = Modifier,
-    toAccountManageScreen: () -> Unit = {},
-    toVersionManageScreen: () -> Unit = {},
-    toVersionSettingsScreen: () -> Unit = {}
-) {
-    val xOffset by swapAnimateDpAsState(
-        targetValue = 40.dp,
-        swapIn = isVisible,
-        isHorizontal = true
-    )
-
-    Box(
-        modifier = modifier
-            .offset { IntOffset(x = xOffset.roundToPx(), y = 0) }
-            .stonePanel()
-            .padding(6.dp)
-    ) {
-        RightMenuContent(
-            modifier = Modifier.fillMaxSize(),
-            onLaunchGame = onLaunchGame,
-            toAccountManageScreen = toAccountManageScreen,
-            toVersionManageScreen = toVersionManageScreen,
-            toVersionSettingsScreen = toVersionSettingsScreen
-        ) { innerModifier, onClick, text ->
-            //DBR: botón "Jugar" oro estilo desktop
-            GoldButton(
-                modifier = innerModifier,
-                onClick = onClick,
-                content = text
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun VersionManagerLayout(
-    isRefreshing: Boolean,
-    version: Version?,
-    swapToVersionManage: () -> Unit,
-    openListMenu: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .clip(shape = MaterialTheme.shapes.large)
-            .combinedClickable(
-                role = Role.Button,
-                onClick = swapToVersionManage,
-                onLongClick = {
-                    if (version != null) openListMenu()
-                }
-            )
-            .padding(PaddingValues(all = 8.dp))
-    ) {
-        if (isRefreshing) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                LoadingIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.Center)
-                )
-            }
-        } else {
-            VersionIconImage(
-                version = version,
-                modifier = Modifier
-                    .size(28.dp)
-                    .align(Alignment.CenterVertically)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-
-            if (version == null) {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .basicMarquee(iterations = Int.MAX_VALUE),
-                    text = stringResource(R.string.versions_manage_no_versions),
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1
-                )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically)
-                ) {
-                    Text(
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                        text = version.getVersionName(),
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1
-                    )
-                    if (version.isValid()) {
-                        Text(
-                            modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            text = version.getVersionSummary(),
-                            style = MaterialTheme.typography.labelSmall,
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 /** Estado de la provisión de la instancia DBR (Minecraft 1.7.10 + Forge). */
 private sealed interface DbrInstallState {
     data object Idle : DbrInstallState
@@ -898,87 +516,5 @@ private fun DbrInstallDialog(
             }
         }
         else -> {}
-    }
-}
-
-/** DBR: selector rápido de motor de render en la home (máxima compatibilidad de dispositivos). */
-@Composable
-private fun RendererPicker(modifier: Modifier = Modifier) {
-    val renderers = remember { Renderers.getRenderers() }
-    if (renderers.isEmpty()) return
-    val selectedId = AllSettings.renderer.state
-    var expanded by remember { mutableStateOf(false) }
-    val currentName = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
-        ?: renderers.first().getRendererName()
-
-    Column(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.large)
-                .clickable { expanded = true }
-                .padding(all = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    modifier = Modifier.alpha(0.7f),
-                    text = stringResource(R.string.dbr_renderer_label),
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1
-                )
-                Text(
-                    text = currentName,
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1
-                )
-            }
-            Icon(
-                painter = painterResource(R.drawable.ic_settings_filled),
-                contentDescription = stringResource(R.string.dbr_renderer_label),
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.width(260.dp),
-            shape = MaterialTheme.shapes.large
-        ) {
-            renderers.forEach { r ->
-                val isSel = r.getUniqueIdentifier() == selectedId
-                DropdownMenuItem(
-                    text = {
-                        Column {
-                            Text(
-                                text = r.getRendererName(),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
-                            r.getRendererSummary()?.let { s ->
-                                Text(
-                                    modifier = Modifier.alpha(0.7f),
-                                    text = s,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-                    },
-                    onClick = {
-                        AllSettings.renderer.save(r.getUniqueIdentifier())
-                        expanded = false
-                    }
-                )
-            }
-        }
-
-        Text(
-            modifier = Modifier
-                .alpha(0.6f)
-                .padding(start = 8.dp, top = 2.dp),
-            text = stringResource(R.string.dbr_renderer_hint),
-            style = MaterialTheme.typography.labelSmall
-        )
     }
 }

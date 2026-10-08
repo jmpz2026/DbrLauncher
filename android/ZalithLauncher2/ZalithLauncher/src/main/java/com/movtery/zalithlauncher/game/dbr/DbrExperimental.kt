@@ -5,6 +5,7 @@
 
 package com.movtery.zalithlauncher.game.dbr
 
+import com.movtery.zalithlauncher.game.renderer.renderers.GL4ESRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.LTWRenderer
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
@@ -12,7 +13,8 @@ import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 /**
  * El modpack experimental lleva Angelica, que solo arranca con LTW. Al activarlo se cambia el
  * motor de render a LTW y se recuerda el anterior; al salir se restaura, salvo que el jugador
- * lo haya cambiado a mano mientras tanto (entonces manda su elección).
+ * lo haya cambiado a mano mientras tanto (entonces manda su elección). Si antes no había
+ * motor elegido, se pone GL4ES, el de los modpacks Completo y Ligero.
  */
 object DbrExperimental {
     /** Activa la variante experimental (el jugador ya confirmó el aviso). */
@@ -33,7 +35,9 @@ object DbrExperimental {
     fun onLeave() {
         if (!AllSettings.dbrExperimentalSwitchedRenderer.getValue()) return
         if (AllSettings.renderer.getValue() == LTWRenderer.getUniqueIdentifier()) {
-            AllSettings.renderer.save(AllSettings.dbrRendererBeforeExperimental.getValue())
+            //Sin motor elegido antes = default de ZL2 (el primero de la lista), que no es el de DBR.
+            val previous = AllSettings.dbrRendererBeforeExperimental.getValue()
+            AllSettings.renderer.save(previous.ifBlank { GL4ESRenderer.getUniqueIdentifier() })
         }
         AllSettings.dbrExperimentalSwitchedRenderer.save(false)
         AllSettings.dbrRendererBeforeExperimental.reset()

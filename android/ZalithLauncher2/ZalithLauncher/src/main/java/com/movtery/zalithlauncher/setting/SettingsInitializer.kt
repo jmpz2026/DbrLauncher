@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.setting
 
 import android.content.Context
+import com.movtery.zalithlauncher.game.dbr.DbrSettingsMigration
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.platform.bytesToMB
 import com.movtery.zalithlauncher.utils.platform.getMaxMemoryForSettings
@@ -38,6 +39,8 @@ private const val DBR_DEFAULT_JVM_ARGS =
  */
 fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     if (reloadAll) AllSettings.reloadAll()
+    //DBR: antes de guardar nada, para distinguir instalación nueva de actualización.
+    DbrSettingsMigration.run(DbrSettingsMigration.isNewInstall())
     val currentRam = AllSettings.ramAllocation.getValue()
     if (currentRam == null) {
         val ram = findBestRAMAllocation(context)
