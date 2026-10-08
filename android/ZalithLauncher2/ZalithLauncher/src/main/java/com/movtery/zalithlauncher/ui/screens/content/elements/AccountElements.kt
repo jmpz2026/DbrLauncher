@@ -82,6 +82,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
@@ -439,12 +440,7 @@ fun AccountItem(
 @Composable
 fun LoginMenuDialog(
     onDismissRequest: () -> Unit,
-    onMicrosoftLogin: () -> Unit,
     onLocalLogin: () -> Unit,
-    authServers: List<AuthServer>,
-    onAuthServerLogin: (server: AuthServer) -> Unit,
-    onAddAuthServer: () -> Unit,
-    onDeleteAuthServer: (server: AuthServer) -> Unit,
 ) {
     val context = LocalContext.current
     Dialog(
@@ -485,9 +481,12 @@ fun LoginMenuDialog(
                             onDismissRequest()
                         }
                     )
-                    //DBR: "Iniciar sesión" (aún no disponible)
+                    //DBR: Microsoft se ve pero está apagado hasta tener OAUTH_CLIENT_ID; tocarlo
+                    //solo avisa. Los servidores de autenticación (authlib) no se ofrecen.
                     LoginItem(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .alpha(0.45f),
                         title = stringResource(R.string.dbr_login_button),
                         onClick = {
                             Toast.makeText(
@@ -516,12 +515,7 @@ private fun PreviewLoginMenuDialog() {
     MaterialExpressiveTheme {
         LoginMenuDialog(
             onDismissRequest = {},
-            onMicrosoftLogin = {},
-            onLocalLogin = {},
-            authServers = emptyList(),
-            onAuthServerLogin = {},
-            onAddAuthServer = {},
-            onDeleteAuthServer = {}
+            onLocalLogin = {}
         )
     }
 }

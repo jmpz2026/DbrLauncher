@@ -380,36 +380,9 @@ private fun LoginMenuOperation(
                         AccountManageIntent.UpdateLoginMenuOp(LoginMenuOperation.None)
                     )
                 },
-                authServers = authServers,
-                onMicrosoftLogin = {
-                    if (!isMicrosoftLogging()) {
-                        actions.onIntent(
-                            AccountManageIntent.UpdateMicrosoftLoginOp(
-                                MicrosoftLoginOperation.Tip
-                            )
-                        )
-                    }
-                },
                 onLocalLogin = {
                     actions.onIntent(AccountManageIntent.UpdateLocalLoginOp(LocalLoginOperation.Edit))
                 },
-                onAuthServerLogin = { server ->
-                    actions.onIntent(
-                        AccountManageIntent.UpdateOtherLoginOp(
-                            OtherLoginOperation.OnLogin(server)
-                        )
-                    )
-                },
-                onAddAuthServer = {
-                    actions.onIntent(AccountManageIntent.UpdateServerOp(ServerOperation.AddNew))
-                },
-                onDeleteAuthServer = { server ->
-                    actions.onIntent(
-                        AccountManageIntent.UpdateServerOp(
-                            ServerOperation.Delete(server)
-                        )
-                    )
-                }
             )
         }
     }

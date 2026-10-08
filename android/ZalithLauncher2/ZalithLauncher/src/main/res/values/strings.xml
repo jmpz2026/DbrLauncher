@@ -54,8 +54,8 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_control_manage_summary">Crear, importar, exportar o editar los layouts de botones.</string>
     <string name="dbr_gamepad_summary">Usar un mando físico y cambiar su mapeo de botones.</string>
     <string name="dbr_mods_import_no_instance">Instala DBR primero (botón Instalar DBR)</string>
-    <string name="dbr_login_button">Iniciar sesión</string>
-    <string name="dbr_login_not_available">Inicio de sesión no disponible por ahora</string>
+    <string name="dbr_login_button">Cuenta Microsoft · Próximamente</string>
+    <string name="dbr_login_not_available">Las cuentas Microsoft llegarán pronto. Por ahora usa una cuenta offline.</string>
     <string name="unofficial_modified_version">Unofficial Modified Version</string>
     <string name="generic_cancel">Cancel</string>
     <string name="generic_confirm">Confirm</string>
