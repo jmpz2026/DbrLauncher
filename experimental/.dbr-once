@@ -33,3 +33,11 @@ config/dbrvoice.cfg
 # revierta (descomenta y ajusta):
 # config/ArmorStatusHUD.cfg
 # config/*Client*.cfg
+
+# Config grafica de Angelica/NotFine para Android (2026-10-07).
+# optionsnf.txt (NotFine) es siembra: los archivos de la raiz solo entran al manifest
+# si estan listados aqui, asi que no se puede forzar.
+optionsnf.txt
+# config/angelica-options.json: se forzo una vez como gestionada (assets d3a7cd7)
+# y ahora es siembra; el jugador la cambia desde el menu de video.
+config/angelica-options.json

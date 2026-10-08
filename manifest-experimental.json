@@ -4,6 +4,13 @@
   "forge": "10.13.4.1614",
   "files": [
     {
+      "path": "config/angelica-options.json",
+      "sha1": "c1251c74d4a6c8d7d12c562fbb2265650ef8dd53",
+      "size": 1326,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/angelica-options.json"
+    },
+    {
       "path": "config/ArmorStatusHUD.cfg",
       "sha1": "5bbf51edf6c723541e823ac9533107f5448df0d2",
       "size": 4730,
@@ -415,10 +422,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
-      "path": "mods/beddium-mc1.7.10-1.2.5-j8.jar",
-      "sha1": "2c4e1d08d00fe3ff19db6637b8de3d54e8cb534a",
-      "size": 850622,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/beddium-mc1.7.10-1.2.5-j8.jar"
+      "path": "mods/angelica-2.2.30.jar",
+      "sha1": "0f6a23dfc855a01d2cced56aa8feaa30f3f67124",
+      "size": 11871676,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.30.jar"
     },
     {
       "path": "mods/bspkrsCore-6.16.1.jar",
@@ -467,18 +474,6 @@
       "sha1": "60f73368a1d66eba3ed58c3701439111ce55cf9a",
       "size": 8834441,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/EtFuturumDbr-1.0.0.jar"
-    },
-    {
-      "path": "mods/falsepatternlib-mc1.7.10-1.12.2.jar",
-      "sha1": "9ec3ae13ef669b55173739eb49178050356cfbc7",
-      "size": 994672,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/falsepatternlib-mc1.7.10-1.12.2.jar"
-    },
-    {
-      "path": "mods/falsetweaks-mc1.7.10-4.4.5.jar",
-      "sha1": "67df3dc14a22a3726da715f2b7df09188fc0c2b4",
-      "size": 801446,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/falsetweaks-mc1.7.10-4.4.5.jar"
     },
     {
       "path": "mods/gtnhlib-0.11.36-dbr.1.jar",
@@ -534,6 +529,13 @@
       "size": 2565,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/options.txt"
+    },
+    {
+      "path": "optionsnf.txt",
+      "sha1": "bd13fab6d3fffe72c5b326dc1e9ca591b1a3a367",
+      "size": 869,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/optionsnf.txt"
     },
     {
       "path": "optionsof.txt",
