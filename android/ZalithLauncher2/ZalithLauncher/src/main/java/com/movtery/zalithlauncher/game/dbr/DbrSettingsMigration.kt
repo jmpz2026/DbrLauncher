@@ -6,6 +6,7 @@
 package com.movtery.zalithlauncher.game.dbr
 
 import com.movtery.zalithlauncher.game.renderer.renderers.GL4ESRenderer
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.launcherMMKV
 
@@ -21,7 +22,9 @@ import com.movtery.zalithlauncher.setting.launcherMMKV
  */
 object DbrSettingsMigration {
     /** Pasos en orden; el índice + 1 es la revisión. */
-    private val steps: List<() -> Unit> = listOf()
+    private val steps: List<() -> Unit> = listOf(
+        ::removedFromSettingsUi
+    )
 
     private val currentRevision get() = steps.size
 
@@ -44,6 +47,44 @@ object DbrSettingsMigration {
             steps[revision - 1]()
             unit.save(revision)
         }
+    }
+
+    /**
+     * Revisión 1: opciones que salieron de Ajustes al simplificarlos (efectos visuales, página
+     * de inicio, mirrors, retención de logs, imágenes de puntero, fuente y vaciado del log).
+     * Las que siguen en el menú del juego (sensibilidades, giroscopio...) no se tocan.
+     */
+    private fun removedFromSettingsUi() {
+        listOf(
+            AllSettings.launcherFestivalEffects,
+            AllSettings.launcherBackgroundOpacity,
+            AllSettings.videoBackgroundVolume,
+            AllSettings.backgroundBlur,
+            AllSettings.backgroundBlurType,
+            AllSettings.homePageType,
+            AllSettings.homePageURL,
+            AllSettings.launcherAnimateSpeed,
+            AllSettings.launcherAnimateExtent,
+            AllSettings.launcherSwapAnimateType,
+            AllSettings.fetchModLoaderSource,
+            AllSettings.fileDownloadSource,
+            AllSettings.assetSearchSource,
+            AllSettings.assetDownloadSource,
+            AllSettings.launcherLogRetentionDays,
+            AllSettings.logTextSize,
+            AllSettings.logBufferFlushInterval,
+            AllSettings.arrowMouseHotspot,
+            AllSettings.linkMouseHotspot,
+            AllSettings.iBeamMouseHotspot,
+            AllSettings.crossHairMouseHotspot,
+            AllSettings.resizeNSMouseHotspot,
+            AllSettings.resizeEWMouseHotspot,
+            AllSettings.resizeAllMouseHotspot,
+            AllSettings.notAllowedMouseHotspot
+        ).forEach { it.reset() }
+        //Fondo e imágenes de puntero personalizados: archivos, no ajustes.
+        runCatching { PathManager.FILE_LAUNCHER_BACKGROUND.delete() }
+        runCatching { PathManager.DIR_MOUSE_POINTER.listFiles()?.forEach { it.delete() } }
     }
 
     /** Valores que solo reciben los jugadores nuevos (los actuales conservan los suyos). */

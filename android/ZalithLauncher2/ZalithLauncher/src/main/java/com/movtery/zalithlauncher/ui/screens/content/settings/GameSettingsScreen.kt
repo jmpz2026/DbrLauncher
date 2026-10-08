@@ -74,7 +74,8 @@ fun GameSettingsScreen(
     key: NestedNavKey.Settings,
     settingsScreenKey: TitledNavKey?,
     mainScreenKey: TitledNavKey?,
-    eventViewModel: EventViewModel
+    eventViewModel: EventViewModel,
+    navigateTo: (TitledNavKey) -> Unit
 ) {
     BaseScreen(
         Triple(key, mainScreenKey, false),
@@ -144,6 +145,15 @@ fun GameSettingsScreen(
                         unit = AllSettings.autoPickJavaRuntime,
                         title = stringResource(R.string.settings_game_auto_pick_java_runtime_title),
                         summary = stringResource(R.string.settings_game_auto_pick_java_runtime_summary)
+                    )
+
+                    //DBR: el Gestor de Java ya no es pestaña propia, se abre desde aquí.
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        title = stringResource(R.string.settings_tab_java_manage),
+                        summary = stringResource(R.string.dbr_java_manage_summary),
+                        onClick = { navigateTo(NormalNavKey.Settings.JavaManager) }
                     )
 
                     val nativePlugins = remember {
@@ -256,28 +266,6 @@ fun GameSettingsScreen(
                         unit = AllSettings.showLogAutomatic,
                         title = stringResource(R.string.settings_game_show_log_automatic_title),
                         summary = stringResource(R.string.settings_game_show_log_automatic_summary)
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.logTextSize,
-                        title = stringResource(R.string.settings_game_log_text_size_title),
-                        summary = stringResource(R.string.settings_game_log_text_size_summary),
-                        valueRange = AllSettings.logTextSize.floatRange,
-                        suffix = "Sp",
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.logBufferFlushInterval,
-                        title = stringResource(R.string.settings_game_log_buffer_flush_interval_title),
-                        summary = stringResource(R.string.settings_game_log_buffer_flush_interval_summary),
-                        valueRange = AllSettings.logBufferFlushInterval.floatRange,
-                        suffix = "ms",
-                        fineTuningControl = true
                     )
                 }
             }

@@ -206,42 +206,7 @@ fun GamepadSettingsScreen(
                         summary = stringResource(R.string.settings_gamepad_summary)
                     )
 
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gamepadDeadZoneScale,
-                        title = stringResource(R.string.settings_gamepad_deadzone_title),
-                        summary = stringResource(R.string.settings_gamepad_deadzone_summary),
-                        valueRange = AllSettings.gamepadDeadZoneScale.floatRange,
-                        suffix = "%",
-                        enabled = AllSettings.gamepadControl.state,
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gamepadCursorSensitivity,
-                        title = stringResource(R.string.settings_gamepad_cursor_sensitivity_title),
-                        summary = stringResource(R.string.settings_gamepad_cursor_sensitivity_summary),
-                        valueRange = AllSettings.gamepadCursorSensitivity.floatRange,
-                        suffix = "%",
-                        enabled = AllSettings.gamepadControl.state,
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gamepadCameraSensitivity,
-                        title = stringResource(R.string.settings_gamepad_camera_sensitivity_title),
-                        summary = stringResource(R.string.settings_gamepad_camera_sensitivity_summary),
-                        valueRange = AllSettings.gamepadCameraSensitivity.floatRange,
-                        suffix = "%",
-                        enabled = AllSettings.gamepadControl.state,
-                        fineTuningControl = true
-                    )
-
+                    //DBR: zona muerta y sensibilidades se ajustan desde el menu del juego.
                     ListSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Bottom,

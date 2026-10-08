@@ -91,6 +91,15 @@ fun RendererSettingsScreen(
             isVisible = isVisible,
             contentPadding = PaddingValues(all = 12.dp)
         ) { scope ->
+            //DBR: calidad del modpack arriba (pestaña Rendimiento).
+            animatedItem(scope) { yOffset ->
+                DbrModpackSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier

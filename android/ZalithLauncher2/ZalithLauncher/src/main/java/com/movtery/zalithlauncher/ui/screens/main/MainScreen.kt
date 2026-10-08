@@ -91,6 +91,7 @@ import com.movtery.zalithlauncher.ui.screens.content.AccountManageScreen
 import com.movtery.zalithlauncher.ui.screens.content.DownloadScreen
 import com.movtery.zalithlauncher.ui.screens.content.FileSelectorScreen
 import com.movtery.zalithlauncher.ui.screens.content.HomePageEditorScreen
+import com.movtery.zalithlauncher.ui.screens.content.settings.DBR_DISCORD_URL
 import com.movtery.zalithlauncher.ui.screens.content.LauncherScreen
 import com.movtery.zalithlauncher.ui.screens.content.LicenseScreen
 import com.movtery.zalithlauncher.ui.screens.content.LogViewScreen
@@ -243,7 +244,7 @@ fun MainScreen(
                     )
                 },
                 onDiscord = {
-                    eventViewModel.sendEvent(EventViewModel.Event.OpenLink("https://discord.gg/HaQh38sFbD"))
+                    eventViewModel.sendEvent(EventViewModel.Event.OpenLink(DBR_DISCORD_URL))
                 }
             )
         }

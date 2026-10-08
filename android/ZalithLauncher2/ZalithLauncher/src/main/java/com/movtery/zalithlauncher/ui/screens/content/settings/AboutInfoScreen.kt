@@ -71,6 +71,7 @@ import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedLazyColumn
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.CardPosition
@@ -85,7 +86,8 @@ fun AboutInfoScreen(
     mainScreenKey: TitledNavKey?,
     checkUpdate: () -> Unit,
     openLicense: (raw: Int) -> Unit,
-    openLink: (url: String) -> Unit
+    openLink: (url: String) -> Unit,
+    eventViewModel: EventViewModel
 ) {
     BaseScreen(
         Triple(key, mainScreenKey, false),
@@ -96,6 +98,16 @@ fun AboutInfoScreen(
             isVisible = isVisible,
             contentPadding = PaddingValues(all = 12.dp)
         ) { scope ->
+            //DBR: pestaña Ayuda = soporte arriba + acerca de y licencias debajo.
+            animatedItem(scope) { yOffset ->
+                DbrHelpSection(
+                    eventViewModel = eventViewModel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             animatedItem(scope) { yOffset ->
                 ChunkLayout(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },

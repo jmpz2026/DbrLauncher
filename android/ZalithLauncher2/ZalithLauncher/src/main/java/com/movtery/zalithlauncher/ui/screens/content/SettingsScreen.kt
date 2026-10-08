@@ -56,6 +56,7 @@ import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.fadeEdge
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
+import com.movtery.zalithlauncher.ui.screens.navigateTo
 import com.movtery.zalithlauncher.ui.screens.TitledNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.CategoryIcon
 import com.movtery.zalithlauncher.ui.screens.content.elements.CategoryItem
@@ -65,7 +66,6 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.ControlSettingsScr
 import com.movtery.zalithlauncher.ui.screens.content.settings.GameSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.settings.GamepadSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.settings.JavaManageScreen
-import com.movtery.zalithlauncher.ui.screens.content.settings.LauncherSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.settings.RendererSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.ModsManagerScreen
 import com.movtery.zalithlauncher.ui.screens.navigateOnce
@@ -106,9 +106,6 @@ fun SettingsScreen(
                     backStackViewModel.settingsScreen.currentKey = newKey
                 },
                 openLicenseScreen = openLicenseScreen,
-                toHomePageEditor = {
-                    backStackViewModel.mainScreen.navigateTo(NormalNavKey.HomePageEditor)
-                },
                 eventViewModel = eventViewModel,
                 submitError = submitError,
                 modifier = Modifier.fillMaxHeight()
@@ -117,19 +114,22 @@ fun SettingsScreen(
     }
 }
 
+//DBR: 5 pestañas. Gamepad y layouts cuelgan de Controles, el Gestor de Java de Juego;
+//la antigua pestaña Launcher se repartió (modpack en Rendimiento, logs en Ayuda).
 private val settingItems = listOf(
-    CategoryItem(NormalNavKey.Settings.Renderer, { CategoryIcon(R.drawable.ic_video_settings, R.string.settings_tab_renderer) }, R.string.settings_tab_renderer),
-    //DBR: Launcher en 2º puesto (ahí viven modpack, mods y log del juego).
-    CategoryItem(NormalNavKey.Settings.Launcher, { CategoryIcon(R.drawable.ic_setting_launcher, R.string.settings_tab_launcher) }, R.string.settings_tab_launcher),
-    //DBR: gestor de mods como pestaña propia (instalar/borrar/desactivar .jar de la instancia DBR).
-    CategoryItem(NormalNavKey.Settings.ModsManager, { CategoryIcon(R.drawable.ic_extension_outlined, R.string.mods_manage) }, R.string.mods_manage),
+    CategoryItem(NormalNavKey.Settings.Renderer, { CategoryIcon(R.drawable.ic_video_settings, R.string.dbr_tab_performance) }, R.string.dbr_tab_performance),
     CategoryItem(NormalNavKey.Settings.Game, { CategoryIcon(R.drawable.ic_rocket_launch_filled, R.string.settings_tab_game) }, R.string.settings_tab_game),
     CategoryItem(NormalNavKey.Settings.Control, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control) }, R.string.settings_tab_control),
-    CategoryItem(NormalNavKey.Settings.Gamepad, { CategoryIcon(R.drawable.ic_sports_esports_outlined, R.string.settings_tab_gamepad) }, R.string.settings_tab_gamepad),
-    CategoryItem(NormalNavKey.Settings.JavaManager, { CategoryIcon(R.drawable.ic_java, R.string.settings_tab_java_manage) }, R.string.settings_tab_java_manage, division = true),
-    CategoryItem(NormalNavKey.Settings.ControlManager, { CategoryIcon(R.drawable.ic_videogame_asset_outlined, R.string.settings_tab_control_manage) }, R.string.settings_tab_control_manage),
-    CategoryItem(NormalNavKey.Settings.AboutInfo, { CategoryIcon(R.drawable.ic_info_outlined, R.string.settings_tab_info_about) }, R.string.settings_tab_info_about, division = true)
+    CategoryItem(NormalNavKey.Settings.ModsManager, { CategoryIcon(R.drawable.ic_extension_outlined, R.string.mods_manage) }, R.string.mods_manage),
+    CategoryItem(NormalNavKey.Settings.AboutInfo, { CategoryIcon(R.drawable.ic_info_outlined, R.string.dbr_tab_help) }, R.string.dbr_tab_help, division = true)
 )
+
+/** Pestaña que queda marcada mientras se ve una subpantalla. */
+private fun tabOf(key: TitledNavKey?): TitledNavKey? = when (key) {
+    NormalNavKey.Settings.Gamepad, NormalNavKey.Settings.ControlManager -> NormalNavKey.Settings.Control
+    NormalNavKey.Settings.JavaManager -> NormalNavKey.Settings.Game
+    else -> key
+}
 
 @Composable
 private fun TabMenu(
@@ -167,7 +167,7 @@ private fun TabMenu(
             }
 
             NavigationRailItem(
-                selected = settingsScreenKey == item.key,
+                selected = tabOf(settingsScreenKey) == item.key,
                 onClick = {
                     navigateTo(item.key)
                 },
@@ -196,13 +196,14 @@ private fun NavigationUI(
     settingsScreenKey: TitledNavKey?,
     onCurrentKeyChange: (TitledNavKey?) -> Unit,
     openLicenseScreen: (raw: Int) -> Unit,
-    toHomePageEditor: () -> Unit,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backStack = key.backStack
     val stackTopKey = backStack.lastOrNull()
+    //Subpantallas (Gamepad, layouts, Java): se apilan para volver con "atrás".
+    val navigateTo: (TitledNavKey) -> Unit = { subKey -> backStack.navigateTo(subKey) }
     LaunchedEffect(stackTopKey) {
         onCurrentKeyChange(stackTopKey)
     }
@@ -221,23 +222,13 @@ private fun NavigationUI(
                     RendererSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel)
                 }
                 entry<NormalNavKey.Settings.Game> {
-                    GameSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel)
+                    GameSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel, navigateTo)
                 }
                 entry<NormalNavKey.Settings.Control> {
-                    ControlSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel, submitError)
+                    ControlSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel, submitError, navigateTo)
                 }
                 entry<NormalNavKey.Settings.Gamepad> {
                     GamepadSettingsScreen(key, settingsScreenKey, mainScreenKey, eventViewModel)
-                }
-                entry<NormalNavKey.Settings.Launcher> {
-                    LauncherSettingsScreen(
-                        key = key,
-                        settingsScreenKey = settingsScreenKey,
-                        mainScreenKey = mainScreenKey,
-                        eventViewModel = eventViewModel,
-                        toHomePageEditor = toHomePageEditor,
-                        submitError = submitError,
-                    )
                 }
                 entry<NormalNavKey.Settings.ModsManager> {
                     //DBR: gestor de mods de la instancia DBR, servido desde Ajustes.
@@ -288,7 +279,8 @@ private fun NavigationUI(
                         openLicense = openLicenseScreen,
                         openLink = { url ->
                             eventViewModel.sendEvent(EventViewModel.Event.OpenLink(url))
-                        }
+                        },
+                        eventViewModel = eventViewModel
                     )
                 }
             }

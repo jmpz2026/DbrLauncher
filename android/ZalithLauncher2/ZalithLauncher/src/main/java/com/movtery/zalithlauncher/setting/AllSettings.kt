@@ -404,7 +404,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 持续型节日彩蛋效果
      */
-    val launcherFestivalEffects = boolSetting("launcherFestivalEffects", true)
+    val launcherFestivalEffects = boolSetting("launcherFestivalEffects", false) //DBR: apagado (efectos que dan lag; ya no está en Ajustes)
 
     /**
      * 动画倍速

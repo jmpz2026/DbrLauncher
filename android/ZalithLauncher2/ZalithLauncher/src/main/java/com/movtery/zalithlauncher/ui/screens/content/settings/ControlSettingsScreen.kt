@@ -109,7 +109,8 @@ fun ControlSettingsScreen(
     settingsScreenKey: TitledNavKey?,
     mainScreenKey: TitledNavKey?,
     eventViewModel: EventViewModel,
-    submitError: (ErrorViewModel.ThrowableMessage) -> Unit
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
+    navigateTo: (TitledNavKey) -> Unit
 ) {
     BaseScreen(
         Triple(key, mainScreenKey, false),
@@ -167,146 +168,8 @@ fun ControlSettingsScreen(
                 }
             }
 
-            animatedItem(scope) { yOffset ->
-                SettingsCardColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
-                ) {
-                    val mouseSize = AllSettings.mouseSize.state
-
-                    var arrowMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Top,
-                        title = stringResource(R.string.settings_control_mouse_pointer_arrow_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_arrow_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = arrowPointerFile,
-                        cursorShape = CursorShape.Arrow,
-                        hotspot = AllSettings.arrowMouseHotspot,
-                        mouseOperation = arrowMouseOperation,
-                        changeOperation = { arrowMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var linkMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_link_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_link_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = linkPointerFile,
-                        cursorShape = CursorShape.Hand,
-                        hotspot = AllSettings.linkMouseHotspot,
-                        mouseOperation = linkMouseOperation,
-                        changeOperation = { linkMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var ibeamMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_ibeam_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_ibeam_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = iBeamPointerFile,
-                        cursorShape = CursorShape.IBeam,
-                        hotspot = AllSettings.iBeamMouseHotspot,
-                        mouseOperation = ibeamMouseOperation,
-                        changeOperation = { ibeamMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var crosshairMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_crosshair_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_common_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = crossHairPointerFile,
-                        cursorShape = CursorShape.CrossHair,
-                        hotspot = AllSettings.crossHairMouseHotspot,
-                        mouseOperation = crosshairMouseOperation,
-                        changeOperation = { crosshairMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeNSMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_ns_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_resize_ns_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeNSPointerFile,
-                        cursorShape = CursorShape.ResizeNS,
-                        hotspot = AllSettings.resizeNSMouseHotspot,
-                        mouseOperation = resizeNSMouseOperation,
-                        changeOperation = { resizeNSMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeEWMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_ew_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_resize_ew_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeEWPointerFile,
-                        cursorShape = CursorShape.ResizeEW,
-                        hotspot = AllSettings.resizeEWMouseHotspot,
-                        mouseOperation = resizeEWMouseOperation,
-                        changeOperation = { resizeEWMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var resizeAllMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_resize_all_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_common_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = resizeAllPointerFile,
-                        cursorShape = CursorShape.ResizeAll,
-                        hotspot = AllSettings.resizeAllMouseHotspot,
-                        mouseOperation = resizeAllMouseOperation,
-                        changeOperation = { resizeAllMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    var notAllowedMouseOperation by remember { mutableStateOf<MousePointerOperation>(MousePointerOperation.None) }
-                    MousePointerCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        title = stringResource(R.string.settings_control_mouse_pointer_not_allowed_title),
-                        summary = stringResource(R.string.settings_control_mouse_pointer_not_allowed_summary),
-                        mouseSize = mouseSize,
-                        mousePointerFile = notAllowedPointerFile,
-                        cursorShape = CursorShape.NotAllowed,
-                        hotspot = AllSettings.notAllowedMouseHotspot,
-                        mouseOperation = notAllowedMouseOperation,
-                        changeOperation = { notAllowedMouseOperation = it },
-                        submitError = submitError
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.mouseSize,
-                        title = stringResource(R.string.settings_control_mouse_size_title),
-                        valueRange = AllSettings.mouseSize.floatRange,
-                        suffix = "Dp",
-                        fineTuningControl = true
-                    )
-                }
-            }
-
+            //DBR: solo lo básico. Sensibilidades, tamaño del cursor, gestos finos y giroscopio fino
+            //se ajustan desde el menú del juego; las imágenes de puntero ya no se cambian.
             animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier
@@ -319,7 +182,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.hideMouse,
                         title = stringResource(R.string.settings_control_mouse_hide_title),
                         summary = stringResource(R.string.settings_control_mouse_hide_summary),
-                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.CLICK //仅点击模式下可更改设置
+                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.CLICK
                     )
 
                     SwitchSettingsCard(
@@ -327,7 +190,7 @@ fun ControlSettingsScreen(
                         position = CardPosition.Middle,
                         title = stringResource(R.string.settings_control_mouse_enable_click_title),
                         summary = stringResource(R.string.settings_control_mouse_enable_click_summary),
-                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.SLIDE //仅滑动模式下可更改设置
+                        enabled = AllSettings.mouseControlMode.state == MouseControlMode.SLIDE
                     )
 
                     ListSettingsCard(
@@ -340,88 +203,13 @@ fun ControlSettingsScreen(
                         getItemText = { stringResource(it.nameRes) }
                     )
 
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.cursorSensitivity,
-                        title = stringResource(R.string.settings_control_mouse_sensitivity_title),
-                        summary = stringResource(R.string.settings_control_mouse_sensitivity_summary),
-                        valueRange = AllSettings.cursorSensitivity.floatRange,
-                        suffix = "%",
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.mouseCaptureSensitivity,
-                        title = stringResource(R.string.settings_control_mouse_capture_sensitivity_title),
-                        summary = stringResource(R.string.settings_control_mouse_capture_sensitivity_summary),
-                        valueRange = AllSettings.mouseCaptureSensitivity.floatRange,
-                        suffix = "%",
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.mouseLongPressDelay,
-                        title = stringResource(R.string.settings_control_mouse_long_press_delay_title),
-                        summary = stringResource(R.string.settings_control_mouse_long_press_delay_summary),
-                        valueRange = AllSettings.mouseLongPressDelay.floatRange,
-                        suffix = "ms",
-                        fineTuningControl = true
-                    )
-                }
-            }
-
-            animatedItem(scope) { yOffset ->
-                SettingsCardColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
-                ) {
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Top,
+                        position = CardPosition.Bottom,
                         unit = AllSettings.gestureControl,
                         title = stringResource(R.string.settings_control_gesture_control_title),
                         summary = stringResource(R.string.settings_control_gesture_control_summary)
                     )
-
-                    ListSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gestureTapMouseAction,
-                        items = GestureActionType.entries,
-                        title = stringResource(R.string.settings_control_gesture_tap_action_title),
-                        summary = stringResource(R.string.settings_control_gesture_tap_action_summary),
-                        getItemText = { stringResource(it.nameRes) },
-                        enabled = AllSettings.gestureControl.state
-                    )
-
-                    ListSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gestureLongPressMouseAction,
-                        items = GestureActionType.entries,
-                        title = stringResource(R.string.settings_control_gesture_long_press_action_title),
-                        summary = stringResource(R.string.settings_control_gesture_long_press_action_summary),
-                        getItemText = { stringResource(it.nameRes) },
-                        enabled = AllSettings.gestureControl.state
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Bottom,
-                        unit = AllSettings.gestureLongPressDelay,
-                        title = stringResource(R.string.settings_control_gesture_long_press_delay_title),
-                        summary = stringResource(R.string.settings_control_mouse_long_press_delay_summary),
-                        valueRange = AllSettings.gestureLongPressDelay.floatRange,
-                        suffix = "ms",
-                        enabled = AllSettings.gestureControl.state,
-                        fineTuningControl = true
-                    )
                 }
             }
 
@@ -431,7 +219,6 @@ fun ControlSettingsScreen(
                         .fillMaxWidth()
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
                 ) {
-                    //检查陀螺仪是否可用
                     val context = LocalContext.current
                     val isGyroscopeAvailable = remember(context) {
                         isGyroscopeAvailable(context = context)
@@ -463,48 +250,6 @@ fun ControlSettingsScreen(
                         } else null
                     )
 
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gyroscopeSensitivity,
-                        title = stringResource(R.string.settings_control_gyroscope_sensitivity_title),
-                        valueRange = AllSettings.gyroscopeSensitivity.floatRange,
-                        suffix = "%",
-                        enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state,
-                        fineTuningControl = true
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gyroscopeSampleRate,
-                        title = stringResource(R.string.settings_control_gyroscope_sample_rate_title),
-                        summary = stringResource(R.string.settings_control_gyroscope_sample_rate_summary),
-                        valueRange = AllSettings.gyroscopeSampleRate.floatRange,
-                        suffix = "ms",
-                        enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state,
-                        fineTuningControl = true
-                    )
-
-                    SwitchSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gyroscopeSmoothing,
-                        title = stringResource(R.string.settings_control_gyroscope_smoothing_title),
-                        summary = stringResource(R.string.settings_control_gyroscope_smoothing_summary),
-                        enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state
-                    )
-
-                    IntSliderSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.gyroscopeSmoothingWindow,
-                        title = stringResource(R.string.settings_control_gyroscope_smoothing_window_title),
-                        summary = stringResource(R.string.settings_control_gyroscope_smoothing_window_summary),
-                        valueRange = AllSettings.gyroscopeSmoothingWindow.floatRange,
-                        enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state && AllSettings.gyroscopeSmoothing.state
-                    )
-
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),
                         position = CardPosition.Middle,
@@ -521,6 +266,31 @@ fun ControlSettingsScreen(
                         title = stringResource(R.string.settings_control_gyroscope_invert_y_title),
                         summary = stringResource(R.string.settings_control_gyroscope_invert_y_summary),
                         enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state
+                    )
+                }
+            }
+
+            //DBR: Gamepad y gestión de layouts ya no son pestañas propias.
+            animatedItem(scope) { yOffset ->
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                ) {
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Top,
+                        title = stringResource(R.string.settings_tab_control_manage),
+                        summary = stringResource(R.string.dbr_control_manage_summary),
+                        onClick = { navigateTo(NormalNavKey.Settings.ControlManager) }
+                    )
+
+                    SettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Bottom,
+                        title = stringResource(R.string.settings_tab_gamepad),
+                        summary = stringResource(R.string.dbr_gamepad_summary),
+                        onClick = { navigateTo(NormalNavKey.Settings.Gamepad) }
                     )
                 }
             }
@@ -617,186 +387,6 @@ private fun PhysicalKeyImeTrigger(
                     )
                 }
             }
-        }
-    }
-}
-
-private sealed interface MousePointerOperation {
-    data object None: MousePointerOperation
-    /** 重置鼠标指针前的提醒 */
-    data object PreReset: MousePointerOperation
-    /** 重置鼠标指针 */
-    data object Reset: MousePointerOperation
-    /** 变更鼠标热点 */
-    data object Hotspot: MousePointerOperation
-}
-
-@Composable
-private fun MousePointerCard(
-    modifier: Modifier = Modifier,
-    position: CardPosition,
-    title: String,
-    summary: String,
-    mouseSize: Int,
-    mousePointerFile: File,
-    cursorShape: CursorShape,
-    hotspot: ParcelableSettingUnit<CursorHotspot>,
-    mouseOperation: MousePointerOperation,
-    changeOperation: (MousePointerOperation) -> Unit,
-    submitError: (ErrorViewModel.ThrowableMessage) -> Unit
-) {
-    val context = LocalContext.current
-    var triggerState by remember { mutableIntStateOf(0) }
-    var fileExists by remember { mutableStateOf(false) }
-
-    LaunchedEffect(triggerState) {
-        fileExists = withContext(Dispatchers.IO) { mousePointerFile.exists() }
-    }
-
-    MousePointerOperation(
-        operation = mouseOperation,
-        changeOperation = changeOperation,
-        mousePointerFile = mousePointerFile,
-        hotspot = hotspot,
-        cursorShape = cursorShape,
-        onRefresh = {
-            triggerState++
-        }
-    )
-
-    val filePicker = rememberLauncherForActivityResult(
-        contract = MediaPickerContract(
-            allowImages = true,
-            allowVideos = false,
-            allowMultiple = false
-        )
-    ) { result ->
-        if (result != null) {
-            TaskSystem.submitTask(
-                Task.runTask(
-                    dispatcher = Dispatchers.IO,
-                    task = {
-                        context.copyLocalFile(result[0], mousePointerFile)
-                        if (!mousePointerFile.isImageFile()) error("The selected file is not an image!")
-                        triggerState++
-                        changeOperation(MousePointerOperation.None)
-                    },
-                    onError = { th ->
-                        FileUtils.deleteQuietly(mousePointerFile)
-                        submitError(
-                            ErrorViewModel.ThrowableMessage(
-                                title = androidText(R.string.error_import_image),
-                                message = androidText(th.getMessageOrToString())
-                            )
-                        )
-                    }
-                )
-            )
-        }
-    }
-
-    SettingsCard(
-        modifier = modifier,
-        position = position
-    ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { filePicker.launch(Unit) }
-                    .padding(all = 16.dp)
-            ) {
-                TitleAndSummary(
-                    title = title,
-                    summary = summary
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MousePointer(
-                    modifier = Modifier.padding(all = 8.dp),
-                    mouseSize = mouseSize.dp,
-                    cursorShape = cursorShape,
-                    mouseFile = mousePointerFile,
-                    centerIcon = true,
-                    triggerRefresh = triggerState,
-                    crossfade = true
-                )
-
-                IconTextButton(
-                    onClick = {
-                        if (mouseOperation == MousePointerOperation.None) {
-                            changeOperation(MousePointerOperation.Hotspot)
-                        }
-                    },
-                    painter = painterResource(R.drawable.ic_highlight_mouse_cursor),
-                    contentDescription = stringResource(R.string.settings_control_mouse_pointer_hotspot),
-                    text = stringResource(R.string.settings_control_mouse_pointer_hotspot)
-                )
-
-                AnimatedVisibility(
-                    visible = fileExists
-                ) {
-                    IconTextButton(
-                        onClick = {
-                            if (mouseOperation == MousePointerOperation.None) {
-                                changeOperation(MousePointerOperation.PreReset)
-                            }
-                        },
-                        painter = painterResource(R.drawable.ic_restart_alt),
-                        contentDescription = stringResource(R.string.generic_reset),
-                        text = stringResource(R.string.generic_reset)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MousePointerOperation(
-    operation: MousePointerOperation,
-    changeOperation: (MousePointerOperation) -> Unit,
-    mousePointerFile: File,
-    hotspot: ParcelableSettingUnit<CursorHotspot>,
-    cursorShape: CursorShape,
-    onRefresh: () -> Unit
-) {
-    when (operation) {
-        is MousePointerOperation.None -> {}
-        is MousePointerOperation.PreReset -> {
-            SimpleAlertDialog(
-                title = stringResource(R.string.generic_reset),
-                text = stringResource(R.string.settings_control_mouse_pointer_reset_message),
-                onConfirm = {
-                    //正式开始重置鼠标指针
-                    changeOperation(MousePointerOperation.Reset)
-                },
-                onDismiss = {
-                    changeOperation(MousePointerOperation.None)
-                }
-            )
-        }
-        is MousePointerOperation.Reset -> {
-            LaunchedEffect(Unit) {
-                FileUtils.deleteQuietly(mousePointerFile)
-                onRefresh()
-                changeOperation(MousePointerOperation.None)
-            }
-        }
-        is MousePointerOperation.Hotspot -> {
-            MouseHotspotEditorDialog(
-                hotspot = hotspot,
-                cursorShape = cursorShape,
-                onClose = {
-                    changeOperation(MousePointerOperation.None)
-                }
-            )
         }
     }
 }
