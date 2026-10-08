@@ -9,14 +9,15 @@ export async function ensureFile(
   dest: string,
   url: string,
   sha1?: string,
-  onProgress?: (received: number, total: number) => void
+  onProgress?: (received: number, total: number) => void,
+  mirrors?: string[]
 ): Promise<boolean> {
   if (existsSync(dest)) {
     if (!sha1) return false
     if ((await sha1FileCached(dest)) === sha1.toLowerCase()) return false
   }
   mkdirSync(dirname(dest), { recursive: true })
-  const res = await httpRequest(url, { onProgress })
+  const res = await httpRequest(url, { onProgress, mirrors })
   if (!res.ok) throw new Error(`Descarga falló (${res.status}): ${url}`)
   const buf = res.body
   if (sha1) {

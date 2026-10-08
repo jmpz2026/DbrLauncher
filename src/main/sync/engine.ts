@@ -4,6 +4,7 @@ import type { ManifestFile, SyncProgress, SyncSummary } from '../../shared/sync'
 import { flushHashCache, sha1FileCached } from './hash'
 import { fetchManifest } from './manifest'
 import { ensureFile } from '../net'
+import { CONFIG } from '../../shared/config'
 
 export interface SyncOptions {
   gameDir: string // dónde viven los mods/configs
@@ -123,10 +124,19 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     inFlight.add(f.path)
     emit(true)
     try {
-      await ensureFile(safeJoin(gameDir, f.path), f.url, f.sha1, (n) => {
-        received.set(f.path, n)
-        emit()
-      })
+      // El release de assets guarda cada archivo con su sha1 por nombre: si raw bloquea la IP
+      // del jugador, se baja de ahí. Un sha1 aún sin subir da 404 y se pasa al siguiente mirror.
+      const mirrors = f.sha1 ? [CONFIG.assetMirrorBase + f.sha1.toLowerCase()] : []
+      await ensureFile(
+        safeJoin(gameDir, f.path),
+        f.url,
+        f.sha1,
+        (n) => {
+          received.set(f.path, n)
+          emit()
+        },
+        mirrors
+      )
     } finally {
       inFlight.delete(f.path)
     }

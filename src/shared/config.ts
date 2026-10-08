@@ -21,6 +21,10 @@ export const CONFIG = {
   // jars en la subcarpeta experimental/.
   manifestUrlExperimental:
     'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-experimental.json',
+  // Copia de cada archivo del modpack como asset de un release, con su sha1 por nombre. La sube
+  // la Action de la rama assets. Se sirve desde objects.githubusercontent.com, otra red distinta
+  // de raw: cuando raw bloquea la IP del jugador (403) la sync baja de aquí.
+  assetMirrorBase: 'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 

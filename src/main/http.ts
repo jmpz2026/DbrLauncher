@@ -17,6 +17,8 @@ export interface HttpInit {
   onProgress?: (received: number, total: number) => void
   /** Ms sin recibir nada (ni cabeceras ni datos) antes de abortar. Por defecto IDLE_TIMEOUT_MS. */
   idleTimeoutMs?: number
+  /** URLs alternativas con el mismo contenido; se prueban tras el origen y antes de los CDN. */
+  mirrors?: string[]
 }
 
 // `net.request` de Electron no trae timeout: una conexión que se queda colgada (wifi que
@@ -136,6 +138,11 @@ const RETRIES = 3
 const BACKOFF_MS = 1000 // base: 1s, 2s, 4s (antes de aplicar el jitter)
 const MAX_RETRY_AFTER_MS = 10_000
 
+// raw.githubusercontent responde 403 cuando bloquea la IP del cliente (VPN, proxy, CGNAT
+// compartido, IP marcada por abuso). Reintentar contra el origen no sirve, pero los mirrors
+// sirven el mismo archivo desde otra red: se salta directo a ellos.
+const MIRROR_STATUS = new Set([403])
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
 // Jitter ±50%: sin él, las descargas paralelas del sync reintentan todas a la vez y vuelven a
@@ -170,7 +177,7 @@ function mirrorsFor(url: string): string[] {
 /**
  * Petición HTTP(S) con redirecciones seguidas y reintentos con backoff exponencial ante status
  * pasajeros o cortes de red; si el origen es raw.githubusercontent y sigue caído tras los
- * reintentos, repite el ciclo contra los mirrors. Solo reintenta métodos idempotentes (GET/HEAD):
+ * reintentos (o responde 403), repite el ciclo contra `init.mirrors` y los CDN. Solo reintenta métodos idempotentes (GET/HEAD):
  * los POST de auth tienen su propia lógica de polling. Rechaza solo por fallo de red, no por status.
  *
  * `onProgress` puede retroceder a 0 si hay reintento (empieza una descarga nueva).
@@ -178,7 +185,7 @@ function mirrorsFor(url: string): string[] {
 export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
   const method = (init.method ?? 'GET').toUpperCase()
   const idempotent = method === 'GET' || method === 'HEAD'
-  const targets = idempotent ? [url, ...mirrorsFor(url)] : [url]
+  const targets = idempotent ? [url, ...(init.mirrors ?? []), ...mirrorsFor(url)] : [url]
   const attempts = idempotent ? RETRIES + 1 : 1
 
   let lastRes: HttpResponse | undefined
@@ -192,8 +199,10 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
         const res = await requestOnce(target, init)
         // Del mirror solo vale un 2xx: su 404 (archivo no cacheado, repo privado, jar de más de
         // 20 MB) no dice nada del origen y no debe sustituir al status real de raw.
-        if (res.ok || (!isMirror && !RETRY_STATUS.has(res.status))) return res
+        const toMirror = !isMirror && targets.length > 1 && MIRROR_STATUS.has(res.status)
+        if (res.ok || (!isMirror && !toMirror && !RETRY_STATUS.has(res.status))) return res
         if (!isMirror || !lastRes) lastRes = res
+        if (toMirror) break
         if (attempt < attempts && RETRY_STATUS.has(res.status)) {
           await sleep(retryAfterMs(res) ?? backoff)
         } else if (attempt < attempts) {
