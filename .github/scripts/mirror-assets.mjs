@@ -61,7 +61,11 @@ for (const [sha1, rel] of wanted) {
     console.warn(`  falta en la rama: ${rel}`)
     continue
   }
-  const got = createHash('sha1').update(readFileSync(rel)).digest('hex')
+  const buf = readFileSync(rel)
+  // GitHub rechaza assets de 0 bytes (400 Bad Content-Length). Un archivo vacío no lo bloquea
+  // nadie, así que no necesita mirror.
+  if (buf.length === 0) continue
+  const got = createHash('sha1').update(buf).digest('hex')
   if (got !== sha1) {
     console.warn(`  sha1 no coincide con el manifest, no se sube: ${rel}`)
     continue
