@@ -128,3 +128,12 @@ al abrirse el cursor se libera y los botones `in_game` se esconden. El botón sa
   Los conmutables (Transformar, Agacharse...) siguen soltándose al abrir un menú, salvo los que llevan
   el campo opcional `keepWhileToggled` (`NormalData`/`ObservableNormalData`): Acciones (X) abre su menú
   con un toque y se suelta con otro, así que tiene que seguir visible en ese menú.
+
+## 9) El foco de la ventana llega bien al juego (2026-10-08)
+**Motivo:** `VMActivity.onWindowFocusChanged` mandaba `GLFW_FOCUSED = 0` tanto al ganar como al perder el
+foco (`if (hasFocus) 0 else 0` en upstream). Con lwjglx no se notaba; con LWJGL 2 nativo (§7) el shim entrega
+el foco al juego y `Display.isActive()` se quedaba en `false` tras cualquier cambio de foco (diálogo, persiana
+de notificaciones...). En 1.7.10 `setIngameFocus()` no hace nada sin foco y `EntityRenderer` reabre el menú de
+pausa a los 500 ms (`pauseOnLostFocus`), así que "Volver al juego" no funcionaba.
+
+- `VMActivity.kt`: `if (hasFocus) 1 else 0`.
