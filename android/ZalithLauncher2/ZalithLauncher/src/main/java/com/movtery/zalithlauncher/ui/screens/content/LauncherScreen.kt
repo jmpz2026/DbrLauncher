@@ -46,8 +46,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,6 +94,7 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.viewmodel.HomePageState
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import com.movtery.zalithlauncher.viewmodel.DbrModsViewModel
 import com.movtery.zalithlauncher.viewmodel.DbrServerViewModel
 import android.content.Context
 import androidx.compose.material3.Button
@@ -168,6 +171,13 @@ private fun DbrHome(
     val hasDbr = allVersions.any { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
     val dbrVm = rememberDbrInstallViewModel()
     val serverVm: DbrServerViewModel = viewModel()
+    val modsVm: DbrModsViewModel = viewModel()
+    val dbrGameDir = allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
+        ?.getGameDir()
+    //Se vuelve a comprobar al instalar DBR o al cambiar de variante.
+    LaunchedEffect(dbrGameDir?.path, AllSettings.dbrModpackVariant.state) {
+        modsVm.refresh(dbrGameDir)
+    }
     val context = LocalContext.current
 
     val nick = account?.username ?: "—"
@@ -175,10 +185,7 @@ private fun DbrHome(
 
     DbrInstallDialog(dbrVm)
     //DBR: propuesta de pasar a Lite en móviles justos (game/dbr/DbrPerf.kt).
-    DbrLiteProposalDialog(
-        allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME && it.isValid() }
-            ?.getGameDir()
-    )
+    DbrLiteProposalDialog(dbrGameDir)
 
     Box(modifier = Modifier.fillMaxSize()) {
         BlockBackground(modifier = Modifier.fillMaxSize())
@@ -233,7 +240,9 @@ private fun DbrHome(
                 onClick = {
                     if (hasDbr) {
                         val v = allVersions.firstOrNull { it.getVersionName() == DbrInstall.VERSION_NAME }
-                        if (v != null) dbrVm.syncThenLaunch(v) { onLaunchGame(null) } else onLaunchGame(null)
+                        if (v != null) {
+                            dbrVm.syncThenLaunch(v, onSynced = { modsVm.markUpToDate() }) { onLaunchGame(null) }
+                        } else onLaunchGame(null)
                     } else {
                         dbrVm.install(context)
                     }
@@ -261,7 +270,7 @@ private fun DbrHome(
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                InfoChip(text = stringResource(R.string.dbr_mods_ok), dot = Color(0xFF5FA838))
+                ModsChip(state = modsVm.state, onClick = { modsVm.refresh(dbrGameDir) })
                 RendererChip(onClick = toRendererSettings)
                 val serverState = serverVm.state
                 val serverDot = when (serverState) {
@@ -322,6 +331,21 @@ private fun InfoChip(
     }
 }
 
+/** Chip con el estado de los mods frente al manifest del servidor. Tocarlo vuelve a comprobar. */
+@Composable
+private fun ModsChip(state: DbrModsViewModel.State, onClick: () -> Unit) {
+    val (text, dot) = when (state) {
+        is DbrModsViewModel.State.Checking -> stringResource(R.string.dbr_mods_checking) to null
+        is DbrModsViewModel.State.NotInstalled -> stringResource(R.string.dbr_mods_not_installed) to Color(0xFF8A8580)
+        is DbrModsViewModel.State.Checked -> when (state.status) {
+            DbrSync.Status.UP_TO_DATE -> stringResource(R.string.dbr_mods_ok) to Color(0xFF5FA838)
+            DbrSync.Status.UPDATE_AVAILABLE -> stringResource(R.string.dbr_mods_update) to Color(0xFFE0B23A)
+            DbrSync.Status.UNKNOWN -> stringResource(R.string.dbr_mods_unknown) to Color(0xFF8A8580)
+        }
+    }
+    InfoChip(text = text, dot = dot, onClick = onClick)
+}
+
 /** Chip con el motor de render actual; el motor se cambia en Ajustes > Renderizador. */
 @Composable
 private fun RendererChip(onClick: () -> Unit) {
@@ -341,6 +365,8 @@ private sealed interface DbrInstallState {
     data class Syncing(val done: Int, val total: Int) : DbrInstallState
     data object Success : DbrInstallState
     data class Error(val th: Throwable) : DbrInstallState
+    /** El sync falló pero hay mods de un sync anterior: se puede jugar con ellos. */
+    data class SyncFailedCanPlay(val onLaunch: () -> Unit) : DbrInstallState
 }
 
 private class DbrInstallViewModel : ViewModel() {
@@ -380,24 +406,16 @@ private class DbrInstallViewModel : ViewModel() {
     }
 
     /**
-     * Sincroniza el modpack y, si tiene éxito, lanza el juego.
-     * Con la actualización automática desactivada se lanza con lo que ya haya instalado,
-     * salvo que la instancia nunca se haya sincronizado (si no, se entraría sin mods).
+     * Sincroniza el modpack y, si tiene éxito, lanza el juego. El sync es obligatorio: si falla
+     * (sin red, GitHub caído) y ya hay mods de un sync anterior de la misma variante, se ofrece
+     * jugar con ellos; si no, se muestra el error y no se lanza.
      */
-    fun syncThenLaunch(version: Version, onLaunch: () -> Unit) {
+    fun syncThenLaunch(version: Version, onSynced: () -> Unit, onLaunch: () -> Unit) {
         when (state) {
             is DbrInstallState.Preparing, is DbrInstallState.Installing, is DbrInstallState.Syncing -> return
             else -> {}
         }
         val gameDir = version.getGameDir()
-        //Un cambio de variante pendiente (o una config por aplicar) obliga a sincronizar
-        //aunque el jugador tenga apagada la actualización automática.
-        val pending = AllSettings.dbrModpackSyncPending.getValue() ||
-                AllSettings.dbrModpackSeedPending.getValue()
-        if (!AllSettings.dbrAutoSyncMods.getValue() && !pending && !DbrSync.neverSynced(gameDir)) {
-            onLaunch()
-            return
-        }
         state = DbrInstallState.Syncing(0, 0)
         //Si el jugador aceptó la config recomendada al cambiar de variante, esta sync la
         //re-aplica y consume el flag.
@@ -412,16 +430,25 @@ private class DbrInstallViewModel : ViewModel() {
                 if (AllSettings.dbrModpackSyncPending.getValue()) {
                     AllSettings.dbrModpackSyncPending.save(false)
                 }
+                onSynced()
                 state = DbrInstallState.Idle
                 onLaunch()
             }.onFailure { th ->
-                state = DbrInstallState.Error(th)
+                //Con un cambio de variante pendiente los mods del disco son de la otra variante.
+                val canPlay = !DbrSync.neverSynced(gameDir) && !AllSettings.dbrModpackSyncPending.getValue()
+                state = if (canPlay) DbrInstallState.SyncFailedCanPlay(onLaunch) else DbrInstallState.Error(th)
             }
         }
     }
 
+    fun playAnyway() {
+        val current = state as? DbrInstallState.SyncFailedCanPlay ?: return
+        state = DbrInstallState.Idle
+        current.onLaunch()
+    }
+
     fun dismissError() {
-        if (state is DbrInstallState.Error) state = DbrInstallState.Idle
+        if (state is DbrInstallState.Error || state is DbrInstallState.SyncFailedCanPlay) state = DbrInstallState.Idle
     }
 
     override fun onCleared() {
@@ -510,6 +537,40 @@ private fun DbrInstallDialog(
                             onClick = { viewModel.dismissError() }
                         ) {
                             Text(stringResource(R.string.generic_close))
+                        }
+                    }
+                }
+            }
+        }
+        is DbrInstallState.SyncFailedCanPlay -> {
+            Dialog(onDismissRequest = { viewModel.dismissError() }) {
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(all = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dbr_sync_offline_title),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = stringResource(R.string.dbr_sync_offline_message),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Row(
+                            modifier = Modifier.align(Alignment.End),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            TextButton(onClick = { viewModel.dismissError() }) {
+                                Text(stringResource(R.string.generic_cancel))
+                            }
+                            Button(onClick = { viewModel.playAnyway() }) {
+                                Text(stringResource(R.string.dbr_sync_offline_play))
+                            }
                         }
                     }
                 }

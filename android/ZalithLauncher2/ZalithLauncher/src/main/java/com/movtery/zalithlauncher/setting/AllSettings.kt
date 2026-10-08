@@ -53,21 +53,14 @@ object AllSettings : SettingsRegistry() {
     val dbrModpackVariant = enumSetting("dbrModpackVariant", DbrModpackVariant.FULL)
 
     /**
-     * DBR: actualizar los mods automáticamente al pulsar Jugar.
-     * Desactivado, se juega con lo que ya haya instalado (salvo la primera sincronización).
-     */
-    val dbrAutoSyncMods = boolSetting("dbrAutoSyncMods", true)
-
-    /**
      * DBR: aplicar la configuración recomendada (archivos `once` del manifest) en la
      * próxima sincronización. Lo activa el jugador al cambiar de variante si acepta el aviso.
      */
     val dbrModpackSeedPending = boolSetting("dbrModpackSeedPending", false)
 
     /**
-     * DBR: hay un cambio de variante sin sincronizar. Obliga a sincronizar en el próximo
-     * Jugar aunque el jugador tenga apagada la actualización automática de mods: ese
-     * interruptor es para no bajar mods nuevos, no para jugar con la otra variante.
+     * DBR: hay un cambio de variante sin sincronizar. Si el sync falla por red, no se deja
+     * jugar con los mods de la otra variante.
      */
     val dbrModpackSyncPending = boolSetting("dbrModpackSyncPending", false)
 

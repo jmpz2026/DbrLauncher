@@ -282,17 +282,6 @@ fun LauncherSettingsScreen(
                         }
                     )
 
-                    SwitchSettingsCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        position = CardPosition.Middle,
-                        unit = AllSettings.dbrAutoSyncMods,
-                        title = stringResource(R.string.dbr_auto_sync_title),
-                        summary = stringResource(
-                            if (AllSettings.dbrAutoSyncMods.state) R.string.dbr_auto_sync_summary_on
-                            else R.string.dbr_auto_sync_summary_off
-                        )
-                    )
-
                     //DBR: instalar un .jar propio en mods (testear mods sin tocar el manifest).
                     SettingsCard(
                         modifier = Modifier.fillMaxWidth(),

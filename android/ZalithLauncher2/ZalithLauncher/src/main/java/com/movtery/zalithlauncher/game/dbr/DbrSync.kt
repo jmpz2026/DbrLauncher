@@ -27,6 +27,9 @@ object DbrSync {
     /** Nombre del índice de archivos gestionados, dentro del gameDir. */
     private const val MANAGED_FILE = ".dbr_managed.json"
 
+    /** Huella del manifest del último sync completo (ver [checkStatus]). */
+    private const val SYNCED_FILE = ".dbr_synced"
+
     /**
      * Descargas/verificaciones simultáneas. En serie, un modpack de ~100 archivos tarda
      * muchísimo en la primera instalación (mismo criterio que el launcher de escritorio).
@@ -192,6 +195,49 @@ object DbrSync {
         }
     }
 
+    /** Manifest remoto de la variante actual y cómo fijar sus URLs al mismo commit. */
+    private class RemoteManifest(val json: String, val pin: (String) -> String) {
+        /** Huella del manifest: cambia con cualquier mod, config o preset de Android. */
+        val fingerprint: String
+            get() = MessageDigest.getInstance("SHA-1").digest(json.toByteArray(Charsets.UTF_8))
+                .joinToString("") { "%02x".format(it) }
+    }
+
+    private fun fetchManifest(): RemoteManifest {
+        //Manifest y archivos de la misma rama, fijados al commit actual. Sin la API, por la rama.
+        val url = manifestUrl()
+        val raw = RAW.find(url)
+        val sha = raw?.let { headSha(it.groupValues[1], it.groupValues[2], it.groupValues[3]) }
+        val pin: (String) -> String = if (raw != null && sha != null) {
+            val branchBase = raw.value
+            val pinnedBase = "https://raw.githubusercontent.com/${raw.groupValues[1]}/${raw.groupValues[2]}/$sha/"
+            ({ u -> if (u.startsWith(branchBase)) pinnedBase + u.removePrefix(branchBase) else u })
+        } else {
+            { u -> u }
+        }
+        return RemoteManifest(readFirst(listOfNotNull(pin(url), jsDelivr(pin(url)))), pin)
+    }
+
+    enum class Status {
+        /** El último sync terminó con el manifest que hay ahora en el servidor. */
+        UP_TO_DATE,
+        /** Hay cambios (o nunca se sincronizó): Jugar los descarga. */
+        UPDATE_AVAILABLE,
+        /** No se pudo leer el manifest remoto (sin red o GitHub caído). */
+        UNKNOWN
+    }
+
+    /**
+     * Compara la huella del manifest remoto con la del último sync completo. Solo baja el
+     * manifest; no mira los archivos del disco (eso lo hace el sync al pulsar Jugar).
+     */
+    suspend fun checkStatus(gameDir: File): Status = withContext(Dispatchers.IO) {
+        val remote = runCatching { fetchManifest() }.getOrNull() ?: return@withContext Status.UNKNOWN
+        if (neverSynced(gameDir)) return@withContext Status.UPDATE_AVAILABLE
+        val synced = runCatching { File(gameDir, SYNCED_FILE).readText().trim() }.getOrNull()
+        if (synced == remote.fingerprint) Status.UP_TO_DATE else Status.UPDATE_AVAILABLE
+    }
+
     /**
      * Sincroniza los archivos del modpack en [gameDir]. Lanza excepción si falla
      * (el llamador debe BLOQUEAR el arranque del juego). Corre en IO.
@@ -205,20 +251,9 @@ object DbrSync {
     ) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
-        //Manifest y archivos de la misma rama, fijados al commit actual. Sin la API, por la rama.
-        val url = manifestUrl()
-        val raw = RAW.find(url)
-        val sha = raw?.let { headSha(it.groupValues[1], it.groupValues[2], it.groupValues[3]) }
-        val pin: (String) -> String = if (raw != null && sha != null) {
-            val branchBase = raw.value
-            val pinnedBase = "https://raw.githubusercontent.com/${raw.groupValues[1]}/${raw.groupValues[2]}/$sha/"
-            ({ u -> if (u.startsWith(branchBase)) pinnedBase + u.removePrefix(branchBase) else u })
-        } else {
-            { u -> u }
-        }
-
-        val json = readFirst(listOfNotNull(pin(url), jsDelivr(pin(url))))
-        val manifest = GSON.fromJson(json, Manifest::class.java)
+        val remote = fetchManifest()
+        val pin = remote.pin
+        val manifest = GSON.fromJson(remote.json, Manifest::class.java)
             ?: error("No se pudo leer el manifest del modpack")
         val files = filesForAndroid(manifest).map { it.copy(url = pin(it.url)) }
         if (files.isEmpty()) error("El manifest no contiene archivos")
@@ -273,6 +308,7 @@ object DbrSync {
         }
 
         managedFile.writeText(GSON.toJson(managedPaths))
+        File(gameDir, SYNCED_FILE).writeText(remote.fingerprint)
         onProgress(Progress("done", total, total, ""))
     }
 }

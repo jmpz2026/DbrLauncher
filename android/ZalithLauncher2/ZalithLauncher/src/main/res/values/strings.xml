@@ -5,10 +5,15 @@
     <string name="dbr_welcome_back">Bienvenido de vuelta</string>
     <string name="dbr_play">▶ JUGAR</string>
     <string name="dbr_mods_ok">Mods al día</string>
+    <string name="dbr_mods_checking">Comprobando mods…</string>
+    <string name="dbr_mods_update">Actualización de mods</string>
+    <string name="dbr_mods_unknown">Mods sin verificar</string>
+    <string name="dbr_mods_not_installed">Mods sin instalar</string>
+    <string name="dbr_sync_offline_title">No se pudieron verificar los mods</string>
+    <string name="dbr_sync_offline_message">No hay conexión con el servidor de descargas. Puedes jugar con los mods que ya tienes, pero si hay una actualización el servidor no te dejará entrar.</string>
+    <string name="dbr_sync_offline_play">Jugar igual</string>
     <string name="dbr_server">Servidor…</string>
     <string name="dbr_exit">Salir</string>
-    <string name="dbr_renderer_label">Motor de render</string>
-    <string name="dbr_renderer_hint">¿Pantalla negra o fallos gráficos? Prueba otro motor.</string>
     <string name="dbr_update_title">Actualización disponible</string>
     <string name="dbr_update_update">Actualizar</string>
     <string name="dbr_update_later">Después</string>
@@ -38,9 +43,6 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_lite_proposal_text">¿Pasar a la versión Lite? Usa ajustes gráficos más ligeros y activa el modo ligero del juego, así irá más fluido. Aplica su configuración recomendada (opciones gráficas y ajustes de mods) al pulsar Jugar. Puedes volver a Completo cuando quieras desde Ajustes.</string>
     <string name="dbr_lite_proposal_accept">Pasar a Lite</string>
     <string name="dbr_lite_proposal_keep">Seguir en Completo</string>
-    <string name="dbr_auto_sync_title">Actualización automática de mods</string>
-    <string name="dbr_auto_sync_summary_on">Al pulsar Jugar se descargan e instalan los últimos mods del servidor.</string>
-    <string name="dbr_auto_sync_summary_off">Desactivada: se juega con los mods ya instalados, sin descargar cambios.</string>
     <string name="dbr_mods_import_title">Instalar mod (.jar)</string>
     <string name="dbr_mods_import_summary">Añade mods propios a la carpeta mods de DBR (para testear). El sync del servidor no los borra.</string>
     <string name="dbr_mods_import_no_instance">Instala DBR primero (botón Instalar DBR)</string>
