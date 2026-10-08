@@ -88,6 +88,73 @@ object DbrSync {
         conn.getInputStream().use { it.readBytes().toString(Charsets.UTF_8).trim() }
     }.getOrNull()?.takeIf { Regex("^[0-9a-f]{40}$").matches(it) }
 
+    /**
+     * Copia de cada archivo del modpack como asset de un release, con su sha1 por nombre (la
+     * sube la Action de la rama assets). Se sirve desde objects.githubusercontent.com, otra red
+     * distinta de raw: cuando raw bloquea la IP del jugador (403) la sync baja de aquí.
+     */
+    private const val ASSET_MIRROR_BASE =
+        "https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/"
+
+    /** La misma URL de raw servida por jsDelivr. Sirve los manifests, no los jars. */
+    private fun jsDelivr(url: String): String? =
+        Regex("""^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$""").find(url)?.let {
+            val (owner, repo, ref, path) = it.destructured
+            "https://cdn.jsdelivr.net/gh/$owner/$repo@$ref/$path"
+        }
+
+    /** Abre [url] y devuelve el stream si responde 2xx; si no, lanza con el status. */
+    private fun openOk(url: String): java.io.InputStream {
+        val conn = URL(url).openConnection() as java.net.HttpURLConnection
+        conn.connectTimeout = 15_000
+        conn.readTimeout = 20_000
+        conn.instanceFollowRedirects = true
+        val code = conn.responseCode
+        if (code !in 200..299) {
+            conn.disconnect()
+            throw java.io.IOException("Descarga falló ($code): $url")
+        }
+        return conn.inputStream
+    }
+
+    /** Texto de la primera URL que responda. Lanza el error de la primera si fallan todas. */
+    private fun readFirst(urls: List<String>): String {
+        var first: Exception? = null
+        for (u in urls) {
+            try {
+                return openOk(u).use { it.readBytes().toString(Charsets.UTF_8) }
+            } catch (e: Exception) {
+                if (first == null) first = e
+            }
+        }
+        throw first ?: IllegalStateException("Sin URLs")
+    }
+
+    /**
+     * Baja a [dest] desde la primera de [urls] que responda y case con [sha1]. Se escribe en un
+     * temporal: una descarga cortada o de un mirror malo no deja el archivo a medias.
+     * Si fallan todas se lanza el error del origen, que es el que explica el problema.
+     */
+    private fun downloadFirst(urls: List<String>, dest: File, sha1: String?) {
+        val tmp = File(dest.path + ".part")
+        var first: Exception? = null
+        for (u in urls) {
+            try {
+                openOk(u).use { input -> tmp.outputStream().use { output -> input.copyTo(output) } }
+                if (!sha1.isNullOrEmpty() && !sha1(tmp).equals(sha1, ignoreCase = true)) {
+                    throw java.io.IOException("El archivo descargado no coincide (hash): $u")
+                }
+                if (dest.exists()) dest.delete()
+                if (!tmp.renameTo(dest)) throw java.io.IOException("No se pudo escribir ${dest.path}")
+                return
+            } catch (e: Exception) {
+                tmp.delete()
+                if (first == null) first = e
+            }
+        }
+        throw first ?: IllegalStateException("Sin URLs")
+    }
+
     /** Progreso reportado por callback. phase: check|download|delete|done */
     data class Progress(val phase: String, val done: Int, val total: Int, val file: String)
 
@@ -150,7 +217,7 @@ object DbrSync {
             { u -> u }
         }
 
-        val json = URL(pin(url)).readText()
+        val json = readFirst(listOfNotNull(pin(url), jsDelivr(pin(url))))
         val manifest = GSON.fromJson(json, Manifest::class.java)
             ?: error("No se pudo leer el manifest del modpack")
         val files = filesForAndroid(manifest).map { it.copy(url = pin(it.url)) }
@@ -193,13 +260,9 @@ object DbrSync {
         pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
-            URL(f.url).openStream().use { input ->
-                dest.outputStream().use { output -> input.copyTo(output) }
-            }
-            if (!f.sha1.isNullOrEmpty() && !sha1(dest).equals(f.sha1, ignoreCase = true)) {
-                dest.delete()
-                error("El archivo descargado no coincide (hash): ${f.path}")
-            }
+            //Origen y, si falla (p. ej. 403 de raw a la IP del jugador), la copia del release.
+            val mirror = f.sha1?.takeIf { it.isNotEmpty() }?.let { ASSET_MIRROR_BASE + it.lowercase() }
+            downloadFirst(listOfNotNull(f.url, mirror), dest, f.sha1)
             onProgress(Progress("download", done.incrementAndGet(), total, f.path))
         }
 
