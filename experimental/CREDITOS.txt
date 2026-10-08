@@ -1,32 +1,17 @@
-CREDITOS Y LICENCIAS - Paquete Angelica para Dragon Block Resurrection (2.2.30)
+CREDITOS Y LICENCIAS - Paquete experimental de Dragon Block Resurrection
 =============================================================================
 
 Los textos completos de cada licencia estan en la carpeta LICENCIAS.
 
 -----------------------------------------------------------------------------
-1. Angelica 2.2.30  (angelica-2.2.30.jar)
+1. Beddium 1.2.5-j8  (beddium-mc1.7.10-1.2.5-j8.jar, sin modificar)
 -----------------------------------------------------------------------------
-Autores: GTNewHorizons y contribuidores de Angelica.
+Autores: Ven y FalsePattern. Copyright (C) 2025 Ven, FalsePattern.
 Licencia: GNU LGPL v3 (LICENCIAS/LGPL-3.0.txt + LICENCIAS/GPL-3.0.txt).
-Proyecto original: https://github.com/GTNewHorizons/Angelica
-
-ESTA ES UNA VERSION MODIFICADA. Codigo fuente de esta version exacta:
-  https://github.com/jmpz2026/Angelica/tree/2.2.30
-  (rama dbr/npcdbc-compat, basada en GTNewHorizons/Angelica master 21a054a4)
-Cambios: compatibilidad de perfil core para mods con varios draw buffers y
-depth compartido, vaciado de geometria diferida en glClear, colorMask en el
-HUD caching, y HUD caching / conversion '&' apagados por defecto.
-
-Angelica incluye codigo de terceros con sus propias licencias (detalle en
-el README del proyecto). Entre ellos:
-  - HUD caching: creado por Moulberry (MCHUDCaching), portado desde Patcher
-    por Alexdoru, bajo CC BY-NC-SA 4.0 (LICENCIAS/CC-BY-NC-SA-4.0.txt).
-  - ArchaicFix (embeddedt), NotFine (jss2a98aj), Neodymium (makamys),
-    FalseTweaks y Beddium (FalsePattern, Venn), glsl-transformation-lib y
-    Monocle: LGPL.
-  - Reese's Sodium Options (FlashyReese), LambDynamicLights (LambdAurora),
-    DynamicLightsReforged (anthxnymc), Mesa: MIT.
-  - Archivos de Minecraft Forge: LGPL 2.1.
+Codigo fuente: https://github.com/vfx-dev/Beddium/tree/1.2.5-j8
+Basado en Celeritas de embeddedt (https://git.taumc.org/embeddedt/celeritas),
+con creditos al equipo CaffeineMC y a los contribuidores de los forks de
+Sodium.
 
 -----------------------------------------------------------------------------
 2. GTNHLib 0.11.36-dbr.1  (gtnhlib-0.11.36-dbr.1.jar)
@@ -82,3 +67,28 @@ pertenecen a sus autores.
   - JvmDowngrader java-api 1.3.5 (downgraded-8 y downgraded-17) -
     Copyright (C) 2024 William Gray - GNU LGPL v2.1 (LICENCIAS/LGPL-2.1.txt)
     Codigo fuente: https://github.com/unimined/JvmDowngrader/tree/1.3.5
+
+-----------------------------------------------------------------------------
+6. FalseTweaks 4.4.5  (falsetweaks-mc1.7.10-4.4.5.jar, sin modificar)
+-----------------------------------------------------------------------------
+Autores: FalsePattern. Copyright (C) 2022-2025 FalsePattern.
+Licencia: GNU LGPL v3 (LICENCIAS/LGPL-3.0.txt + LICENCIAS/GPL-3.0.txt).
+Codigo fuente: https://github.com/FalsePattern/FalseTweaks/tree/4.4.5
+Incluye codigo de terceros (detalle en el LICENSE del propio jar):
+  - ArchaicFix (embeddedt), Angelica y HodgePodge (GTNH Team): LGPL v3.
+  - Ordenacion del triangulator basada en Minetest, Copyright (C)
+    2010-2018 celeron55, Perttu Ahola: LGPL v2.1 o posterior.
+  - Packing2D, Copyright (c) 2013 papuja: MIT (LICENCIAS/MIT.txt).
+  - Optimizacion de pending block updates de CoreTweaks, Copyright (c)
+    2021 makamys: MIT.
+  - Modulo de occlusion culling derivado de CoFHTweaks (CoFH Team) y de
+    Minecraft 1.8; segun el autor no esta bajo LGPL v3.
+Lleva dentro, sin modificar, megatraceservice 1.3.0 y falsetweaks-panama
+4.4.5 (este ultimo solo se usa con Java 25).
+
+-----------------------------------------------------------------------------
+7. FalsePatternLib 1.12.2  (falsepatternlib-mc1.7.10-1.12.2.jar, sin modificar)
+-----------------------------------------------------------------------------
+Autores: FalsePattern. Copyright (C) 2022-2025 FalsePattern.
+Licencia: GNU LGPL v3 (LICENCIAS/LGPL-3.0.txt + LICENCIAS/GPL-3.0.txt).
+Codigo fuente: https://github.com/FalsePattern/FalsePatternLib/tree/1.12.2
