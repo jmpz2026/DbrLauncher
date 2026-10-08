@@ -1,0 +1,28 @@
+name: Mirror de assets
+
+# Sube los archivos del modpack al release `assets-files` (ver .github/scripts/mirror-assets.mjs).
+on:
+  push:
+    branches: [assets]
+  workflow_dispatch: {}
+
+concurrency:
+  group: mirror-assets
+  cancel-in-progress: false # dos pushes seguidos: el segundo espera, no corta una subida a medias
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Subir los archivos que falten y borrar los huérfanos
+        run: node .github/scripts/mirror-assets.mjs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
