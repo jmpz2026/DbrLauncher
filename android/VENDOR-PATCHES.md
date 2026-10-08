@@ -137,3 +137,21 @@ de notificaciones...). En 1.7.10 `setIngameFocus()` no hace nada sin foco y `Ent
 pausa a los 500 ms (`pauseOnLostFocus`), así que "Volver al juego" no funcionaba.
 
 - `VMActivity.kt`: `if (hasFocus) 1 else 0`.
+
+## 10) Launcher simplificado (2026-10-08, plan en `PLAN-SIMPLIFICACION.md`)
+**Motivo:** ~90 opciones heredadas de ZL2 en 10 pestañas; el jugador de DBR toca 5 o 6.
+
+- `game/dbr/DbrSettingsMigration.kt`: pasos por revisión (`AllSettings.dbrSettingsRevision`), una vez por
+  instalación. Al quitar una opción de la UI, añadir un paso que la devuelva a su default.
+- Motor: GL4ES por defecto en instalaciones nuevas; al salir del Experimental sin motor previo, GL4ES. El chip
+  "Motor" de la home abre Ajustes > Rendimiento (se borró `RendererPicker` y el código muerto de la home ZL2).
+- Mods: chip real (`DbrSync.checkStatus`, huella SHA-1 del manifest en `.dbr_synced`), sin interruptor de
+  auto-sync; si el sync falla y hay mods de un sync anterior, se ofrece "Jugar igual".
+- Ajustes en 5 pestañas (Rendimiento, Juego, Controles, Mods, Ayuda). Fuera `LauncherSettingsScreen.kt`;
+  Gamepad, gestor de layouts y gestor de Java son subpantallas. Ajustes finos de controles solo en el menú
+  del juego. "Reportar problema" (`game/dbr/DbrReport.kt`) junta logs del juego, crash y launcher en un zip.
+- Terracotta eliminado (módulo AGPL, servicio VPN y permiso, menú del juego, pantalla de multijugador).
+- Cuentas: Microsoft visible y apagado ("Próximamente") hasta tener `OAUTH_CLIENT_ID`; sin authlib.
+- Pantalla de carga (`ui/screens/game/elements/DbrLoadingScreen.kt`) hasta el menú principal. Etapas en
+  `game/dbr/DbrLaunchLog.kt`, que es ahora el único listener de `LoggerBridge` y reenvía a `LogBox`. Contrato:
+  marcas `[DBR-LAUNCH] stage=preinit|init|postinit|complete|menu` de `LaunchMarker` (DbrServerPack/DbrMod).
