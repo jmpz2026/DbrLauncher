@@ -1346,4 +1346,22 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="festivals_new_year">Happy New Year!</string>
     <string name="festivals_april_fools">Happy April Fools\' Day!</string>
     <string name="festivals_christmas">Merry Christmas!</string>
+    <string name="dbr_launch_subtitle">LAUNCHER MÓVIL</string>
+    <string name="dbr_launch_title">Tu aventura está por comenzar</string>
+    <string name="dbr_launch_wait">Espera mientras se abre Dragon Block Resurrection.</string>
+    <string name="dbr_launch_device_note">El tiempo de inicio depende de tu dispositivo.</string>
+    <string name="dbr_launch_cancel">Cancelar inicio</string>
+    <string name="dbr_launch_stage_java">Iniciando Java…</string>
+    <string name="dbr_launch_stage_minecraft">Cargando Minecraft…</string>
+    <string name="dbr_launch_stage_mods">Cargando mods…</string>
+    <string name="dbr_launch_stage_preparing">Preparando texturas y sonidos…</string>
+    <string name="dbr_launch_stage_menu">Abriendo el menú…</string>
+    <string-array name="dbr_launch_tips">
+        <item>Consejo: si ves la pantalla negra, prueba otro motor en Ajustes &gt; Rendimiento.</item>
+        <item>Consejo: con el modpack Ligero el juego va más fluido en móviles justos.</item>
+        <item>Consejo: puedes mover y cambiar el tamaño de los botones desde el menú del juego.</item>
+        <item>Consejo: la sensibilidad de la cámara se ajusta desde el menú del juego.</item>
+        <item>Consejo: si el juego se cierra, usa Ajustes &gt; Ayuda &gt; Reportar problema y mándalo al Discord.</item>
+        <item>Consejo: baja la resolución en Ajustes &gt; Rendimiento si notas lag.</item>
+    </string-array>
 </resources>

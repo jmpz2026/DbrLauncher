@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.bridge.LoggerBridge
+import com.movtery.zalithlauncher.game.dbr.DbrLaunchLog
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.screens.game.elements.log_parser.LogHighlighter
 import kotlinx.coroutines.CancellationException
@@ -95,7 +95,7 @@ fun LogBox(
         if (enableLog) {
             scrollChannel.value = Channel(capacity = 100)
 
-            LoggerBridge.setListener { log ->
+            DbrLaunchLog.viewer = { log ->
                 synchronized(buffer) {
                     val string = logHighlighter.highlight(log)
                     buffer.add(string)
@@ -146,7 +146,7 @@ fun LogBox(
             }
         } else {
             scrollChannel.value = null
-            LoggerBridge.setListener(null)
+            DbrLaunchLog.viewer = null
             logList.clear()
             buffer.clear()
         }

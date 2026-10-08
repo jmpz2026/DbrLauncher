@@ -76,6 +76,7 @@ import com.movtery.layer_controller.observable.ObservableControlLayout
 import com.movtery.layer_controller.observable.ObservableJoystickStyle
 import com.movtery.layer_controller.observable.ObservableSpecial
 import com.movtery.layer_controller.utils.widgetPosition
+import com.movtery.zalithlauncher.game.account.Account
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.CURSOR_DISABLED
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
@@ -120,6 +121,7 @@ import com.movtery.zalithlauncher.ui.screens.game.elements.DraggableGameBall
 import com.movtery.zalithlauncher.ui.screens.game.elements.ForceCloseOperation
 import com.movtery.zalithlauncher.ui.screens.game.elements.GameMenuSubscreen
 import com.movtery.zalithlauncher.ui.screens.game.elements.JoystickManageOperation
+import com.movtery.zalithlauncher.ui.screens.game.elements.DbrLoadingScreen
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogBox
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogState
 import com.movtery.zalithlauncher.ui.screens.game.elements.ReplacementControlOperation
@@ -517,6 +519,7 @@ fun GameScreen(
     isTouchProxyEnabled: Boolean,
     onInputAreaRectUpdated: (IntRect?) -> Unit,
     getAccountName: () -> String?,
+    account: Account?,
     eventViewModel: EventViewModel,
     gamepadViewModel: GamepadViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
@@ -780,6 +783,13 @@ fun GameScreen(
                 )
             }
         }
+
+        //DBR: encima de todo hasta que DbrMod abre el menú principal.
+        DbrLoadingScreen(
+            account = account,
+            onCancel = { ZLNativeInvoker.jvmExit(0, false) },
+            modifier = Modifier.fillMaxSize()
+        )
     }
 
     //摇杆管理状态操作

@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import com.movtery.zalithlauncher.bridge.ZLBridge
+import com.movtery.zalithlauncher.game.dbr.DbrLaunchLog
 import com.movtery.zalithlauncher.game.control.ControlManager
 import com.movtery.zalithlauncher.game.input.EfficientAndroidLWJGLKeycode
 import com.movtery.zalithlauncher.game.input.LWJGLCharSender
@@ -87,6 +88,8 @@ class GameHandler(
         scope: CoroutineScope
     ) {
         ZLBridge.setupBridgeWindow(surface)
+        //DBR: etapas de arranque para la pantalla de carga (game/dbr/DbrLaunchLog).
+        DbrLaunchLog.start()
 
         MCOptions.setup(activity, version)
 
@@ -217,6 +220,7 @@ class GameHandler(
             isTouchProxyEnabled = version.enableTouchProxy,
             onInputAreaRectUpdated = { _inputArea.value = it },
             getAccountName = { account.username },
+            account = account,
             eventViewModel = eventViewModel,
             gamepadViewModel = gamepadViewModel,
             submitError = {
