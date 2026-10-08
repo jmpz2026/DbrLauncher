@@ -97,7 +97,6 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.isLauncherInDarkTheme
 import com.movtery.zalithlauncher.setting.enums.toAction
-import com.movtery.zalithlauncher.terracotta.Terracotta
 import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.MenuState
@@ -127,8 +126,6 @@ import com.movtery.zalithlauncher.ui.screens.game.elements.ReplacementControlOpe
 import com.movtery.zalithlauncher.ui.screens.game.elements.ReplacementControlState
 import com.movtery.zalithlauncher.ui.screens.game.elements.SendKeycodeOperation
 import com.movtery.zalithlauncher.ui.screens.game.elements.SendKeycodeState
-import com.movtery.zalithlauncher.ui.screens.game.multiplayer.TerracottaOperation
-import com.movtery.zalithlauncher.ui.screens.game.multiplayer.rememberTerracottaViewModel
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.ControlEditor
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.string.getMessageOrToString
@@ -534,12 +531,6 @@ fun GameScreen(
         cursorMode == CURSOR_DISABLED
     }
     val joystickMovementViewModel: JoystickMovementViewModel = viewModel()
-    val terracottaViewModel = rememberTerracottaViewModel(
-        keyTag = gameHandler.toString() + "_Terracotta",
-        gameHandler = gameHandler,
-        eventViewModel = eventViewModel,
-        getUserName = getAccountName
-    )
 
     LaunchedEffect(viewModel.isEditingLayout) {
         val state = viewModel.isEditingLayout
@@ -557,7 +548,6 @@ fun GameScreen(
         operation = viewModel.forceCloseState,
         onChange = { viewModel.forceCloseState = it },
         onForceClose = {
-            Terracotta.setWaiting(false)
             ZLNativeInvoker.jvmExit(0, false)
         },
         text = stringResource(R.string.game_menu_option_force_close_text)
@@ -568,13 +558,6 @@ fun GameScreen(
         onChange = { viewModel.replacementControlState = it },
         currentLayout = viewModel.currentControlFile,
         replacementControl = { viewModel.replaceControlLayout(it) }
-    )
-
-    TerracottaOperation(
-        viewModel = terracottaViewModel,
-        onShowToast = { text, duration ->
-            eventViewModel.sendToast(text, duration)
-        }
     )
 
     BoxWithConstraints(
@@ -718,8 +701,6 @@ fun GameScreen(
             closeScreen = { viewModel.gameMenuState = MenuState.HIDE },
             onForceClose = { viewModel.forceCloseState = ForceCloseOperation.Show },
             onSwitchLog = { onLogStateChange(logState.next()) },
-            enableTerracotta = AllSettings.enableTerracotta.state,
-            onOpenTerracottaMenu = { terracottaViewModel.openMenu() },
             onRefreshWindowSize = { eventViewModel.sendEvent(EventViewModel.Event.Game.RefreshSize) },
             onInputMethod = {
                 eventViewModel.sendEvent(EventViewModel.Event.Game.SwitchIme(null))
