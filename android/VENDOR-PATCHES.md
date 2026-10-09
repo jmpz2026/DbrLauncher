@@ -137,6 +137,9 @@ de notificaciones...). En 1.7.10 `setIngameFocus()` no hace nada sin foco y `Ent
 pausa a los 500 ms (`pauseOnLostFocus`), así que "Volver al juego" no funcionaba.
 
 - `VMActivity.kt`: `if (hasFocus) 1 else 0`.
+- (2026-10-09) Perder el foco con la actividad en primer plano ya no se manda: un panel flotante del sistema
+  (Game Turbo, Game Booster, burbujas) puede quedarse con el foco sin pausar la app y dejaba el juego en
+  pausa. Solo `onPause` manda `GLFW_FOCUSED = 0`.
 
 ## 10) Launcher simplificado (2026-10-08, plan en `PLAN-SIMPLIFICACION.md`)
 **Motivo:** ~90 opciones heredadas de ZL2 en 10 pestañas; el jugador de DBR toca 5 o 6.

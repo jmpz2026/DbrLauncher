@@ -522,7 +522,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_FOCUSED, if (hasFocus) 1 else 0)
+        //DBR: solo se avisa al ganar el foco. Perderlo con la actividad en primer plano (diálogo,
+        //persiana, paneles flotantes tipo Game Turbo) no debe llegar al juego: sin foco, 1.7.10
+        //reabre el menú de pausa sin parar. Salir de la app ya lo manda onPause.
+        if (hasFocus) CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_FOCUSED, 1)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
