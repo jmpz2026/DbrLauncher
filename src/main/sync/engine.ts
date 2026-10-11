@@ -5,6 +5,7 @@ import { flushHashCache, sha1FileCached } from './hash'
 import { fetchManifest } from './manifest'
 import { ensureFile } from '../net'
 import { CONFIG } from '../../shared/config'
+import { aplicarLang, langActual } from './lang'
 
 export interface SyncOptions {
   gameDir: string // dónde viven los mods/configs
@@ -13,6 +14,9 @@ export interface SyncOptions {
   // Re-aplicar los archivos de siembra (`once`) aunque ya existan. Se usa al cambiar de
   // variante del modpack, cuando el jugador acepta la config recomendada de la nueva.
   reseed?: boolean
+  // Locale del sistema operativo (app.getLocale()): idioma del juego en la primera siembra
+  // de options.txt. Sin él, no se toca el lang: del archivo.
+  systemLocale?: string
 }
 
 type OnProgress = (p: SyncProgress) => void
@@ -56,7 +60,7 @@ export function safeJoin(base: string, rel: string): string {
 
 /** Sincroniza los archivos locales con el manifest. Reporta progreso por callback. */
 export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promise<SyncSummary> {
-  const { gameDir, managedFile, manifestUrl, reseed = false } = opts
+  const { gameDir, managedFile, manifestUrl, reseed = false, systemLocale } = opts
   const manifest = await fetchManifest(manifestUrl)
   mkdirSync(gameDir, { recursive: true })
 
@@ -81,6 +85,9 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     onProgress({ phase: 'check', file: f.path, done: ++checked, total: checkTotal })
   })
   const toDownload: ManifestFile[] = manifest.files.filter((_, i) => needed[i])
+  // options.txt se re-siembra al cambiar de variante: se guarda antes el idioma del jugador.
+  const opciones = toDownload.find((f) => f.once && f.path === 'options.txt')
+  const langPrevio = opciones ? langActual(safeJoin(gameDir, opciones.path)) : null
 
   // 2) Determinar archivos obsoletos: gestionados antes pero ya no en el manifest.
   // Los `once` no entran nunca en el índice de gestionados: así jamás se borran del equipo
@@ -144,6 +151,10 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     done++
     emit(true)
   })
+
+  if (opciones && systemLocale !== undefined) {
+    aplicarLang(safeJoin(gameDir, opciones.path), langPrevio, systemLocale)
+  }
 
   // 4) Borrar obsoletos. Si uno no se puede borrar (en Windows, un jar abierto por un juego
   // que sigue corriendo) se queda en el índice para reintentarlo en la próxima sync. Antes el

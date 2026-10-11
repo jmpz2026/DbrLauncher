@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import { CONFIG, isManifestConfigured } from '../../shared/config'
 import type { SyncResult } from '../../shared/sync'
 import { loadSettings, saveSettings } from '../settings'
@@ -37,7 +37,8 @@ export function registerSync(): void {
           gameDir: getGameDir(),
           managedFile: getManagedFile(),
           manifestUrl: manifestUrlForVariant(),
-          reseed
+          reseed,
+          systemLocale: app.getLocale()
         },
         (p) => e.sender.send('sync:progress', p)
       )
