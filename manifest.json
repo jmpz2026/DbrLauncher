@@ -440,8 +440,8 @@
     },
     {
       "path": "mods/DbrServerPack-4.3.0.jar",
-      "sha1": "65947415698727885d07242c4ddfe7b3faa1a7d1",
-      "size": 42412520,
+      "sha1": "421fedff897a4dd63145300d9967b55237a11842",
+      "size": 42503622,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-4.3.0.jar"
     },
     {
@@ -533,8 +533,8 @@
     },
     {
       "path": "resourcepacks/DbrTexture v6.zip",
-      "sha1": "b1d17c7d22551756e6715ecb6a96b61b9e97fc0a",
-      "size": 4323579,
+      "sha1": "6c082d9a7f03685e873e62525dd2d224eba50a4c",
+      "size": 4334396,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/resourcepacks/DbrTexture%20v6.zip"
     }
   ],
