@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Textos propios de DbrLauncher Mobile. Inglés por defecto (cualquier idioma que no sea
+  castellano ni portugués), castellano en values-es y portugués de Brasil en values-pt
+  (vale también para pt-BR y pt-PT). Misma cadena que el servidor y el launcher de PC.
+-->
+<resources>
+    <string name="dbr_server_label">Server:</string>
+    <string name="dbr_server_offline">Server: offline</string>
+    <string name="dbr_welcome_back">Welcome back</string>
+    <string name="dbr_play">▶ PLAY</string>
+    <string name="dbr_mods_ok">Mods up to date</string>
+    <string name="dbr_mods_checking">Checking mods…</string>
+    <string name="dbr_mods_update">Mod update</string>
+    <string name="dbr_mods_unknown">Mods not verified</string>
+    <string name="dbr_mods_not_installed">Mods not installed</string>
+    <string name="dbr_sync_offline_title">Could not verify the mods</string>
+    <string name="dbr_sync_offline_message">There is no connection to the download server. You can play with the mods you already have, but if there is an update the server will not let you in.</string>
+    <string name="dbr_sync_offline_play">Play anyway</string>
+    <string name="dbr_server">Server…</string>
+    <string name="dbr_exit">Exit</string>
+    <string name="dbr_update_title">Update available</string>
+    <string name="dbr_update_update">Update</string>
+    <string name="dbr_update_later">Later</string>
+    <string name="dbr_update_downloading">Downloading update…</string>
+    <string name="dbr_syncing_message">Syncing the DBR modpack…</string>
+    <string name="dbr_install_button">Install DBR</string>
+    <string name="dbr_installing_message">Installing DBR (Minecraft 1.7.10 + Forge).
+This may take a few minutes…</string>
+    <string name="dbr_install_error_title">Error installing DBR</string>
+    <string name="dbr_modpack_variant_title">Modpack variant</string>
+    <string name="dbr_modpack_variant_summary">Full, Lite and Experimental share Minecraft and Forge. When you change it, the next Play syncs the mods again.</string>
+    <string name="dbr_modpack_full">Full</string>
+    <string name="dbr_modpack_lite">Lite</string>
+    <string name="dbr_modpack_experimental">Experimental</string>
+    <string name="dbr_modpack_experimental_title">Experimental modpack</string>
+    <string name="dbr_modpack_experimental_text">This version is NOT meant for playing on the server. It brings mods being tested so you can try them: it may fail or not let you join the server. To play normally, go back to Full or Lite.
+
+Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. You can change it later on the home screen.</string>
+    <string name="dbr_modpack_experimental_check">I understand it is not for playing on the server</string>
+    <string name="dbr_modpack_experimental_confirm">Turn on</string>
+    <string name="dbr_modpack_experimental_banner">Experimental modpack active: it is not meant for playing on the server.</string>
+    <string name="dbr_modpack_seed_title">Recommended settings</string>
+    <string name="dbr_modpack_seed_text">Also apply the recommended settings of this version (graphics options and mod settings)? It overwrites your current settings. It is applied when you press Play.</string>
+    <string name="dbr_modpack_seed_apply">Apply them</string>
+    <string name="dbr_modpack_seed_keep">Keep mine</string>
+    <string name="dbr_lite_proposal_title">Your phone seems low-end</string>
+    <string name="dbr_lite_proposal_text">Switch to the Lite version? It uses lighter graphics settings and turns on the game\'s light mode, so it runs smoother. It applies its recommended settings (graphics options and mod settings) when you press Play. You can go back to Full whenever you want from Settings.</string>
+    <string name="dbr_lite_proposal_accept">Switch to Lite</string>
+    <string name="dbr_lite_proposal_keep">Stay on Full</string>
+    <string name="dbr_lite_reason_game">The game turned on its light mode on this phone.</string>
+    <string name="dbr_lite_reason_detected">Detected: %1$s.</string>
+    <string name="dbr_lite_reason_ram">%1$s GB of RAM</string>
+    <string name="dbr_lite_reason_cores">%1$d cores</string>
+    <string name="dbr_lite_reason_32bit">32-bit system</string>
+    <string name="dbr_tab_performance">Performance</string>
+    <string name="dbr_tab_help">Help</string>
+    <string name="dbr_report_title">Report a problem</string>
+    <string name="dbr_report_summary">Creates a file with the game and launcher logs to send to the staff on Discord.</string>
+    <string name="dbr_report_packing">Preparing the report…</string>
+    <string name="dbr_discord_title">DBR Discord</string>
+    <string name="dbr_discord_summary">Support, news and the server community.</string>
+    <string name="dbr_java_manage_summary">See, add or remove the installed Java runtimes.</string>
+    <string name="dbr_control_manage_summary">Create, import, export or edit button layouts.</string>
+    <string name="dbr_gamepad_summary">Use a physical controller and change its button mapping.</string>
+    <string name="dbr_mods_import_no_instance">Install DBR first (Install DBR button)</string>
+    <string name="dbr_login_button">Microsoft account · Coming soon</string>
+    <string name="dbr_login_not_available">Microsoft accounts are coming soon. For now use an offline account.</string>
+    <string name="dbr_nav_play">Play</string>
+    <string name="dbr_nav_settings">Settings</string>
+    <string name="dbr_renderer_chip">Engine: %1$s</string>
+
+    <!-- Idioma (Ajustes > Juego) -->
+    <string name="dbr_language_title">Language</string>
+    <string name="dbr_language_summary">Language of the launcher and of the game. The server talks to you in your Minecraft language.</string>
+    <string name="dbr_language_es" translatable="false">Español</string>
+    <string name="dbr_language_en" translatable="false">English</string>
+    <string name="dbr_language_pt" translatable="false">Português</string>
+
+    <!-- Errores del sync y de la instalación -->
+    <string name="dbr_error_download">Download failed (%1$d): %2$s</string>
+    <string name="dbr_error_hash">The downloaded file does not match (hash): %1$s</string>
+    <string name="dbr_error_write">Could not write %1$s</string>
+    <string name="dbr_error_manifest">Could not read the modpack manifest</string>
+    <string name="dbr_error_manifest_empty">The manifest has no files</string>
+    <string name="dbr_error_forge_list">Could not get the Forge list for %1$s</string>
+    <string name="dbr_error_forge_missing">Forge %1$s for Minecraft %2$s was not found</string>
+
+    <!-- Acerca de -->
+    <string name="dbr_about_launcher_text">Launcher of the Dragon Block Resurrection server for Android.</string>
+    <string name="dbr_about_zalith_text">DbrLauncher Mobile is an unofficial modified version of ZalithLauncher.</string>
+    <string name="dbr_about_credits_title">Credits and permissions</string>
+    <string name="dbr_about_npcdbc_text">Thanks to KAMKEEL (Kam), author of the addon together with bigguy345 (Goatee) and somehussar (Hussar), for allowing us to distribute to players, through this launcher, our modified version (an unofficial fork) with credit to its authors. Granted on 2026-10-05.</string>
+    <string name="dbr_about_jingames_text">Thanks to Benjámin Nagy (Ben), of JinGames, authors of Dragon Block C, JRMCore, JBRA Client, Family C and Years C, for allowing us to create and use addons that extend their mods. Granted on 2026-10-06. Their mods are used unmodified.</string>
+    <string name="dbr_about_independent">Dragon Block Resurrection is an independent project: it is not affiliated with JinGames or KAMKEEL.</string>
+    <string name="dbr_about_zalith_ack">Base launcher DbrLauncher Mobile is built on (unofficial fork, GPL-3.0).</string>
+    <string name="dbr_about_ltw_text">Render engine used by the experimental modpack. By artDev, SerpentSpirale, CADIndie and contributors (MojoLauncher). Included unmodified, built from commit 9dc80cb.</string>
+
+    <!-- Pantalla de carga del juego -->
+    <string name="dbr_launch_subtitle">MOBILE LAUNCHER</string>
+    <string name="dbr_launch_title">Your adventure is about to begin</string>
+    <string name="dbr_launch_wait">Please wait while Dragon Block Resurrection opens.</string>
+    <string name="dbr_launch_device_note">The start-up time depends on your device.</string>
+    <string name="dbr_launch_cancel">Cancel start</string>
+    <string name="dbr_launch_stage_java">Starting Java…</string>
+    <string name="dbr_launch_stage_minecraft">Loading Minecraft…</string>
+    <string name="dbr_launch_stage_mods">Loading mods…</string>
+    <string name="dbr_launch_stage_preparing">Preparing textures and sounds…</string>
+    <string name="dbr_launch_stage_menu">Opening the menu…</string>
+    <string-array name="dbr_launch_tips">
+        <item>Tip: if you see a black screen, try another engine in Settings &gt; Performance.</item>
+        <item>Tip: with the Lite modpack the game runs smoother on low-end phones.</item>
+        <item>Tip: you can move and resize the buttons from the in-game menu.</item>
+        <item>Tip: camera sensitivity is set from the in-game menu.</item>
+        <item>Tip: if the game closes, use Settings &gt; Help &gt; Report a problem and send it on Discord.</item>
+        <item>Tip: lower the resolution in Settings &gt; Performance if you notice lag.</item>
+        <item>Tip: change the language of the launcher and of the game in Settings &gt; Game.</item>
+    </string-array>
+</resources>

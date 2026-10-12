@@ -44,6 +44,8 @@ import com.movtery.zalithlauncher.context.COPY_LABEL_LINK
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.control.ControlManager
+import com.movtery.zalithlauncher.game.dbr.DbrIdioma
+import com.movtery.zalithlauncher.game.dbr.DbrInstall
 import com.movtery.zalithlauncher.game.plugin.PluginLoader
 import com.movtery.zalithlauncher.game.plugin.driver.DriverPluginManager
 import com.movtery.zalithlauncher.game.renderer.Renderers
@@ -105,6 +107,7 @@ import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import com.movtery.zalithlauncher.viewmodel.VulkanCheckerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -187,6 +190,13 @@ class MainActivity : BaseAppCompatActivity() {
         //加载插件
         PluginLoader.loadAllPlugins(this, false)
         refreshData()
+
+        //DBR: la app sigue al idioma del juego (lang: de options.txt) en cuanto se conoce la
+        //instancia DBR; si el jugador lo cambió dentro de Minecraft, el launcher se cambia también.
+        lifecycleScope.launch {
+            VersionsManager.versions.first { list -> list.any { it.getVersionName() == DbrInstall.VERSION_NAME } }
+            DbrIdioma.seguirAlJuego()
+        }
 
         //初始化通知管理（创建渠道）
         NotificationManager.initManager(this)
@@ -805,6 +815,8 @@ class MainActivity : BaseAppCompatActivity() {
     override fun onResume() {
         super.onResume()
         ControlManager.checkDefaultAndRefresh(this@MainActivity)
+        //DBR: al volver del juego, por si se cambió el idioma dentro de Minecraft.
+        DbrIdioma.seguirAlJuego()
     }
 
     @SuppressLint("RestrictedApi")

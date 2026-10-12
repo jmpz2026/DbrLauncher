@@ -33,7 +33,7 @@ object LTWRenderer : RendererInterface {
 
     override fun getRendererName(): String = "LTW (OpenGL ES 3)"
 
-    override fun getRendererSummary(): String = "Necesario para el modpack experimental (Angelica)"
+    override fun getRendererSummary(): String = "Required by the experimental modpack (Angelica)"
 
     override fun getRendererEnv(): Lazy<Map<String, String>> = lazy {
         mapOf(

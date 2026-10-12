@@ -354,7 +354,7 @@ private fun RendererChip(onClick: () -> Unit) {
     val selectedId = AllSettings.renderer.state
     val name = renderers.firstOrNull { it.getUniqueIdentifier() == selectedId }?.getRendererName()
         ?: renderers.first().getRendererName()
-    InfoChip(text = "Motor: $name", onClick = onClick)
+    InfoChip(text = stringResource(R.string.dbr_renderer_chip, name), onClick = onClick)
 }
 
 /** Estado de la provisión de la instancia DBR (Minecraft 1.7.10 + Forge). */

@@ -86,6 +86,15 @@ fun GameSettingsScreen(
             isVisible = isVisible,
             contentPadding = PaddingValues(all = 12.dp)
         ) { scope ->
+            //DBR: idioma del launcher y del juego (game/dbr/DbrIdioma).
+            animatedItem(scope) { yOffset ->
+                DbrLanguageSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier

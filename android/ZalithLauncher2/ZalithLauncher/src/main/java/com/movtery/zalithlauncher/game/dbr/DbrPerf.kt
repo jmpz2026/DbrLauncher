@@ -10,6 +10,7 @@ package com.movtery.zalithlauncher.game.dbr
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
+import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import java.io.File
@@ -39,7 +40,7 @@ object DbrPerf {
     fun check(context: Context, gameDir: File?): Proposal? {
         if (AllSettings.dbrModpackVariant.getValue() != DbrModpackVariant.FULL) return null
         if (gameDir != null && getKey(gameDir, "recomendarLite") == "true") {
-            return Proposal("El juego activó su modo ligero en este móvil.", fromGame = true)
+            return Proposal(context.getString(R.string.dbr_lite_reason_game), fromGame = true)
         }
         if (AllSettings.dbrLiteProposal.getValue() != NONE) return null
 
@@ -47,13 +48,13 @@ object DbrPerf {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
         val mem = ActivityManager.MemoryInfo().also { am?.getMemoryInfo(it) }
         if (mem.totalMem in 1 until RAM_JUSTA) {
-            senales += "%.1f GB de RAM".format(mem.totalMem / (1024.0 * 1024 * 1024))
+            senales += context.getString(R.string.dbr_lite_reason_ram, "%.1f".format(mem.totalMem / (1024.0 * 1024 * 1024)))
         }
         val nucleos = Runtime.getRuntime().availableProcessors()
-        if (nucleos <= NUCLEOS_JUSTOS) senales += "$nucleos núcleos"
-        if (Build.SUPPORTED_64_BIT_ABIS.isEmpty()) senales += "sistema de 32 bits"
+        if (nucleos <= NUCLEOS_JUSTOS) senales += context.getString(R.string.dbr_lite_reason_cores, nucleos)
+        if (Build.SUPPORTED_64_BIT_ABIS.isEmpty()) senales += context.getString(R.string.dbr_lite_reason_32bit)
         if (senales.isEmpty()) return null
-        return Proposal("Detectado: ${senales.joinToString(", ")}.", fromGame = false)
+        return Proposal(context.getString(R.string.dbr_lite_reason_detected, senales.joinToString(", ")), fromGame = false)
     }
 
     /**

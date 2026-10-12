@@ -37,8 +37,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.movtery.zalithlauncher.R
 
 // Paleta DBR (misma que el desktop).
 val DbrGold = Color(0xFFFFCF4A)
@@ -171,8 +173,8 @@ fun DbrBottomBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StoneNavButton(text = "Jugar", selected = inLauncherScreen, onClick = toMainScreen)
-            StoneNavButton(text = "Ajustes", selected = inSettingsScreen, onClick = toSettingsScreen)
+            StoneNavButton(text = stringResource(R.string.dbr_nav_play), selected = inLauncherScreen, onClick = toMainScreen)
+            StoneNavButton(text = stringResource(R.string.dbr_nav_settings), selected = inSettingsScreen, onClick = toSettingsScreen)
         }
     }
 }

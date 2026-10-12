@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos propios de DbrLauncher Mobile en portugués de Brasil (vale para pt-BR y pt-PT). -->
+<resources>
+    <string name="dbr_server_label">Servidor:</string>
+    <string name="dbr_server_offline">Servidor: offline</string>
+    <string name="dbr_welcome_back">Bem-vindo de volta</string>
+    <string name="dbr_play">▶ JOGAR</string>
+    <string name="dbr_mods_ok">Mods em dia</string>
+    <string name="dbr_mods_checking">Verificando mods…</string>
+    <string name="dbr_mods_update">Atualização de mods</string>
+    <string name="dbr_mods_unknown">Mods não verificados</string>
+    <string name="dbr_mods_not_installed">Mods não instalados</string>
+    <string name="dbr_sync_offline_title">Não foi possível verificar os mods</string>
+    <string name="dbr_sync_offline_message">Não há conexão com o servidor de downloads. Você pode jogar com os mods que já tem, mas se houver uma atualização o servidor não vai deixar você entrar.</string>
+    <string name="dbr_sync_offline_play">Jogar mesmo assim</string>
+    <string name="dbr_server">Servidor…</string>
+    <string name="dbr_exit">Sair</string>
+    <string name="dbr_update_title">Atualização disponível</string>
+    <string name="dbr_update_update">Atualizar</string>
+    <string name="dbr_update_later">Depois</string>
+    <string name="dbr_update_downloading">Baixando atualização…</string>
+    <string name="dbr_syncing_message">Sincronizando o modpack DBR…</string>
+    <string name="dbr_install_button">Instalar DBR</string>
+    <string name="dbr_installing_message">Instalando DBR (Minecraft 1.7.10 + Forge).
+Isso pode levar alguns minutos…</string>
+    <string name="dbr_install_error_title">Erro ao instalar DBR</string>
+    <string name="dbr_modpack_variant_title">Variante do modpack</string>
+    <string name="dbr_modpack_variant_summary">Full, Lite e Experimental compartilham Minecraft e Forge. Ao trocar, o próximo Jogar sincroniza os mods de novo.</string>
+    <string name="dbr_modpack_full">Full</string>
+    <string name="dbr_modpack_lite">Lite</string>
+    <string name="dbr_modpack_experimental">Experimental</string>
+    <string name="dbr_modpack_experimental_title">Modpack experimental</string>
+    <string name="dbr_modpack_experimental_text">Esta versão NÃO foi feita para jogar no servidor. Traz mods em teste para você testar: pode falhar ou não deixar você entrar no servidor. Para jogar normalmente, volte para Full ou Lite.
+
+Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o que ela precisa. Você pode trocar depois na tela inicial.</string>
+    <string name="dbr_modpack_experimental_check">Entendo que não é para jogar no servidor</string>
+    <string name="dbr_modpack_experimental_confirm">Ativar</string>
+    <string name="dbr_modpack_experimental_banner">Modpack experimental ativo: não foi feito para jogar no servidor.</string>
+    <string name="dbr_modpack_seed_title">Configuração recomendada</string>
+    <string name="dbr_modpack_seed_text">Aplicar também a configuração recomendada desta versão (opções gráficas e ajustes dos mods)? Ela substitui a configuração que você tem agora. É aplicada ao tocar em Jogar.</string>
+    <string name="dbr_modpack_seed_apply">Aplicar</string>
+    <string name="dbr_modpack_seed_keep">Manter a minha</string>
+    <string name="dbr_lite_proposal_title">Seu celular parece fraco</string>
+    <string name="dbr_lite_proposal_text">Mudar para a versão Lite? Ela usa ajustes gráficos mais leves e ativa o modo leve do jogo, assim fica mais fluido. Aplica a configuração recomendada dela (opções gráficas e ajustes dos mods) ao tocar em Jogar. Você pode voltar para Completo quando quiser em Ajustes.</string>
+    <string name="dbr_lite_proposal_accept">Mudar para Lite</string>
+    <string name="dbr_lite_proposal_keep">Continuar no Completo</string>
+    <string name="dbr_lite_reason_game">O jogo ativou o modo leve neste celular.</string>
+    <string name="dbr_lite_reason_detected">Detectado: %1$s.</string>
+    <string name="dbr_lite_reason_ram">%1$s GB de RAM</string>
+    <string name="dbr_lite_reason_cores">%1$d núcleos</string>
+    <string name="dbr_lite_reason_32bit">sistema de 32 bits</string>
+    <string name="dbr_tab_performance">Desempenho</string>
+    <string name="dbr_tab_help">Ajuda</string>
+    <string name="dbr_report_title">Reportar problema</string>
+    <string name="dbr_report_summary">Cria um arquivo com os registros do jogo e do launcher para enviar à staff pelo Discord.</string>
+    <string name="dbr_report_packing">Preparando o relatório…</string>
+    <string name="dbr_discord_title">Discord do DBR</string>
+    <string name="dbr_discord_summary">Suporte, avisos e comunidade do servidor.</string>
+    <string name="dbr_java_manage_summary">Ver, adicionar ou remover os ambientes Java instalados.</string>
+    <string name="dbr_control_manage_summary">Criar, importar, exportar ou editar os layouts de botões.</string>
+    <string name="dbr_gamepad_summary">Usar um controle físico e mudar o mapeamento dos botões.</string>
+    <string name="dbr_mods_import_no_instance">Instale o DBR primeiro (botão Instalar DBR)</string>
+    <string name="dbr_login_button">Conta Microsoft · Em breve</string>
+    <string name="dbr_login_not_available">As contas Microsoft chegam em breve. Por enquanto use uma conta offline.</string>
+    <string name="dbr_nav_play">Jogar</string>
+    <string name="dbr_nav_settings">Ajustes</string>
+    <string name="dbr_renderer_chip">Motor: %1$s</string>
+
+    <string name="dbr_language_title">Idioma</string>
+    <string name="dbr_language_summary">Idioma do launcher e do jogo. O servidor fala com você no idioma do seu Minecraft.</string>
+
+    <string name="dbr_error_download">O download falhou (%1$d): %2$s</string>
+    <string name="dbr_error_hash">O arquivo baixado não confere (hash): %1$s</string>
+    <string name="dbr_error_write">Não foi possível gravar %1$s</string>
+    <string name="dbr_error_manifest">Não foi possível ler o manifest do modpack</string>
+    <string name="dbr_error_manifest_empty">O manifest não tem arquivos</string>
+    <string name="dbr_error_forge_list">Não foi possível obter a lista do Forge para %1$s</string>
+    <string name="dbr_error_forge_missing">Forge %1$s para Minecraft %2$s não encontrado</string>
+
+    <string name="dbr_about_launcher_text">Launcher do servidor Dragon Block Resurrection para Android.</string>
+    <string name="dbr_about_zalith_text">DbrLauncher Mobile é uma versão modificada não oficial do ZalithLauncher.</string>
+    <string name="dbr_about_credits_title">Créditos e permissões</string>
+    <string name="dbr_about_npcdbc_text">Obrigado a KAMKEEL (Kam), autor do addon junto com bigguy345 (Goatee) e somehussar (Hussar), por nos permitir distribuir aos jogadores, por meio deste launcher, a nossa versão modificada (um fork não oficial) com os créditos aos autores. Concedido em 05/10/2026.</string>
+    <string name="dbr_about_jingames_text">Obrigado a Benjámin Nagy (Ben), da JinGames, autores de Dragon Block C, JRMCore, JBRA Client, Family C e Years C, por nos permitir criar e usar addons que estendem os mods deles. Concedido em 06/10/2026. Os mods deles são usados sem modificações.</string>
+    <string name="dbr_about_independent">Dragon Block Resurrection é um projeto independente: não tem vínculo com a JinGames nem com KAMKEEL.</string>
+    <string name="dbr_about_zalith_ack">Launcher base sobre o qual o DbrLauncher Mobile é construído (fork não oficial, GPL-3.0).</string>
+    <string name="dbr_about_ltw_text">Motor de renderização usado pelo modpack experimental. De artDev, SerpentSpirale, CADIndie e colaboradores (MojoLauncher). Incluído sem modificações, compilado do commit 9dc80cb.</string>
+
+    <string name="dbr_launch_subtitle">LAUNCHER MÓVEL</string>
+    <string name="dbr_launch_title">Sua aventura está prestes a começar</string>
+    <string name="dbr_launch_wait">Aguarde enquanto o Dragon Block Resurrection abre.</string>
+    <string name="dbr_launch_device_note">O tempo de abertura depende do seu dispositivo.</string>
+    <string name="dbr_launch_cancel">Cancelar abertura</string>
+    <string name="dbr_launch_stage_java">Iniciando o Java…</string>
+    <string name="dbr_launch_stage_minecraft">Carregando o Minecraft…</string>
+    <string name="dbr_launch_stage_mods">Carregando os mods…</string>
+    <string name="dbr_launch_stage_preparing">Preparando texturas e sons…</string>
+    <string name="dbr_launch_stage_menu">Abrindo o menu…</string>
+    <string-array name="dbr_launch_tips">
+        <item>Dica: se a tela ficar preta, tente outro motor em Ajustes &gt; Desempenho.</item>
+        <item>Dica: com o modpack Lite o jogo fica mais fluido em celulares mais fracos.</item>
+        <item>Dica: você pode mover e mudar o tamanho dos botões pelo menu do jogo.</item>
+        <item>Dica: a sensibilidade da câmera é ajustada pelo menu do jogo.</item>
+        <item>Dica: se o jogo fechar, use Ajustes &gt; Ajuda &gt; Reportar problema e envie no Discord.</item>
+        <item>Dica: diminua a resolução em Ajustes &gt; Desempenho se notar lag.</item>
+        <item>Dica: mude o idioma do launcher e do jogo em Ajustes &gt; Jogo.</item>
+    </string-array>
+</resources>

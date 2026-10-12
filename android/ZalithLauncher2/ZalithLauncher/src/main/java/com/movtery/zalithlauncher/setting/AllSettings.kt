@@ -78,6 +78,13 @@ object AllSettings : SettingsRegistry() {
     val dbrLiteProposal = stringSetting("dbrLiteProposal", "none")
 
     /**
+     * DBR: idioma de Minecraft elegido en Ajustes (es_ES, en_US, pt_BR), o vacío para seguir al
+     * sistema. Manda el lang: de options.txt cuando existe; esto cubre la primera siembra
+     * (game/dbr/DbrIdioma).
+     */
+    val dbrGameLanguage = stringSetting("dbrGameLanguage", "")
+
+    /**
      * DBR: último paso de migración de ajustes aplicado (game/dbr/DbrSettingsMigration).
      */
     val dbrSettingsRevision = intSetting("dbrSettingsRevision", 0, min = 0)

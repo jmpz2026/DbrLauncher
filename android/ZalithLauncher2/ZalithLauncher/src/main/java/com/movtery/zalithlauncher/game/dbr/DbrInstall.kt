@@ -5,6 +5,8 @@
 
 package com.movtery.zalithlauncher.game.dbr
 
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.forge.ForgeVersions
 import com.movtery.zalithlauncher.game.download.game.GameDownloadInfo
 
@@ -25,9 +27,9 @@ object DbrInstall {
      */
     suspend fun buildInfo(): GameDownloadInfo {
         val list = ForgeVersions.fetchForgeList(MINECRAFT)
-            ?: error("No se pudo obtener la lista de Forge para $MINECRAFT")
+            ?: error(GlobalContext.getString(R.string.dbr_error_forge_list, MINECRAFT))
         val forge = list.firstOrNull { it.versionName == FORGE }
-            ?: error("No se encontró Forge $FORGE para Minecraft $MINECRAFT")
+            ?: error(GlobalContext.getString(R.string.dbr_error_forge_missing, FORGE, MINECRAFT))
         return GameDownloadInfo(
             gameVersion = MINECRAFT,
             customVersionName = VERSION_NAME,

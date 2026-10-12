@@ -8,6 +8,8 @@
 
 package com.movtery.zalithlauncher.game.dbr
 
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import com.movtery.zalithlauncher.utils.GSON
@@ -115,7 +117,7 @@ object DbrSync {
         val code = conn.responseCode
         if (code !in 200..299) {
             conn.disconnect()
-            throw java.io.IOException("Descarga falló ($code): $url")
+            throw java.io.IOException(GlobalContext.getString(R.string.dbr_error_download, code, url))
         }
         return conn.inputStream
     }
@@ -145,10 +147,10 @@ object DbrSync {
             try {
                 openOk(u).use { input -> tmp.outputStream().use { output -> input.copyTo(output) } }
                 if (!sha1.isNullOrEmpty() && !sha1(tmp).equals(sha1, ignoreCase = true)) {
-                    throw java.io.IOException("El archivo descargado no coincide (hash): $u")
+                    throw java.io.IOException(GlobalContext.getString(R.string.dbr_error_hash, u))
                 }
                 if (dest.exists()) dest.delete()
-                if (!tmp.renameTo(dest)) throw java.io.IOException("No se pudo escribir ${dest.path}")
+                if (!tmp.renameTo(dest)) throw java.io.IOException(GlobalContext.getString(R.string.dbr_error_write, dest.path))
                 return
             } catch (e: Exception) {
                 tmp.delete()
@@ -254,9 +256,9 @@ object DbrSync {
         val remote = fetchManifest()
         val pin = remote.pin
         val manifest = GSON.fromJson(remote.json, Manifest::class.java)
-            ?: error("No se pudo leer el manifest del modpack")
+            ?: error(GlobalContext.getString(R.string.dbr_error_manifest))
         val files = filesForAndroid(manifest).map { it.copy(url = pin(it.url)) }
-        if (files.isEmpty()) error("El manifest no contiene archivos")
+        if (files.isEmpty()) error(GlobalContext.getString(R.string.dbr_error_manifest_empty))
 
         // 1) Qué hay que descargar (falta, tamaño distinto, o SHA-1 distinto).
         // El SHA-1 del disco se calcula en paralelo: es I/O + CPU y en serie se nota mucho.
@@ -276,6 +278,10 @@ object DbrSync {
             onProgress(Progress("check", checked.incrementAndGet(), files.size, f.path))
         }
         val toDownload = files.filterIndexed { i, _ -> needed[i] }
+        //options.txt se re-siembra al cambiar de variante: antes se guarda el idioma del jugador.
+        val opciones = toDownload.firstOrNull { it.once && it.path == "options.txt" }
+            ?.let { safeJoin(gameDir, it.path) }
+        val langPrevio = opciones?.let { DbrIdioma.leerLang(it) }
 
         // 2) Obsoletos: gestionados antes pero ya no en el manifest.
         //Los `once` nunca entran en el índice: así jamás se borran del equipo del jugador,
@@ -300,6 +306,9 @@ object DbrSync {
             downloadFirst(listOfNotNull(f.url, mirror), dest, f.sha1)
             onProgress(Progress("download", done.incrementAndGet(), total, f.path))
         }
+
+        //El options.txt de DBR-ASSETS dice lang:es_ES para todos.
+        opciones?.let { DbrIdioma.aplicarSiembra(it, langPrevio) }
 
         // 4) Borrar obsoletos.
         for (p in toDelete) {

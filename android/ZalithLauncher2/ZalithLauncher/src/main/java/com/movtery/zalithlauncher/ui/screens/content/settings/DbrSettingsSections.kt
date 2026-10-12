@@ -30,6 +30,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.dbr.DbrExperimental
+import com.movtery.zalithlauncher.game.dbr.DbrIdioma
 import com.movtery.zalithlauncher.game.dbr.DbrReport
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
@@ -116,6 +117,33 @@ fun DbrModpackSection(modifier: Modifier = Modifier) {
             unit = AllSettings.launcherFullScreen,
             title = stringResource(R.string.settings_launcher_full_screen_title),
             summary = stringResource(R.string.settings_launcher_full_screen_summary)
+        )
+    }
+}
+
+/**
+ * Idioma del launcher y del juego: los tres del servidor. Escribe el lang: de options.txt y
+ * cambia el idioma de la app (recrea la actividad).
+ */
+@Composable
+fun DbrLanguageSection(modifier: Modifier = Modifier) {
+    var idioma by remember { mutableStateOf(DbrIdioma.actual()) }
+    SettingsCardColumn(modifier = modifier) {
+        EnumSettingsCard(
+            modifier = Modifier.fillMaxWidth(),
+            position = CardPosition.Single,
+            value = idioma,
+            entries = DbrIdioma.Idioma.entries,
+            title = stringResource(R.string.dbr_language_title),
+            summary = stringResource(R.string.dbr_language_summary),
+            getRadioEnable = { true },
+            getRadioText = { stringResource(it.textRes) },
+            onRadioClick = {
+                if (it != idioma) {
+                    idioma = it
+                    DbrIdioma.elegir(it)
+                }
+            }
         )
     }
 }

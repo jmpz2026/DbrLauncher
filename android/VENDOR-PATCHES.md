@@ -158,3 +158,17 @@ pausa a los 500 ms (`pauseOnLostFocus`), así que "Volver al juego" no funcionab
 - Pantalla de carga (`ui/screens/game/elements/DbrLoadingScreen.kt`) hasta el menú principal. Etapas en
   `game/dbr/DbrLaunchLog.kt`, que es ahora el único listener de `LoggerBridge` y reenvía a `LogBox`. Contrato:
   marcas `[DBR-LAUNCH] stage=preinit|init|postinit|complete|menu` de `LaunchMarker` (DbrServerPack/DbrMod).
+
+## 11) Idioma del launcher y del juego (2026-10-12, LANGUAGE UPDATE fase 8)
+**Motivo:** el servidor habla castellano, inglés y portugués según el idioma de Minecraft de cada
+jugador; el `options.txt` de DBR-ASSETS trae `lang:es_ES` para todos y los textos DBR solo estaban en
+castellano.
+
+- Textos DBR en `res/values*/strings_dbr.xml` (fuera de `strings.xml` del upstream): inglés por defecto,
+  `values-es` y `values-pt` (cubre pt-BR y pt-PT). Errores del sync, propuesta de Lite, créditos de
+  Acerca de, chip del motor y barra inferior pasan a recursos.
+- `game/dbr/DbrIdioma.kt`: el idioma de la app es el del juego (`lang:` de `options.txt`). Ajustes > Juego
+  tiene la tarjeta Idioma (ES/EN/PT) que escribe `options.txt`, guarda `AllSettings.dbrGameLanguage` y
+  aplica el idioma de la app (`applyLanguage`). La primera siembra de `options.txt` en `DbrSync` pone el
+  elegido o el del sistema; una re-siembra conserva el del jugador. `MainActivity` sigue al juego al
+  abrir y al volver (si se cambió dentro de Minecraft).

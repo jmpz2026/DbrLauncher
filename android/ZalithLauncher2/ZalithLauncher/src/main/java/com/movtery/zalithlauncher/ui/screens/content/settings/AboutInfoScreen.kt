@@ -118,7 +118,7 @@ fun AboutInfoScreen(
                         ButtonIconItem(
                             icon = painterResource(R.drawable.dbr_logo),
                             title = "DbrLauncher Mobile",
-                            text = "Launcher del server Dragon Block Resurrection para Android. " +
+                            text = stringResource(R.string.dbr_about_launcher_text) + " " +
                                     stringResource(R.string.about_launcher_version, BuildConfig.VERSION_NAME),
                             button = {
                                 Button(
@@ -133,7 +133,7 @@ fun AboutInfoScreen(
                         ButtonIconItem(
                             icon = painterResource(R.drawable.img_launcher),
                             title = "ZalithLauncher",
-                            text = "DbrLauncher Mobile es una versión modificada no oficial de ZalithLauncher.",
+                            text = stringResource(R.string.dbr_about_zalith_text),
                             button = {
                                 Button(
                                     onClick = { openLink("https://github.com/ZalithLauncher/ZalithLauncher2") }
@@ -164,16 +164,13 @@ fun AboutInfoScreen(
             animatedItem(scope) { yOffset ->
                 ChunkLayout(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
-                    title = "Créditos y permisos"
+                    title = stringResource(R.string.dbr_about_credits_title)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         ButtonIconItem(
                             icon = painterResource(R.drawable.ic_github),
                             title = "CustomNPC+ DBC Addon (npcdbc)",
-                            text = "Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y " +
-                                    "somehussar (Hussar), por permitirnos distribuir a los jugadores, a través de " +
-                                    "este launcher, nuestra versión modificada (un fork no oficial) con los créditos " +
-                                    "a sus autores. Concedido el 05/10/2026.",
+                            text = stringResource(R.string.dbr_about_npcdbc_text),
                             button = {
                                 Button(
                                     onClick = { openLink("https://github.com/KAMKEEL/CustomNPC-DBC-Addon") }
@@ -190,16 +187,13 @@ fun AboutInfoScreen(
                         LinkIconItem(
                             icon = painterResource(R.drawable.ic_link),
                             title = "JinGames · Dragon Block C",
-                            text = "Gracias a Benjámin Nagy (Ben), de JinGames, autores de Dragon Block C, JRMCore, " +
-                                    "JBRA Client, Family C y Years C, por permitirnos crear y usar addons que " +
-                                    "extienden sus mods. Concedido el 06/10/2026. Sus mods se usan sin modificar.",
+                            text = stringResource(R.string.dbr_about_jingames_text),
                             openLink = { openLink("https://main.jingames.net") },
                             useImage = false
                         )
                         Text(
                             modifier = Modifier.alpha(0.7f),
-                            text = "Dragon Block Resurrection es un proyecto independiente: no está afiliado a " +
-                                    "JinGames ni a KAMKEEL.",
+                            text = stringResource(R.string.dbr_about_independent),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -216,16 +210,14 @@ fun AboutInfoScreen(
                         LinkIconItem(
                             icon = painterResource(R.drawable.img_launcher),
                             title = "ZalithLauncher",
-                            text = "Launcher base sobre el que se construye DbrLauncher Mobile (fork no oficial, GPL-3.0).",
+                            text = stringResource(R.string.dbr_about_zalith_ack),
                             openLink = { openLink("https://github.com/ZalithLauncher/ZalithLauncher2") }
                         )
                         //DBR: LTW va dentro del APK (libltw.so sin modificar, LGPL-3.0).
                         LinkIconItem(
                             icon = painterResource(R.drawable.ic_github),
                             title = "LTW (Large Thin Wrapper)",
-                            text = "Motor de render que usa el modpack experimental. De artDev, SerpentSpirale, " +
-                                    "CADIndie y colaboradores (MojoLauncher). Se incluye sin modificar, compilado " +
-                                    "del commit 9dc80cb.",
+                            text = stringResource(R.string.dbr_about_ltw_text),
                             openLicense = { openLicense(R.raw.lgpl_3_license) },
                             openLink = { openLink("https://github.com/MojoLauncher/LTW") }
                         )
