@@ -37,6 +37,7 @@ Toda la lógica sensible vive en el **proceso main** y se expone al renderer por
 | `launch/` | Resuelve versión (vanilla Mojang + overlay Forge), descarga libs/natives/assets, arma el comando y lanza. |
 | `status/` | Server List Ping 1.7+ (con SRV). |
 | `settings/` | Persiste `userData/settings.json` (RAM, resolución, JVM args). |
+| `idioma/` | Idioma del launcher = idioma del juego (`lang:` de `options.txt`). Selector ES/EN/PT; textos en `src/shared/i18n.ts`. |
 | `updater/` | Auto-update con electron-updater (solo app instalada). |
 
 ## Configuración (rellenar antes de producción)

@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import type { LaunchPhase } from '../../../shared/launch'
 import { useStore } from '../store'
+import { useT } from '../i18n'
 
 export default function Home(): JSX.Element {
   const account = useStore((s) => s.account)
@@ -10,6 +12,7 @@ export default function Home(): JSX.Element {
   const play = useStore((s) => s.play)
   const ping = useStore((s) => s.ping)
   const experimental = useStore((s) => s.modpackVariant === 'experimental')
+  const tr = useT()
 
   useEffect(() => {
     void ping()
@@ -17,12 +20,12 @@ export default function Home(): JSX.Element {
 
   const busy = syncing || launching || gameRunning
   const label = gameRunning
-    ? 'Jugando…'
+    ? tr('home.jugando')
     : launching
-      ? 'Preparando…'
+      ? tr('comun.preparando')
       : syncing
-        ? 'Sincronizando…'
-        : 'Jugar'
+        ? tr('home.sincronizando')
+        : tr('home.jugar')
 
   return (
     <div className="relative h-full">
@@ -30,11 +33,11 @@ export default function Home(): JSX.Element {
 
       <div className="flex h-full flex-col items-center justify-center gap-7 px-8">
         <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-deep mc-text-sm">
-          Bienvenido de vuelta
+          {tr('home.bienvenido')}
         </p>
 
         <h1 className="mc-text -mt-1 text-[58px] font-bold uppercase leading-none tracking-tight text-gold">
-          {account?.username ?? 'Jugador'}
+          {account?.username ?? tr('home.jugador')}
         </h1>
 
         <div className="relative mt-2 grid place-items-center">
@@ -58,8 +61,7 @@ export default function Home(): JSX.Element {
 
         {experimental && (
           <div className="mc-panel !border-red-600 max-w-lg px-4 py-2 text-center text-xs text-red-300">
-            Modpack experimental activo: no está diseñado para jugar en el servidor. Cámbialo en
-            Ajustes para jugar normal.
+            {tr('home.experimental')}
           </div>
         )}
 
@@ -79,6 +81,7 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
   const lastCrash = useStore((s) => s.lastCrash)
   const openLog = useStore((s) => s.openLog)
   const dismissCrash = useStore((s) => s.dismissCrash)
+  const tr = useT()
 
   if (syncing) return <SyncBar />
   if (launching) return <LaunchBar />
@@ -87,20 +90,20 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
     return (
       <div className="mc-panel !border-red-600 mt-1 flex max-w-lg flex-col items-center gap-2 px-5 py-3 text-center">
         <p className="text-xs uppercase tracking-wider text-red-300 mc-text-sm">
-          El juego se cerró con errores en el último arranque
+          {tr('home.crash')}
         </p>
         <div className="flex gap-3">
           <button
             onClick={() => void openLog()}
             className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
           >
-            Ver log
+            {tr('home.ver_log')}
           </button>
           <button
             onClick={dismissCrash}
             className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
           >
-            Descartar
+            {tr('home.descartar')}
           </button>
         </div>
       </div>
@@ -120,7 +123,7 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
     return (
       <p className="mt-2 flex items-center gap-2 text-xs uppercase tracking-wider text-grass mc-text-sm">
         <span className="h-2 w-2 animate-blink bg-grass" />
-        Minecraft en marcha
+        {tr('home.en_marcha')}
       </p>
     )
   }
@@ -128,14 +131,14 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
   return (
     <div className="mt-2 flex flex-col items-center gap-2.5">
       <div className="flex items-center gap-2.5">
-        <Chip online>Mods al día</Chip>
+        <Chip online>{tr('home.mods_al_dia')}</Chip>
         <Chip>{ram} GB RAM</Chip>
         <ServerChip />
       </div>
       {summary && summary.version && (
         <p className="text-xs uppercase tracking-wider text-grass mc-text-sm">
-          Listo · v{summary.version} — {summary.updated} actualizados
-          {summary.removed > 0 ? `, ${summary.removed} eliminados` : ''}
+          {tr('home.listo_version', { version: summary.version, updated: summary.updated })}
+          {summary.removed > 0 ? tr('home.eliminados', { n: summary.removed }) : ''}
         </p>
       )}
     </div>
@@ -144,19 +147,21 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
 
 function LaunchBar(): JSX.Element {
   const p = useStore((s) => s.launchProgress)
+  const tr = useT()
   const pct = p?.percent ?? 0
   const hasPct = typeof p?.percent === 'number'
 
-  const phaseText: Record<string, string> = {
-    version: 'Resolviendo versión',
-    libraries: 'Descargando librerías',
-    natives: 'Extrayendo natives',
-    assets: 'Descargando assets',
-    client: 'Descargando cliente',
-    launching: 'Arrancando Minecraft',
-    running: 'En marcha'
+  const phaseText: Record<LaunchPhase, string> = {
+    java: tr('launch.java'),
+    version: tr('launch.version'),
+    libraries: tr('launch.libraries'),
+    natives: tr('launch.natives'),
+    assets: tr('launch.assets'),
+    client: tr('launch.client'),
+    launching: tr('launch.launching'),
+    running: tr('launch.running')
   }
-  const label = p ? (phaseText[p.phase] ?? p.phase) : 'Preparando…'
+  const label = p ? (phaseText[p.phase] ?? p.phase) : tr('comun.preparando')
 
   return (
     <div className="mt-1 w-full max-w-md">
@@ -177,6 +182,7 @@ function LaunchBar(): JSX.Element {
 
 function SyncBar(): JSX.Element {
   const p = useStore((s) => s.syncProgress)
+  const tr = useT()
   // En descarga la barra va por bytes si el manifest trae tamaños; si no, por archivos.
   const byBytes = p?.phase === 'download' && !!p.bytesTotal
   const pct = byBytes
@@ -187,12 +193,14 @@ function SyncBar(): JSX.Element {
   const file = p?.file ? p.file.split('/').pop() : ''
   const others = p?.inFlight ? ` +${p.inFlight}` : ''
 
-  let label = 'Preparando…'
-  if (p?.phase === 'check') label = 'Comprobando archivos…'
+  let label = tr('comun.preparando')
+  if (p?.phase === 'check') label = tr('sync.comprobando')
   else if (p?.phase === 'download')
-    label = file ? `Descargando ${file}${others} — ${p.done}/${p.total}` : `Descargando — ${p.done}/${p.total}`
-  else if (p?.phase === 'delete') label = `Limpiando ${p.done}/${p.total}`
-  else if (p?.phase === 'done') label = 'Listo'
+    label = file
+      ? tr('sync.descargando_archivo', { file, others, done: p.done, total: p.total })
+      : tr('sync.descargando', { done: p.done, total: p.total })
+  else if (p?.phase === 'delete') label = tr('sync.limpiando', { done: p.done, total: p.total })
+  else if (p?.phase === 'done') label = tr('sync.listo')
 
   const indeterminate = !p || p.phase === 'check'
 
@@ -215,16 +223,17 @@ function SyncBar(): JSX.Element {
 function ServerChip(): JSX.Element {
   const status = useStore((s) => s.serverStatus)
   const pinging = useStore((s) => s.pinging)
+  const tr = useT()
 
-  if (pinging && !status) return <Chip>Servidor…</Chip>
+  if (pinging && !status) return <Chip>{tr('home.servidor')}</Chip>
   if (status?.online) {
     return (
       <Chip online>
-        {status.players ?? 0}/{status.max ?? 0} en línea
+        {tr('home.en_linea', { players: status.players ?? 0, max: status.max ?? 0 })}
       </Chip>
     )
   }
-  return <Chip>Servidor offline</Chip>
+  return <Chip>{tr('home.servidor_offline')}</Chip>
 }
 
 function Chip({ children, online }: { children: ReactNode; online?: boolean }): JSX.Element {

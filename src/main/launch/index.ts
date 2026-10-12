@@ -17,6 +17,7 @@ import { errMsg } from '../errors'
 import { ensureFile } from '../net'
 import { flushHashCache } from '../sync/hash'
 import { assetsDir, getGameDir, librariesDir, versionsDir } from './paths'
+import { tr } from '../idioma'
 
 type OnProgress = (p: LaunchProgress) => void
 
@@ -36,7 +37,7 @@ interface Prepared {
 
 /** Descarga versión + client + librerías + natives + assets. Devuelve el classpath. */
 async function prepare(onProgress: OnProgress): Promise<Prepared> {
-  onProgress({ phase: 'version', detail: 'Resolviendo versión' })
+  onProgress({ phase: 'version' })
   const vanilla = await fetchVanilla(CONFIG.minecraft)
   const version = isForgeConfigured() ? mergeVersions(vanilla, await fetchForge()) : vanilla
 
@@ -64,16 +65,11 @@ export async function launch(
   onStatus: (s: LaunchStatus) => void
 ): Promise<void> {
   const account = loadAccount()
-  if (!account) throw new Error('No hay sesión iniciada.')
+  if (!account) throw new Error(tr('err.sin_sesion'))
 
   const settings = loadSettings()
 
-  const java = await ensureJava((jp) =>
-    onProgress({
-      phase: 'version',
-      detail: `Java ${jp.phase}${jp.percent != null ? ` ${jp.percent}%` : ''}`
-    })
-  )
+  const java = await ensureJava((jp) => onProgress({ phase: 'java', percent: jp.percent }))
 
   const prep = await prepare(onProgress)
   if (!prep.version.minecraftArguments) {
@@ -101,7 +97,7 @@ export async function launch(
   }
 
   const args = buildLaunchArgs(ctx)
-  onProgress({ phase: 'launching', detail: 'Arrancando Minecraft' })
+  onProgress({ phase: 'launching' })
 
   // El directorio de trabajo debe existir o spawn falla con ENOENT (culpando a java).
   const gameDir = getGameDir()
@@ -127,7 +123,7 @@ export async function launch(
         onStatus({ state: 'running' })
         resolve()
       })
-      child.once('error', (e) => reject(new Error(`No se pudo iniciar java: ${e.message}`)))
+      child.once('error', (e) => reject(new Error(tr('err.java_iniciar', { detalle: e.message }))))
     })
   } finally {
     closeSync(logFd) // el proceso hijo mantiene su propio handle del archivo

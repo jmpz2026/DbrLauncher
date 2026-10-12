@@ -8,6 +8,8 @@
 // Además los errores de Chromium traen código (ERR_CERT_AUTHORITY_INVALID, ERR_NAME_NOT_RESOLVED…),
 // que traducimos a un mensaje accionable para el jugador.
 import { net } from 'electron'
+import { existe } from '../shared/i18n'
+import { tr } from './idioma'
 
 export interface HttpInit {
   method?: string
@@ -35,24 +37,18 @@ export interface HttpResponse {
   body: Buffer
 }
 
-// Códigos de error de Chromium que el jugador puede accionar. El resto se muestra crudo.
-const HINTS: Record<string, string> = {
-  ERR_NAME_NOT_RESOLVED: 'el DNS no resolvió el dominio (tu proveedor de internet puede estar bloqueándolo; prueba con DNS 1.1.1.1)',
-  ERR_INTERNET_DISCONNECTED: 'no hay conexión a internet',
-  ERR_CONNECTION_TIMED_OUT: 'la conexión expiró (red lenta o firewall)',
-  ERR_TIMED_OUT: 'la conexión expiró (red lenta o firewall)',
-  ERR_CONNECTION_REFUSED: 'el servidor rechazó la conexión',
-  ERR_CONNECTION_RESET: 'la conexión se cortó a mitad (firewall o antivirus)',
-  ERR_CERT_AUTHORITY_INVALID: 'certificado no confiable: desactiva el escaneo HTTPS/SSL de tu antivirus o añade su certificado al sistema',
-  ERR_CERT_COMMON_NAME_INVALID: 'el certificado no corresponde al dominio (algo está interceptando la conexión)',
-  ERR_CERT_DATE_INVALID: 'certificado fuera de fecha: revisa la fecha y hora de tu PC',
-  ERR_SSL_PROTOCOL_ERROR: 'fallo de TLS (antivirus, proxy o Windows sin actualizar)',
-  ERR_PROXY_CONNECTION_FAILED: 'el proxy configurado en Windows no responde'
+// Códigos de error de Chromium que el jugador puede accionar (textos red.<código> de
+// shared/i18n). El resto se muestra crudo.
+const ALIAS: Record<string, string> = { ERR_TIMED_OUT: 'ERR_CONNECTION_TIMED_OUT' }
+
+function hintOf(code: string): string | undefined {
+  const clave = 'red.' + (ALIAS[code] ?? code)
+  return existe(clave) ? tr(clave) : undefined
 }
 
 function describe(url: string, err: Error): Error {
   const code = /ERR_[A-Z_]+/.exec(err.message)?.[0]
-  const hint = code ? HINTS[code] : undefined
+  const hint = code ? hintOf(code) : undefined
   const host = (() => {
     try {
       return new URL(url).host
@@ -61,7 +57,7 @@ function describe(url: string, err: Error): Error {
     }
   })()
   const detail = hint ? `${hint} [${code}]` : err.message
-  return new Error(`No se pudo conectar con ${host}: ${detail}`, { cause: err })
+  return new Error(tr('err.conectar', { host, detalle: detail }), { cause: err })
 }
 
 function toBuffer(body: HttpInit['body']): Buffer | null {
@@ -90,7 +86,7 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
     const arm = (): void => {
       clearTimeout(timer)
       timer = setTimeout(() => {
-        finish(() => reject(describe(url, new Error(`net::ERR_TIMED_OUT (${idleMs / 1000}s sin respuesta)`))))
+        finish(() => reject(describe(url, new Error(`net::ERR_TIMED_OUT (${tr('red.sin_respuesta', { s: idleMs / 1000 })})`))))
         req.abort()
       }, idleMs)
     }

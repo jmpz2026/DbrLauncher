@@ -8,6 +8,7 @@ import type { ServerStatus } from '../shared/status'
 import type { UpdateStatus } from '../shared/update'
 import type { FuseStatus, FuseInstallResult } from '../shared/fuse'
 import type { LiteProposal } from '../shared/perf'
+import type { IdiomaInfo, Lang } from '../shared/i18n'
 
 const api = {
   platform: process.platform,
@@ -90,6 +91,11 @@ const api = {
   fuse: {
     status: (): Promise<FuseStatus> => ipcRenderer.invoke('fuse:status'),
     install: (): Promise<FuseInstallResult> => ipcRenderer.invoke('fuse:install')
+  },
+
+  idioma: {
+    get: (): Promise<IdiomaInfo> => ipcRenderer.invoke('idioma:get'),
+    set: (lang: Lang): Promise<IdiomaInfo> => ipcRenderer.invoke('idioma:set', lang)
   },
 
   perf: {

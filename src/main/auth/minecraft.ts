@@ -1,6 +1,7 @@
 // Cadena Xbox Live → XSTS → Minecraft services → perfil.
 // A partir del access token de Microsoft obtiene el perfil de Minecraft (uuid + nombre).
 import { httpRequest, readJson, readJsonOr } from '../http'
+import { tr } from '../idioma'
 
 interface XboxAuth {
   token: string
@@ -21,7 +22,7 @@ async function xblAuthenticate(msAccessToken: string): Promise<XboxAuth> {
       TokenType: 'JWT'
     })
   })
-  if (!res.ok) throw new Error('Fallo al autenticar con Xbox Live.')
+  if (!res.ok) throw new Error(tr('err.xbox'))
   const data = readJson<any>(res, 'user.auth.xboxlive.com')
   return { token: data.Token, uhs: data.DisplayClaims.xui[0].uhs }
 }
@@ -41,19 +42,19 @@ async function xstsAuthorize(xblToken: string): Promise<XboxAuth> {
     // Errores comunes de XSTS.
     switch (String(err.XErr)) {
       case '2148916233':
-        throw new Error('Esta cuenta Microsoft no tiene un perfil de Xbox. Crea uno en xbox.com.')
+        throw new Error(tr('err.xbox_sin_perfil'))
       case '2148916235':
-        throw new Error('Xbox Live no está disponible en tu país/región.')
+        throw new Error(tr('err.xbox_pais'))
       case '2148916236':
       case '2148916237':
-        throw new Error('La cuenta requiere verificación de adulto (South Korea).')
+        throw new Error(tr('err.xbox_adulto'))
       case '2148916238':
-        throw new Error('Cuenta de menor: debe añadirse a una Familia para usar Xbox Live.')
+        throw new Error(tr('err.xbox_menor'))
       default:
-        throw new Error('Fallo de autorización XSTS con Xbox Live.')
+        throw new Error(tr('err.xsts'))
     }
   }
-  if (!res.ok) throw new Error('Fallo de autorización XSTS con Xbox Live.')
+  if (!res.ok) throw new Error(tr('err.xsts'))
   const data = readJson<any>(res, 'xsts.auth.xboxlive.com')
   return { token: data.Token, uhs: data.DisplayClaims.xui[0].uhs }
 }
@@ -64,7 +65,7 @@ async function loginWithXbox(uhs: string, xstsToken: string): Promise<string> {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ identityToken: `XBL3.0 x=${uhs};${xstsToken}` })
   })
-  if (!res.ok) throw new Error('Fallo al iniciar sesión en los servicios de Minecraft.')
+  if (!res.ok) throw new Error(tr('err.mc_login'))
   const data = readJson<any>(res, 'api.minecraftservices.com/authentication')
   return data.access_token as string
 }
@@ -80,9 +81,9 @@ async function getProfile(mcAccessToken: string): Promise<Omit<McProfile, 'acces
     headers: { Authorization: `Bearer ${mcAccessToken}` }
   })
   if (res.status === 404) {
-    throw new Error('Esta cuenta Microsoft no posee Minecraft: Java Edition.')
+    throw new Error(tr('err.mc_sin_juego'))
   }
-  if (!res.ok) throw new Error('No se pudo obtener el perfil de Minecraft.')
+  if (!res.ok) throw new Error(tr('err.mc_perfil'))
   const data = readJson<any>(res, 'api.minecraftservices.com/minecraft/profile')
   const raw = String(data.id) // sin guiones
   const uuid = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`

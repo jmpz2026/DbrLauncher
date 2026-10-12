@@ -5,6 +5,7 @@ import type { JavaProgress } from '../../shared/java'
 import { httpRequest } from '../http'
 import { adoptiumUrl, type JrePlatform } from './platform'
 import { extractZip } from './zip'
+import { tr } from '../idioma'
 
 type OnProgress = (p: JavaProgress) => void
 
@@ -20,7 +21,7 @@ export async function downloadArchive(
       if (total > 0) onProgress({ phase: 'download', percent: Math.round((received / total) * 100) })
     }
   })
-  if (!res.ok) throw new Error(`Descarga de Java falló (${res.status}).`)
+  if (!res.ok) throw new Error(tr('err.java_descarga', { status: res.status }))
   writeFileSync(destFile, res.body)
 }
 
@@ -91,7 +92,7 @@ export function verifyJava(javaPath: string): Promise<string> {
     p.on('error', (e) => reject(new Error(`No se pudo ejecutar java: ${e.message}`)))
     p.on('close', () => {
       if (!/(^|[^\d])1\.8\./.test(out)) {
-        reject(new Error(`El runtime descargado no es Java 8: ${out.split('\n')[0]}`))
+        reject(new Error(tr('err.java_no_8', { detalle: out.split('\n')[0] })))
         return
       }
       const m = out.match(/version "([^"]+)"/)

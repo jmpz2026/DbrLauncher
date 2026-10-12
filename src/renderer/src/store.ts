@@ -6,6 +6,7 @@ import type { LaunchProgress } from '../../shared/launch'
 import { DEFAULT_JVM_ARGS, type LauncherSettings, type ModpackVariant } from '../../shared/settings'
 import type { ServerStatus } from '../../shared/status'
 import type { UpdateStatus } from '../../shared/update'
+import { langDe, t, type Lang } from '../../shared/i18n'
 
 export type Tab = 'home' | 'settings'
 export type { Account, AccountType } from '../../shared/account'
@@ -39,6 +40,12 @@ const CRASH_RE =
 interface State {
   tab: Tab
   setTab: (t: Tab) => void
+
+  // Idioma del launcher = idioma del juego (lang: de options.txt). Ver shared/i18n.
+  lang: Lang
+  idiomaJuego: string | null // lang: de options.txt, null si aún no existe
+  loadIdioma: () => Promise<void>
+  setIdioma: (lang: Lang) => Promise<void>
 
   // Sesión
   ready: boolean // ya se consultó la cuenta persistida
@@ -113,10 +120,31 @@ export const useStore = create<State>((set, get) => ({
   tab: 'home',
   setTab: (tab) => set({ tab }),
 
+  // Hasta saber el de main, el del navegador (es el mismo locale del sistema).
+  lang: langDe(navigator.language),
+  idiomaJuego: null,
+  loadIdioma: async () => {
+    if (!window.dbr?.idioma) return
+    const info = await window.dbr.idioma.get()
+    set({ lang: info.lang, idiomaJuego: info.juego })
+  },
+  setIdioma: async (lang) => {
+    set({ lang })
+    if (!window.dbr?.idioma) return
+    const info = await window.dbr.idioma.set(lang)
+    set({ lang: info.lang, idiomaJuego: info.juego })
+  },
+
   ready: false,
   account: null,
   setAccount: (account) => set({ account }),
   hydrate: async () => {
+    // Antes de mostrar nada: así la primera pantalla ya sale en el idioma del jugador.
+    try {
+      await get().loadIdioma()
+    } catch {
+      /* se queda con el del sistema */
+    }
     let account: Account | null = null
     try {
       account = (await window.dbr?.auth?.get?.()) ?? null
@@ -189,7 +217,7 @@ export const useStore = create<State>((set, get) => ({
         set({ gameRunning: false })
         offS()
       } else if (s.state === 'error') {
-        set({ launchError: s.error ?? 'Error', launching: false, gameRunning: false })
+        set({ launchError: s.error ?? t(get().lang, 'comun.error'), launching: false, gameRunning: false })
         offS()
       }
     })

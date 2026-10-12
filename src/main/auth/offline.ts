@@ -1,5 +1,6 @@
 import { createHash } from 'crypto'
 import type { Account } from '../../shared/account'
+import { tr } from '../idioma'
 
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/
 
@@ -19,7 +20,7 @@ export function offlineUuid(username: string): string {
 export function makePirataAccount(rawName: string): Account {
   const username = rawName.trim()
   if (!NAME_RE.test(username)) {
-    throw new Error('El nombre debe tener 3-16 caracteres: letras, números o guion bajo.')
+    throw new Error(tr('err.nombre'))
   }
   return { type: 'pirata', username, uuid: offlineUuid(username) }
 }

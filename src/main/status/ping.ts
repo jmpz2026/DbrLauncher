@@ -2,6 +2,7 @@ import net from 'net'
 import { promises as dns } from 'dns'
 import type { ServerStatus } from '../../shared/status'
 import { buildHandshake, buildStatusRequest, flattenMotd, tryParseStatus } from './protocol'
+import { tr } from '../idioma'
 
 interface RawStatus {
   version?: { name?: string }
@@ -41,7 +42,7 @@ export async function pingServer(
     }
 
     socket.setTimeout(timeoutMs)
-    socket.on('timeout', () => done({ online: false, error: 'Tiempo de espera agotado' }))
+    socket.on('timeout', () => done({ online: false, error: tr('err.ping_timeout') }))
     socket.on('error', (e) => done({ online: false, error: e.message }))
     socket.on('connect', () => {
       socket.write(buildHandshake(host, port))
@@ -53,7 +54,7 @@ export async function pingServer(
       try {
         parsed = tryParseStatus(buf) as RawStatus | null
       } catch {
-        done({ online: false, error: 'Respuesta inválida del servidor' })
+        done({ online: false, error: tr('err.ping_invalido') })
         return
       }
       if (parsed) {

@@ -1,6 +1,7 @@
 // Tipos del lanzador de Minecraft/Forge.
 
 export type LaunchPhase =
+  | 'java'
   | 'version'
   | 'libraries'
   | 'natives'

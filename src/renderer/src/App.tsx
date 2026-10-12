@@ -10,6 +10,7 @@ import FuseBanner from './components/FuseBanner'
 import GameLogModal from './components/GameLogModal'
 import LiteProposalModal from './components/LiteProposalModal'
 import { useStore } from './store'
+import { useHtmlLang, useT } from './i18n'
 
 export default function App(): JSX.Element {
   const tab = useStore((s) => s.tab)
@@ -18,6 +19,7 @@ export default function App(): JSX.Element {
   const hydrate = useStore((s) => s.hydrate)
   const setUpdateStatus = useStore((s) => s.setUpdateStatus)
   const prewarm = useStore((s) => s.prewarm)
+  useHtmlLang()
 
   useEffect(() => {
     void hydrate()
@@ -65,10 +67,11 @@ export default function App(): JSX.Element {
 }
 
 function Loading(): JSX.Element {
+  const tr = useT()
   return (
     <div className="grid h-full place-items-center">
       <p className="text-sm uppercase tracking-[0.3em] text-muted mc-text-sm">
-        Cargando<span className="animate-blink">_</span>
+        {tr('comun.cargando')}<span className="animate-blink">_</span>
       </p>
     </div>
   )

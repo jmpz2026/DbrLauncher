@@ -23,6 +23,9 @@ export interface LauncherSettings {
   modpackSyncPending: boolean
   // Respuesta a la propuesta de pasar a Lite por hardware (main/perf): sale una sola vez.
   liteProposal: LiteProposalAnswer
+  // Idioma de Minecraft elegido en el launcher (es_ES, en_US, pt_BR), o null para seguir al
+  // sistema. Manda el lang: de options.txt cuando existe; esto cubre la primera instalación.
+  idioma: string | null
 }
 
 /**
@@ -44,7 +47,8 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   autoSyncMods: true,
   modpackSeedPending: false,
   modpackSyncPending: false,
-  liteProposal: 'none'
+  liteProposal: 'none',
+  idioma: null
 }
 
 /** RAM mínima asignable al juego (GB). */

@@ -1,14 +1,17 @@
 import { useStore, type Tab } from '../store'
 import discordIcon from '../assets/discord.png'
+import { useT } from '../i18n'
+import type { Clave } from '../../../shared/i18n'
 
-const items: { id: Tab; label: string }[] = [
-  { id: 'home', label: 'Jugar' },
-  { id: 'settings', label: 'Ajustes' }
+const items: { id: Tab; label: Clave }[] = [
+  { id: 'home', label: 'nav.jugar' },
+  { id: 'settings', label: 'nav.ajustes' }
 ]
 
 export default function NavBar(): JSX.Element {
   const tab = useStore((s) => s.tab)
   const setTab = useStore((s) => s.setTab)
+  const tr = useT()
 
   return (
     <nav className="relative flex h-16 items-center justify-center gap-2 border-t-2 border-black bg-stone/85 px-4">
@@ -17,7 +20,7 @@ export default function NavBar(): JSX.Element {
         href="https://discord.gg/HaQh38sFbD"
         target="_blank"
         rel="noreferrer"
-        title="Únete al Discord"
+        title={tr('nav.discord')}
         className="mc-btn absolute left-3 inset-y-0 my-auto grid h-10 w-10 place-items-center hover:!border-[#8ea1e1]"
       >
         <img src={discordIcon} alt="Discord" className="h-6 w-6" />
@@ -33,7 +36,7 @@ export default function NavBar(): JSX.Element {
               active ? 'mc-btn-on' : ''
             }`}
           >
-            {it.label}
+            {tr(it.label)}
           </button>
         )
       })}
@@ -42,7 +45,7 @@ export default function NavBar(): JSX.Element {
         onClick={() => window.dbr.openGameFolder()}
         className="mc-btn px-4 py-2 text-sm font-semibold uppercase tracking-[0.14em]"
       >
-        Carpeta
+        {tr('nav.carpeta')}
       </button>
     </nav>
   )

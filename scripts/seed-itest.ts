@@ -6,6 +6,7 @@ import { mkdtempSync, existsSync, readFileSync, rmSync, writeFileSync } from 'fs
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { runSync } from '../src/main/sync/engine'
+import { langActual } from '../src/main/sync/lang'
 
 const sha1 = (s: string): string => createHash('sha1').update(s).digest('hex')
 
@@ -106,6 +107,17 @@ async function main(): Promise<void> {
     const s6 = await runSync({ gameDir, managedFile, manifestUrl: base + '/lite' }, noop)
     assert(s6.updated === 1, `updated=1 (${s6.updated})`)
     assert(readFileSync(options, 'utf-8') === OPTIONS_LITE, 'options.txt re-sembrado')
+
+    console.log('7) idioma: la primera siembra pone el inicial; una re-siembra respeta el del jugador')
+    rmSync(options)
+    await runSync({ gameDir, managedFile, manifestUrl: base + '/lite', langInicial: 'pt_BR' }, noop)
+    assert(langActual(options) === 'pt_BR', 'lang:pt_BR en la primera siembra')
+    await runSync(
+      { gameDir, managedFile, manifestUrl: base + '/full', reseed: true, langInicial: 'es_ES' },
+      noop
+    )
+    assert(readFileSync(options, 'utf-8').startsWith(OPTIONS_FULL), 'config de Full aplicada')
+    assert(langActual(options) === 'pt_BR', 'se conserva lang:pt_BR del jugador')
 
     console.log('\nTODO OK ✅')
   } finally {

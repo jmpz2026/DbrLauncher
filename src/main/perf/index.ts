@@ -3,6 +3,7 @@ import { cpus, totalmem } from 'os'
 import type { LiteProposal } from '../../shared/perf'
 import { loadSettings, saveSettings } from '../settings'
 import { getKey, setKey } from './cfg'
+import { tr } from '../idioma'
 
 /**
  * Detección de equipo justo en el launcher (PC) y propuesta de pasar a la variante Lite.
@@ -28,19 +29,19 @@ export async function checkLite(): Promise<LiteProposal> {
     return {
       propose: true,
       fromGame: true,
-      reason: 'El juego activó su modo ligero en este equipo.'
+      reason: tr('lite.motivo_juego')
     }
   }
   if (s.liteProposal !== 'none') return NONE
 
   const senales: string[] = []
-  if (totalmem() < RAM_JUSTA) senales.push(`${(totalmem() / 1024 ** 3).toFixed(1)} GB de RAM`)
+  if (totalmem() < RAM_JUSTA) senales.push(tr('lite.ram', { gb: (totalmem() / 1024 ** 3).toFixed(1) }))
   const nucleos = cpus().length
-  if (nucleos <= NUCLEOS_JUSTOS) senales.push(`${nucleos} núcleos`)
+  if (nucleos <= NUCLEOS_JUSTOS) senales.push(tr('lite.nucleos', { n: nucleos }))
   const gpu = await gpuJusta()
   if (gpu) senales.push(gpu)
   if (senales.length < 2) return NONE
-  return { propose: true, fromGame: false, reason: `Detectado: ${senales.join(', ')}.` }
+  return { propose: true, fromGame: false, reason: tr('lite.detectado', { senales: senales.join(', ') }) }
 }
 
 /**
@@ -56,8 +57,8 @@ async function gpuJusta(): Promise<string | null> {
     ])
     if (!info) return null
     const textos = JSON.stringify(info).toLowerCase()
-    if (SOFTWARE.some((t) => textos.includes(t))) return 'GPU por software'
-    if (intelAntigua(textos)) return 'GPU integrada antigua'
+    if (SOFTWARE.some((t) => textos.includes(t))) return tr('lite.gpu_software')
+    if (intelAntigua(textos)) return tr('lite.gpu_antigua')
   } catch {
     /* sin datos de GPU: no cuenta */
   }

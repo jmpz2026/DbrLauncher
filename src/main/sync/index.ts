@@ -1,10 +1,11 @@
-import { app, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { CONFIG, isManifestConfigured } from '../../shared/config'
 import type { SyncResult } from '../../shared/sync'
 import { loadSettings, saveSettings } from '../settings'
 import { getGameDir, getManagedFile } from './paths'
 import { runSync } from './engine'
 import { errMsg } from '../errors'
+import { langInicial } from '../idioma'
 
 export { runSync } from './engine'
 
@@ -38,7 +39,7 @@ export function registerSync(): void {
           managedFile: getManagedFile(),
           manifestUrl: manifestUrlForVariant(),
           reseed,
-          systemLocale: app.getLocale()
+          langInicial: langInicial()
         },
         (p) => e.sender.send('sync:progress', p)
       )

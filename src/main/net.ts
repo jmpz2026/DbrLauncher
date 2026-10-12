@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
 import { httpRequest, readJson } from './http'
 import { rememberSha1, sha1FileCached } from './sync/hash'
+import { tr } from './idioma'
 
 /** Descarga `url` a `dest` si falta o el sha1 no coincide. Devuelve true si descargó. */
 export async function ensureFile(
@@ -18,7 +19,7 @@ export async function ensureFile(
   }
   mkdirSync(dirname(dest), { recursive: true })
   const res = await httpRequest(url, { onProgress, mirrors })
-  if (!res.ok) throw new Error(`Descarga falló (${res.status}): ${url}`)
+  if (!res.ok) throw new Error(tr('err.descarga', { status: res.status, url }))
   const buf = res.body
   if (sha1) {
     const got = createHash('sha1').update(buf).digest('hex')

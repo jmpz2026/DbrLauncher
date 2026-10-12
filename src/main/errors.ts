@@ -1,3 +1,5 @@
+import { tr } from './idioma'
+
 /**
  * Mensaje legible de un error, incluyendo la cadena de `cause`. Sin esto, los errores de red
  * llegaban a la UI como un escueto "fetch failed" y no había forma de saber qué falló en el
@@ -14,5 +16,5 @@ export function errMsg(err: unknown): string {
     if (line && !parts.includes(line)) parts.push(line)
     cur = e.cause
   }
-  return parts.join(' · ') || 'Error desconocido'
+  return parts.join(' · ') || tr('comun.error_desconocido')
 }

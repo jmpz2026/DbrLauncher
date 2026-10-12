@@ -9,6 +9,7 @@ import { registerStatus } from './status'
 import { registerUpdater } from './updater'
 import { registerFuse } from './fuse'
 import { registerPerf } from './perf'
+import { registerIdioma } from './idioma'
 
 // UI estática de pixel-art: no necesita GPU. Desactivar la aceleración por hardware elimina
 // el proceso GPU de Chromium (~30-50MB menos de RAM) y va mejor en equipos viejos. Debe
@@ -77,6 +78,8 @@ app.whenReady().then(() => {
   registerFuse()
   // Propuesta de pasar a Lite en equipos justos
   registerPerf()
+  // Idioma del launcher y del juego (lang: de options.txt)
+  registerIdioma()
 
   createWindow()
 

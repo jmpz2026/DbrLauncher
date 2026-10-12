@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { LiteProposal } from '../../../shared/perf'
 import { useStore } from '../store'
+import { useT } from '../i18n'
 
 // Propuesta de pasar a la versión Lite en equipos justos (DbrServerPack/docs/rendimiento).
 // Sale una vez por arranque como mucho: la decide main/perf (hardware una sola vez, o la marca
@@ -9,6 +10,7 @@ import { useStore } from '../store'
 export default function LiteProposalModal(): JSX.Element | null {
   const setSetting = useStore((s) => s.setSetting)
   const [proposal, setProposal] = useState<LiteProposal | null>(null)
+  const tr = useT()
 
   useEffect(() => {
     if (!window.dbr?.perf) return
@@ -31,13 +33,11 @@ export default function LiteProposalModal(): JSX.Element | null {
         <div className="flex items-center gap-3">
           <span className="h-5 w-2 bg-gold" />
           <h2 className="mc-text text-lg font-bold uppercase tracking-wide text-gold">
-            Tu equipo parece justo
+            {tr('lite.titulo')}
           </h2>
         </div>
         <p className="text-xs leading-relaxed text-muted">
-          ¿Pasar a la versión Lite? Usa ajustes gráficos más ligeros y activa el modo ligero
-          del juego, así irá más fluido. Aplica su configuración recomendada (opciones
-          gráficas y ajustes de mods). Puedes volver a Completo cuando quieras desde Ajustes.
+          {tr('lite.texto')}
         </p>
         <p className="text-xs leading-relaxed text-muted">{proposal.reason}</p>
         <div className="flex flex-wrap gap-3">
@@ -45,13 +45,13 @@ export default function LiteProposalModal(): JSX.Element | null {
             onClick={() => answer(true)}
             className="mc-btn mc-btn-gold px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
           >
-            Pasar a Lite
+            {tr('lite.pasar')}
           </button>
           <button
             onClick={() => answer(false)}
             className="mc-btn px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
           >
-            Seguir en Completo
+            {tr('lite.seguir')}
           </button>
         </div>
       </div>

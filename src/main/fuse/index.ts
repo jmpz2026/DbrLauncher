@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import { execFile } from 'child_process'
 import { existsSync, readFileSync } from 'fs'
 import type { FuseStatus, FuseInstallResult } from '../../shared/fuse'
+import { tr } from '../idioma'
 
 /**
  * Detección de libfuse2 en Linux. El AppImage se monta con FUSE (libfuse.so.2); si falta,
@@ -74,10 +75,10 @@ export function registerFuse(): void {
   })
 
   ipcMain.handle('fuse:install', async (): Promise<FuseInstallResult> => {
-    if (process.platform !== 'linux') return { ok: false, error: 'Solo disponible en Linux' }
+    if (process.platform !== 'linux') return { ok: false, error: tr('fuse.solo_linux') }
     const { id, like } = readDistro()
     const cmd = installCmdFor(id, like)
-    if (!cmd) return { ok: false, error: 'Distribución no reconocida' }
+    if (!cmd) return { ok: false, error: tr('fuse.distro') }
 
     // pkexec abre un diálogo gráfico de contraseña (sin necesidad de terminal).
     return new Promise((resolve) => {

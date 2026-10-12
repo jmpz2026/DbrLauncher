@@ -1,5 +1,6 @@
 import { CONFIG } from '../../shared/config'
 import { httpRequest, readJsonOr } from '../http'
+import { tr } from '../idioma'
 
 export interface MsToken {
   accessToken: string
@@ -26,7 +27,7 @@ export async function requestDeviceCode(): Promise<DeviceCode> {
   })
   const data = readJsonOr<Record<string, unknown>>(res, {})
   if (!res.ok) {
-    throw new Error(`No se pudo iniciar el login de Microsoft: ${data.error_description ?? res.status}`)
+    throw new Error(tr('err.ms_iniciar', { detalle: String(data.error_description ?? res.status) }))
   }
   return {
     deviceCode: String(data.device_code),
@@ -67,14 +68,14 @@ export async function pollForToken(dc: DeviceCode): Promise<MsToken> {
         intervalMs += 5000
         break
       case 'authorization_declined':
-        throw new Error('Autorización cancelada en Microsoft.')
+        throw new Error(tr('err.ms_cancelado'))
       case 'expired_token':
-        throw new Error('El código expiró. Intenta de nuevo.')
+        throw new Error(tr('err.ms_expiro'))
       default:
-        throw new Error(`Error de Microsoft: ${data.error_description ?? data.error}`)
+        throw new Error(tr('err.ms_error', { detalle: String(data.error_description ?? data.error) }))
     }
   }
-  throw new Error('El código expiró. Intenta de nuevo.')
+  throw new Error(tr('err.ms_expiro'))
 }
 
 /** Renueva el access token usando el refresh token guardado. */
@@ -90,7 +91,7 @@ export async function refreshToken(refresh: string): Promise<MsToken> {
     })
   })
   const data = readJsonOr<Record<string, unknown>>(res, {})
-  if (!res.ok) throw new Error('La sesión de Microsoft expiró. Vuelve a iniciar sesión.')
+  if (!res.ok) throw new Error(tr('err.ms_sesion'))
   return {
     accessToken: String(data.access_token),
     refreshToken: String(data.refresh_token ?? refresh)

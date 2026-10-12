@@ -14,9 +14,9 @@ export interface SyncOptions {
   // Re-aplicar los archivos de siembra (`once`) aunque ya existan. Se usa al cambiar de
   // variante del modpack, cuando el jugador acepta la config recomendada de la nueva.
   reseed?: boolean
-  // Locale del sistema operativo (app.getLocale()): idioma del juego en la primera siembra
-  // de options.txt. Sin él, no se toca el lang: del archivo.
-  systemLocale?: string
+  // Idioma de Minecraft (es_ES, en_US, pt_BR) para la primera siembra de options.txt: el
+  // elegido en el launcher o el del sistema. Sin él, no se toca el lang: del archivo.
+  langInicial?: string
 }
 
 type OnProgress = (p: SyncProgress) => void
@@ -60,7 +60,7 @@ export function safeJoin(base: string, rel: string): string {
 
 /** Sincroniza los archivos locales con el manifest. Reporta progreso por callback. */
 export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promise<SyncSummary> {
-  const { gameDir, managedFile, manifestUrl, reseed = false, systemLocale } = opts
+  const { gameDir, managedFile, manifestUrl, reseed = false, langInicial } = opts
   const manifest = await fetchManifest(manifestUrl)
   mkdirSync(gameDir, { recursive: true })
 
@@ -152,8 +152,8 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     emit(true)
   })
 
-  if (opciones && systemLocale !== undefined) {
-    aplicarLang(safeJoin(gameDir, opciones.path), langPrevio, systemLocale)
+  if (opciones && langInicial !== undefined) {
+    aplicarLang(safeJoin(gameDir, opciones.path), langPrevio, langInicial)
   }
 
   // 4) Borrar obsoletos. Si uno no se puede borrar (en Windows, un jar abierto por un juego

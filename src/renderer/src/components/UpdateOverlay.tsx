@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
+import { useT } from '../i18n'
 import logo from '../assets/logo.png'
 
 // Pantalla bloqueante de actualización forzada (Opción B): si hay versión nueva, el launcher
@@ -10,18 +11,19 @@ export default function UpdateOverlay(): JSX.Element | null {
   const installUpdate = useStore((s) => s.installUpdate)
   const [installing, setInstalling] = useState(false)
   const [failed, setFailed] = useState(false)
+  const tr = useT()
   if (!status || !['available', 'downloading', 'ready'].includes(status.state)) return null
 
   const ready = status.state === 'ready'
   const manual = ready && !!status.manual
   const pct = ready ? 100 : (status.percent ?? 0)
   const label = !ready
-    ? 'Descargando actualización…'
+    ? tr('update.descargando')
     : !manual
-      ? 'Reiniciando…'
+      ? tr('update.reiniciando')
       : installing
-        ? 'Instalando…'
-        : 'Lista para instalar'
+        ? tr('comun.instalando')
+        : tr('update.lista')
 
   const install = async (): Promise<void> => {
     setInstalling(true)
@@ -38,7 +40,7 @@ export default function UpdateOverlay(): JSX.Element | null {
         <img src={logo} alt="" className="h-16 w-16 object-contain [image-rendering:auto]" />
         <div className="text-center">
           <h1 className="mc-text text-2xl font-bold uppercase tracking-wide text-gold">
-            Actualizando launcher
+            {tr('update.titulo')}
           </h1>
           {status.version && (
             <p className="mt-1 text-xs uppercase tracking-[0.3em] text-gold-deep mc-text-sm">
@@ -66,12 +68,12 @@ export default function UpdateOverlay(): JSX.Element | null {
               disabled={installing}
               className="mc-btn mc-btn-gold px-5 py-2 text-xs font-semibold uppercase tracking-[0.12em] disabled:opacity-60"
             >
-              {installing ? 'Instalando…' : failed ? 'Reintentar' : 'Actualizar ahora'}
+              {installing ? tr('comun.instalando') : failed ? tr('update.reintentar') : tr('update.ahora')}
             </button>
             <p className="text-center text-xs text-muted">
               {failed
-                ? 'No se pudo instalar. Vuelve a intentarlo e introduce tu contraseña.'
-                : 'Se pedirá la contraseña de tu usuario para instalar el paquete.'}
+                ? tr('update.fallo')
+                : tr('update.password')}
             </p>
           </div>
         )}
