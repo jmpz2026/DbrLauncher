@@ -441,8 +441,8 @@
     },
     {
       "path": "mods/CustomNpcResu-1.10.3.jar",
-      "sha1": "803a391c6db41d893b60d6b03f47edabaec58bc5",
-      "size": 24881488,
+      "sha1": "cef3e6f3c93bc9d1e92fe082599862c380a0c029",
+      "size": 24916275,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CustomNpcResu-1.10.3.jar"
     },
     {
@@ -453,8 +453,8 @@
     },
     {
       "path": "mods/DbrServerPack-4.3.0.jar",
-      "sha1": "421fedff897a4dd63145300d9967b55237a11842",
-      "size": 42503622,
+      "sha1": "44499b923319740e36cf896ceb6bdb53815b4cbd",
+      "size": 42729538,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-4.3.0.jar"
     },
     {
@@ -519,8 +519,8 @@
     },
     {
       "path": "mods/npcdbc-1.1.7.jar",
-      "sha1": "5e701c3d51848451399816a541350618bbb34c79",
-      "size": 4352522,
+      "sha1": "fa4d77282acc282ddd1c10d75d9a1fd233608a93",
+      "size": 4355943,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.7.jar"
     },
     {
