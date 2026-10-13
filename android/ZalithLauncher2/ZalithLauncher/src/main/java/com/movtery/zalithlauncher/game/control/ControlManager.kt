@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.game.control
 
 import android.content.Context
+import android.content.res.Resources
 import com.movtery.layer_controller.layout.ControlLayout
 import com.movtery.layer_controller.layout.loadLayoutFromFile
 import com.movtery.layer_controller.layout.loadLayoutFromFileUncheck
@@ -257,6 +258,7 @@ object ControlManager {
      */
     suspend fun importControl(
         inputStream: InputStream,
+        fileName: String? = null,
         onSerializationError: (Exception) -> Unit,
         catchedError: (Exception) -> Unit,
         onFinished: () -> Unit = {},
@@ -264,7 +266,19 @@ object ControlManager {
         val file = getNewRandomFile()
         try {
             inputStream.use { stream ->
-                val jsonString = stream.readString()
+                var jsonString = stream.readString()
+                //DBR: los layouts de PojavLauncher/MojoLauncher se convierten al formato de ZL2
+                if (PojavLayoutConverter.isPojavLayout(jsonString)) {
+                    val metrics = Resources.getSystem().displayMetrics
+                    val widthDp = maxOf(metrics.widthPixels, metrics.heightPixels) / metrics.density.toDouble()
+                    val heightDp = minOf(metrics.widthPixels, metrics.heightPixels) / metrics.density.toDouble()
+                    jsonString = PojavLayoutConverter.convert(
+                        jsonString = jsonString,
+                        layoutName = fileName?.substringBeforeLast('.')?.takeIf { it.isNotBlank() } ?: "Pojav",
+                        screenWidthDp = widthDp,
+                        screenHeightDp = heightDp
+                    )
+                }
                 val layout = loadLayoutFromString(jsonString)
                 layout.saveToFile(file)
             }

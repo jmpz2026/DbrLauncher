@@ -172,3 +172,17 @@ castellano.
   aplica el idioma de la app (`applyLanguage`). La primera siembra de `options.txt` en `DbrSync` pone el
   elegido o el del sistema; una re-siembra conserva el del jugador. `MainActivity` sigue al juego al
   abrir y al volver (si se cambió dentro de Minecraft).
+
+## 12) Importar layouts de PojavLauncher / MojoLauncher (2026-10-13)
+**Motivo:** el botón Importar de la lista de controles solo leía el formato de ZL2; los jugadores
+traen sus layouts de Pojav (y el staff armó el suyo en MojoLauncher).
+
+- `game/control/PojavLayoutConverter.kt`: puerto en Kotlin de `android/tools/pojav-layout-to-zl2.py`.
+  Detecta el formato (`mControlDataList` sin `editorVersion`) y lo convierte a editorVersion 11.
+  Versiones 3-8 (Pojav/Amethyst) llevan teclas GLFW; la 9 (MojoLauncher) keycodes de Android, que se
+  pasan por `EfficientAndroidLWJGLKeycode`. Evalúa `dynamicX/Y` con la pantalla real del dispositivo
+  (en dp, horizontal). Botones especiales: teclado, GUI (alterna capas), clics, scroll y menú; el
+  ratón virtual de Pojav va al menú de ZL2. Cada drawer pasa a una capa oculta que su botón alterna.
+  Los joysticks de Pojav no se convierten (ZL2 tiene el suyo).
+- `ControlManager.importControl` recibe el nombre del archivo (que pasa a ser el nombre del layout) y
+  convierte antes de `loadLayoutFromString`. Con el layout del staff da el mismo resultado que el script.

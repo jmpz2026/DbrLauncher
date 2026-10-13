@@ -41,6 +41,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.context.COPY_LABEL_LINK
+import com.movtery.zalithlauncher.context.getFileName
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.control.ControlManager
@@ -716,6 +717,7 @@ class MainActivity : BaseAppCompatActivity() {
                         }
                         ControlManager.importControl(
                             inputStream = inputStream,
+                            fileName = getFileName(uri),
                             onSerializationError = {
                                 showError(
                                     message = buildAppendedText {
