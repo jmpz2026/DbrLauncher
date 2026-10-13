@@ -1,5 +1,5 @@
 import { ipcMain, shell, type WebContents } from 'electron'
-import { isAzureConfigured } from '../../shared/config'
+import { isAzureConfigured, isPremiumEnabled } from '../../shared/config'
 import type { Account, AuthResult, DeviceCodeInfo } from '../../shared/account'
 import { makePirataAccount } from './offline'
 import { requestDeviceCode, pollForToken, refreshToken } from './microsoft'
@@ -13,6 +13,9 @@ let currentMcToken: string | null = null
 async function loginPremium(sender: WebContents): Promise<Account> {
   if (!isAzureConfigured()) {
     throw new Error('Falta configurar el Azure client ID en src/shared/config.ts (auth.azureClientId).')
+  }
+  if (!isPremiumEnabled()) {
+    throw new Error('El login premium está desactivado (auth.premiumEnabled en src/shared/config.ts).')
   }
   const dc = await requestDeviceCode()
 

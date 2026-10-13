@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { DeviceCodeInfo } from '../../../shared/account'
 import { useStore } from '../store'
 import { useT } from '../i18n'
+import { isPremiumEnabled } from '../../../shared/config'
 
 export default function Login(): JSX.Element {
   const setAccount = useStore((s) => s.setAccount)
@@ -82,7 +83,20 @@ export default function Login(): JSX.Element {
             </h2>
           </div>
 
-          {!device ? (
+          {!isPremiumEnabled() ? (
+            <>
+              <p className="text-xs leading-relaxed text-muted">
+                {tr('login.premium_pronto_desc')}
+              </p>
+              <div className="flex-1" />
+              <button
+                disabled
+                className="mc-btn w-full py-3 text-base font-bold uppercase tracking-[0.14em] disabled:opacity-50"
+              >
+                {tr('login.pronto')}
+              </button>
+            </>
+          ) : !device ? (
             <>
               <p className="text-xs leading-relaxed text-muted">
                 {tr('login.premium_desc')}

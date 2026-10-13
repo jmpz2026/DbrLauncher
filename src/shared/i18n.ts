@@ -71,6 +71,12 @@ const T = {
     en: 'Official Minecraft account (Microsoft). Your browser will open.',
     pt: 'Conta oficial do Minecraft (Microsoft). Seu navegador vai abrir.'
   },
+  'login.premium_pronto_desc': {
+    es: 'Las cuentas oficiales de Minecraft (Microsoft) llegarán pronto. Por ahora entra con No-Premium.',
+    en: 'Official Minecraft accounts (Microsoft) are coming soon. For now log in with No-Premium.',
+    pt: 'As contas oficiais do Minecraft (Microsoft) chegam em breve. Por enquanto entre com No-Premium.'
+  },
+  'login.pronto': { es: 'Próximamente', en: 'Coming soon', pt: 'Em breve' },
   'login.conectando': { es: 'Conectando…', en: 'Connecting…', pt: 'Conectando…' },
   'login.con_microsoft': { es: 'Entrar con Microsoft', en: 'Log in with Microsoft', pt: 'Entrar com Microsoft' },
   'login.abre': { es: 'Abre', en: 'Open', pt: 'Abra' },

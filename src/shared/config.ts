@@ -33,7 +33,10 @@ export const CONFIG = {
   // 2) Tipo "public client / native", habilitar "Allow public client flows" = Yes.
   // 3) Pegar el Application (client) ID aquí. Sin secreto (public client).
   auth: {
-    azureClientId: 'YOUR_AZURE_CLIENT_ID',
+    // Apagado hasta que Mojang apruebe el client ID (aka.ms/mce-reviewappid); sin aprobación
+    // login_with_xbox devuelve 403. Al aprobarlo, poner true y sacar release.
+    premiumEnabled: false,
+    azureClientId: 'cea6378f-0390-4f9f-8f41-a4f512877fe5',
     scope: 'XboxLive.signin offline_access',
     // Tenant 'consumers' = solo cuentas Microsoft personales (las de Minecraft/Xbox).
     deviceCodeUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode',
@@ -46,6 +49,9 @@ export const isAzureConfigured = (): boolean => {
   const id: string = CONFIG.auth.azureClientId
   return id !== 'YOUR_AZURE_CLIENT_ID' && id.length > 0
 }
+
+// True cuando el login premium está activado y configurado.
+export const isPremiumEnabled = (): boolean => CONFIG.auth.premiumEnabled && isAzureConfigured()
 
 // True cuando ya se rellenó el OWNER/REPO del manifest.
 export const isManifestConfigured = (): boolean => !CONFIG.manifestUrl.includes('OWNER/REPO')
