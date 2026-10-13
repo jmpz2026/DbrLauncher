@@ -20,8 +20,10 @@ package com.movtery.zalithlauncher
 
 import android.app.Application
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Process
 import android.util.Log
+import android.webkit.WebView
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -79,6 +81,7 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
         }
 
         super.onCreate()
+        useOwnWebViewDirInGameProcess()
         runCatching {
             Fishnet.init(this, PathManager.DIR_NATIVE_LOGS.absolutePath)
 
@@ -104,6 +107,21 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
             }
             showFatalError(this, launchTh)
         }
+    }
+
+    /**
+     * DBR: el proceso :game también crea WebViews (vista de la skin en la pantalla de carga).
+     * Desde Android 9 dos procesos no pueden compartir el directorio de datos de WebView:
+     * si el launcher sigue vivo, el juego crashea al crear la vista. El proceso :game usa
+     * su propio directorio. Debe ir antes de crear cualquier WebView en el proceso.
+     */
+    private fun useOwnWebViewDirInGameProcess() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
+        val process = getProcessName() ?: return
+        if (process == packageName) return
+        val suffix = process.substringAfter(':', "").ifEmpty { return }
+        runCatching { WebView.setDataDirectorySuffix(suffix) }
+            .onFailure { Log.w("ZLApplication", "Could not set WebView data dir suffix", it) }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
