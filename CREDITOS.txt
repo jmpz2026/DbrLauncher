@@ -1,0 +1,40 @@
+CREDITOS Y LICENCIAS - Paquete principal y lite de Dragon Block Resurrection
+=============================================================================
+
+Los textos completos de cada licencia estan en la carpeta LICENCIAS.
+
+-----------------------------------------------------------------------------
+1. CustomNPC+ 1.10.3-dbr.1  (CustomNpcResu-1.10.3.jar)
+-----------------------------------------------------------------------------
+Autores: KAMKEEL (creador de CustomNPC+); Noppes (autor original de
+CustomNPCs) y contribuidores.
+Licencia: licencia propia de CustomNPC+ (LICENCIAS/CustomNPC-Plus.txt).
+Proyecto original: https://github.com/KAMKEEL/CustomNPC-Plus
+
+ESTA ES UNA VERSION MODIFICADA. Codigo fuente de esta version exacta:
+  https://github.com/jmpz2026/CustomNPC-Plus/tree/1.10.3-dbr.1
+  (rama fork-1.10.3, basada en KAMKEEL/CustomNPC-Plus 1.10.3)
+Cambios: estilo de dialogo cinematico por defecto (con pestana Dialogos en
+el menu N), textos traducidos por jugador y otros ajustes para el servidor.
+
+Distribuido a los jugadores de Dragon Block Resurrection a traves del
+launcher del servidor con permiso de KAMKEEL (otorgado el 2026-10-05), con
+la condicion de dar credito y de no publicar esta version en sitios de mods
+como CurseForge o Modrinth. Todos los derechos de la obra original
+pertenecen a sus autores.
+
+-----------------------------------------------------------------------------
+2. CustomNPC+ DBC Addon (npcdbc) 1.1.7  (npcdbc-1.1.7.jar)
+-----------------------------------------------------------------------------
+Autores originales: KAMKEEL (Kam), bigguy345 (Goatee), somehussar (Hussar)
+y contribuidores. Creditos adicionales: @PopsicleNate (texturas), @mtbarr
+(correcciones), kla_xi (traduccion al chino).
+Proyecto original: https://github.com/KAMKEEL/CustomNPC-DBC-Addon
+Version modificada (fork) mantenida por Machitos para Dragon Block
+Resurrection: https://github.com/jmpz2026/CustomNPC-DBC-Addon
+
+Distribuido a los jugadores de Dragon Block Resurrection a traves del
+launcher del servidor con permiso de KAMKEEL (otorgado el 2026-10-05), con
+la condicion de dar credito y de no publicar esta version en sitios de mods
+como CurseForge o Modrinth. Todos los derechos de la obra original
+pertenecen a sus autores.
