@@ -84,7 +84,7 @@ pertenecen a sus autores.
     Codigo fuente: https://github.com/unimined/JvmDowngrader/tree/1.3.5
 
 -----------------------------------------------------------------------------
-6. CustomNPC+ 1.10.3-dbr.1  (CustomNpcResu-1.10.3.jar)
+6. CustomNPC+ 1.10.3  (CustomNpcResu-1.10.3.jar)
 -----------------------------------------------------------------------------
 Autores: KAMKEEL (creador de CustomNPC+); Noppes (autor original de
 CustomNPCs) y contribuidores.
@@ -92,7 +92,7 @@ Licencia: licencia propia de CustomNPC+ (LICENCIAS/CustomNPC-Plus.txt).
 Proyecto original: https://github.com/KAMKEEL/CustomNPC-Plus
 
 ESTA ES UNA VERSION MODIFICADA. Codigo fuente de esta version exacta:
-  https://github.com/jmpz2026/CustomNPC-Plus/tree/1.10.3-dbr.1
+  https://github.com/jmpz2026/CustomNPC-Plus/tree/1.10.3
   (rama fork-1.10.3, basada en KAMKEEL/CustomNPC-Plus 1.10.3)
 Cambios: estilo de dialogo cinematico por defecto (con pestana Dialogos en
 el menu N), textos traducidos por jugador y otros ajustes para el servidor.
