@@ -440,10 +440,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CoreTweaks-1.7.10-0.3.3.2.jar"
     },
     {
-      "path": "mods/CustomNpcResu-1.10.3.jar",
-      "sha1": "ca70973d82807a2ecdb89cc2f1097899145dab5f",
-      "size": 25090705,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CustomNpcResu-1.10.3.jar"
+      "path": "mods/CustomNPC-Plus-1.10.4.jar",
+      "sha1": "60f52682b5183692e09afb46794394aa8f7303bc",
+      "size": 25094136,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CustomNPC-Plus-1.10.4.jar"
     },
     {
       "path": "mods/DbrFrutas.jar",
@@ -519,8 +519,8 @@
     },
     {
       "path": "mods/npcdbc-1.1.7.jar",
-      "sha1": "2254d88c3802ce27ab37641f5d8dc3e5d91a4444",
-      "size": 4356076,
+      "sha1": "fa7eadac38ce71d8c5532d64158bd1e7138f47b7",
+      "size": 4356427,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-1.1.7.jar"
     },
     {
