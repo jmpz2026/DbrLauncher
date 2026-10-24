@@ -4,13 +4,6 @@
   "forge": "10.13.4.1614",
   "files": [
     {
-      "path": "config/angelica-options.json",
-      "sha1": "c1251c74d4a6c8d7d12c562fbb2265650ef8dd53",
-      "size": 1326,
-      "once": true,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/angelica-options.json"
-    },
-    {
       "path": "config/ArmorStatusHUD.cfg",
       "sha1": "5bbf51edf6c723541e823ac9533107f5448df0d2",
       "size": 4730,
@@ -422,12 +415,6 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
     },
     {
-      "path": "mods/angelica-2.2.30.jar",
-      "sha1": "0f6a23dfc855a01d2cced56aa8feaa30f3f67124",
-      "size": 11871676,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/angelica-2.2.30.jar"
-    },
-    {
       "path": "mods/bspkrsCore-6.16.1.jar",
       "sha1": "850dd81e6b34da40399f8f3079579e11204dd5a0",
       "size": 198655,
@@ -450,6 +437,12 @@
       "sha1": "1c55f9737cf2a72fe64fa9863010c4717314943e",
       "size": 31319,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
+    },
+    {
+      "path": "mods/DbrOptimizer-0.1.0-m0.jar",
+      "sha1": "cd41c8c1eb91fd5415953685da2182a3362be06f",
+      "size": 298398,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrOptimizer-0.1.0-m0.jar"
     },
     {
       "path": "mods/DbrServerPack-4.7.0.jar",
