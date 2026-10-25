@@ -445,10 +445,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrOptimizer-0.1.0-m0.jar"
     },
     {
-      "path": "mods/DbrServerPack-4.7.0.jar",
-      "sha1": "6b58f1bf16d50cccb0698769bb5b505789995589",
-      "size": 45929646,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-4.7.0.jar"
+      "path": "mods/DbrServerPack-4.9.0.jar",
+      "sha1": "631b2986e03f2993642e4581e23ac60a3ed77016",
+      "size": 45928644,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-4.9.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
