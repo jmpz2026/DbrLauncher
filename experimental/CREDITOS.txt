@@ -4,7 +4,7 @@ CREDITOS Y LICENCIAS - Paquete experimental de Dragon Block Resurrection
 Los textos completos de cada licencia estan en la carpeta LICENCIAS.
 
 -----------------------------------------------------------------------------
-1. DbrOptimizer 0.4.0-m2b  (DbrOptimizer-0.4.0-m2b.jar)
+1. DbrOptimizer 0.5.0-m3  (DbrOptimizer-0.5.0-m3.jar)
 -----------------------------------------------------------------------------
 Autor: Machitos (Dragon Block Resurrection).
 Licencia: todos los derechos reservados. Codigo propio, sin codigo de
