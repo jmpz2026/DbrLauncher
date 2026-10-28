@@ -31,6 +31,11 @@ private const val LWJGL_LIB_NAME_ARG = "-Dorg.lwjgl.opengl.libname="
 /** DBR: args JVM por defecto (G1GC, como el launcher de escritorio) para FPS más suave en Java 8. */
 private const val DBR_DEFAULT_JVM_ARGS =
     "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 " +
+    "-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=8M"
+
+/** DBR: default anterior, regiones de 32 MB: con 1,5 GB la carga hacía Full GC de ~375 ms. */
+private const val DBR_OLD_DEFAULT_JVM_ARGS_32M =
+    "-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 " +
     "-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M"
 
 /**
@@ -54,6 +59,10 @@ fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     }
     //DBR: si no hay args JVM configurados, aplicar los de G1GC por defecto.
     if (AllSettings.jvmArgs.getValue().isBlank()) {
+        AllSettings.jvmArgs.save(DBR_DEFAULT_JVM_ARGS)
+    }
+    //DBR: quien sigue con el default viejo tal cual pasa a regiones de 8 MB.
+    if (AllSettings.jvmArgs.getValue().trim() == DBR_OLD_DEFAULT_JVM_ARGS_32M) {
         AllSettings.jvmArgs.save(DBR_DEFAULT_JVM_ARGS)
     }
     val jvmArgs = AllSettings.jvmArgs.getValue()
