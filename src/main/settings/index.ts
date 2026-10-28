@@ -4,6 +4,7 @@ import { totalmem } from 'os'
 import { join } from 'path'
 import {
   DEFAULT_JVM_ARGS,
+  OLD_DEFAULT_JVM_ARGS_32M,
   DEFAULT_SETTINGS,
   MIN_RAM_GB,
   RAM_HEADROOM_GB,
@@ -43,6 +44,15 @@ export function loadSettings(): LauncherSettings {
   if (!cache.jvmArgsMigrated) {
     if (!cache.jvmArgs.trim()) cache.jvmArgs = DEFAULT_JVM_ARGS
     cache.jvmArgsMigrated = true
+    try {
+      writeFileSync(filePath(), JSON.stringify(cache), 'utf-8')
+    } catch {
+      /* si no se puede persistir, se reintentará al siguiente arranque */
+    }
+  }
+  // Regiones de G1 de 32 MB a 8 MB, solo a quien sigue con el default viejo tal cual.
+  if (cache.jvmArgs.trim() === OLD_DEFAULT_JVM_ARGS_32M) {
+    cache.jvmArgs = DEFAULT_JVM_ARGS
     try {
       writeFileSync(filePath(), JSON.stringify(cache), 'utf-8')
     } catch {

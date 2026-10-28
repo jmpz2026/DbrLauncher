@@ -34,6 +34,14 @@ export interface LauncherSettings {
  */
 export const DEFAULT_JVM_ARGS =
   '-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 ' +
+  '-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=8M'
+
+/**
+ * Default anterior, con regiones de 32 MB: con 1,5 GB son 48 regiones y la carga hacía Full GC
+ * de ~375 ms (DbrOptimizer docs/perf/debil-ab.md). Quien lo tenga sin tocar pasa al nuevo.
+ */
+export const OLD_DEFAULT_JVM_ARGS_32M =
+  '-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 ' +
   '-XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M'
 
 export const DEFAULT_SETTINGS: LauncherSettings = {
