@@ -1,7 +1,8 @@
 {
-  "build": 27,
-  "versionName": "DbrLauncher Mobile android-v27",
-  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v27/DbrLauncherMobile-arm64.apk",
+  "build": 28,
+  "versionName": "DbrLauncher Mobile android-v28",
+  "apkUrl": "https://github.com/jmpz2026/DbrLauncher/releases/download/android-v28/DbrLauncherMobile-arm64.apk",
+  "sha256": "6dd5071eaa6757f99ecaf43f92cd515388a47a913e25b175cfc95724fa82b3f8",
   "mandatory": true,
-  "changelog": "Build 27"
+  "changelog": "Build 28"
 }
