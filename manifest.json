@@ -428,8 +428,8 @@
     },
     {
       "path": "mods/CustomNPC-Plus-1.10.5.jar",
-      "sha1": "74a2fd9c9e8d6933d192c560abed9d8891662d74",
-      "size": 25105311,
+      "sha1": "cb6f7bcf88443785e184fb6ddf3f080d5e47e410",
+      "size": 25108089,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/CustomNPC-Plus-1.10.5.jar"
     },
     {
@@ -439,10 +439,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-4.9.0.jar",
-      "sha1": "ac8392d795e8def732465e5eaced06d9dac137cb",
-      "size": 46005262,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-4.9.0.jar"
+      "path": "mods/DbrServerPack-5.1.0.jar",
+      "sha1": "c420e1020f166b6e9d34a0c95248605bfc2f8ed1",
+      "size": 46640159,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-5.1.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -461,6 +461,12 @@
       "sha1": "e556bf7f19751cb1d893303ffea46843a64c70f0",
       "size": 8834465,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/EtFuturumDbr-1.0.0.jar"
+    },
+    {
+      "path": "mods/gtnhlib-0.11.36-dbr.1.jar",
+      "sha1": "58f78b7f15cd7d719f80dd49f7095acd77f3871f",
+      "size": 26572020,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/gtnhlib-0.11.36-dbr.1.jar"
     },
     {
       "path": "mods/JBRA-Client-v1.6.52.jar",
@@ -500,15 +506,9 @@
     },
     {
       "path": "mods/npcdbc-1.1.7.jar",
-      "sha1": "62c066618ca00555f46e900b3d78ce403562b6eb",
-      "size": 4372084,
+      "sha1": "636e4b63ad69c88b49a2ab4d562d2ee998c07f88",
+      "size": 4373413,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/npcdbc-1.1.7.jar"
-    },
-    {
-      "path": "mods/OptifinePrincipal.jar",
-      "sha1": "2130d7266224da6a7325051e37444f7e7c19277c",
-      "size": 1774165,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/OptifinePrincipal.jar"
     },
     {
       "path": "options.txt",
@@ -545,6 +545,13 @@
       "size": 147,
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/config/dbrcore/rendimiento.cfg"
+    },
+    {
+      "path": "config/dbroptimizer/video.cfg",
+      "sha1": "6deea32fdbbb9ee6f5c0b2b44eb5e7012d541606",
+      "size": 1074,
+      "once": true,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/android/config/dbroptimizer/video.cfg"
     },
     {
       "path": "options.txt",
