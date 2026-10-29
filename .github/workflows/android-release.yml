@@ -101,8 +101,10 @@ jobs:
           N="${{ steps.ver.outputs.n }}"
           TAG="${{ steps.ver.outputs.tag }}"
           URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/DbrLauncherMobile-arm64.apk"
-          printf '{\n  "build": %s,\n  "versionName": "DbrLauncher Mobile %s",\n  "apkUrl": "%s",\n  "mandatory": true,\n  "changelog": "Build %s"\n}\n' \
-            "$N" "$TAG" "$URL" "$N" > android/version.json
+          # sha256: el updater verifica que el APK bajado no llegó corrupto ni truncado.
+          SHA=$(sha256sum "$GITHUB_WORKSPACE/DbrLauncherMobile-arm64.apk" | cut -d' ' -f1)
+          printf '{\n  "build": %s,\n  "versionName": "DbrLauncher Mobile %s",\n  "apkUrl": "%s",\n  "sha256": "%s",\n  "mandatory": true,\n  "changelog": "Build %s"\n}\n' \
+            "$N" "$TAG" "$URL" "$SHA" "$N" > android/version.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add android/version.json

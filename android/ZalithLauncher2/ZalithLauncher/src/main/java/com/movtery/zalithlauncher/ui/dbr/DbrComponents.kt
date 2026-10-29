@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -176,5 +178,18 @@ fun DbrBottomBar(
             StoneNavButton(text = stringResource(R.string.dbr_nav_play), selected = inLauncherScreen, onClick = toMainScreen)
             StoneNavButton(text = stringResource(R.string.dbr_nav_settings), selected = inSettingsScreen, onClick = toSettingsScreen)
         }
+    }
+}
+
+/**
+ * Mantiene la pantalla encendida mientras esté en composición. Durante descargas largas,
+ * con la pantalla apagada Android corta los sockets ("Software caused connection abort").
+ */
+@Composable
+fun KeepScreenOn() {
+    val view = LocalView.current
+    DisposableEffect(view) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
     }
 }

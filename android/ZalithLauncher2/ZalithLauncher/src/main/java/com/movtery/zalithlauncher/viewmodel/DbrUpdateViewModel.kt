@@ -30,12 +30,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.dbr.DbrUpdater
+import com.movtery.zalithlauncher.ui.dbr.KeepScreenOn
+import com.movtery.zalithlauncher.utils.logging.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class DbrUpdateViewModel : ViewModel() {
     var info by mutableStateOf<DbrUpdater.UpdateInfo?>(null)
         private set
     var downloadPercent by mutableStateOf<Int?>(null)
+        private set
+    /** Detalle técnico del último fallo de descarga; null si no hubo. */
+    var error by mutableStateOf<String?>(null)
         private set
 
     fun checkOnStart() {
@@ -48,9 +54,14 @@ class DbrUpdateViewModel : ViewModel() {
         val i = info ?: return
         if (downloadPercent != null) return
         downloadPercent = 0
+        error = null
         viewModelScope.launch {
             runCatching {
                 DbrUpdater.downloadAndInstall(context, i) { p -> downloadPercent = p }
+            }.onFailure { th ->
+                if (th is CancellationException) throw th
+                Logger.error("DbrUpdate", "No se pudo descargar la actualización", th)
+                error = th.localizedMessage ?: th.toString()
             }
             downloadPercent = null
         }
@@ -66,6 +77,9 @@ fun DbrUpdateDialog(viewModel: DbrUpdateViewModel) {
     val context = LocalContext.current
     val info = viewModel.info ?: return
     val percent = viewModel.downloadPercent
+    val error = viewModel.error
+    //Con la pantalla apagada Android corta los sockets de la app ("connection abort").
+    if (percent != null) KeepScreenOn()
 
     Dialog(
         onDismissRequest = { if (!info.mandatory && percent == null) viewModel.dismiss() }
@@ -105,6 +119,17 @@ fun DbrUpdateDialog(viewModel: DbrUpdateViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
+                    if (error != null) {
+                        Text(
+                            text = stringResource(R.string.dbr_net_error_friendly),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -115,7 +140,11 @@ fun DbrUpdateDialog(viewModel: DbrUpdateViewModel) {
                             }
                         }
                         Button(onClick = { viewModel.install(context) }) {
-                            Text(stringResource(R.string.dbr_update_update))
+                            Text(
+                                stringResource(
+                                    if (error != null) R.string.dbr_retry else R.string.dbr_update_update
+                                )
+                            )
                         }
                     }
                 }

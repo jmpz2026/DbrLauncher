@@ -116,4 +116,7 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
         <item>Tip: lower the resolution in Settings &gt; Performance if you notice lag.</item>
         <item>Tip: change the language of the launcher and of the game in Settings &gt; Game.</item>
     </string-array>
+    <string name="dbr_net_error_friendly">An unstable connection or the phone screen turning off cut the download. Check your internet and try again; it resumes where it left off.</string>
+    <string name="dbr_retry">Retry</string>
+    <string name="dbr_retrying">Retrying (%1$d/%2$d)…</string>
 </resources>

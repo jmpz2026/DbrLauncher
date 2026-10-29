@@ -105,4 +105,7 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
         <item>Consejo: baja la resolución en Ajustes &gt; Rendimiento si notas lag.</item>
         <item>Consejo: cambia el idioma del launcher y del juego en Ajustes &gt; Juego.</item>
     </string-array>
+    <string name="dbr_net_error_friendly">Se cortó la conexión (red inestable o la pantalla se apagó). Revisa tu internet y reintenta: sigue donde se quedó.</string>
+    <string name="dbr_retry">Reintentar</string>
+    <string name="dbr_retrying">Reintentando (%1$d/%2$d)…</string>
 </resources>

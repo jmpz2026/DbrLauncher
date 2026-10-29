@@ -78,6 +78,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.account.AccountsManager
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
+import com.movtery.zalithlauncher.game.version.download.DownloadFailedException
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.MarqueeText
@@ -91,6 +92,7 @@ import com.movtery.zalithlauncher.ui.screens.content.elements.VersionIconImage
 import com.movtery.zalithlauncher.ui.screens.main.custom_home.MarkdownBlock
 import com.movtery.zalithlauncher.ui.screens.main.custom_home.customHomePage
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
+import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.viewmodel.HomePageState
 import com.movtery.zalithlauncher.viewmodel.LocalHomePageViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
@@ -118,13 +120,16 @@ import com.movtery.zalithlauncher.ui.dbr.stonePanel
 import com.movtery.zalithlauncher.ui.dbr.DbrGold
 import com.movtery.zalithlauncher.ui.dbr.DbrCream
 import com.movtery.zalithlauncher.ui.dbr.StoneNavButton
+import com.movtery.zalithlauncher.ui.dbr.KeepScreenOn
 import com.movtery.zalithlauncher.game.account.getAccountTypeName
 import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @Composable
 fun LauncherScreen(
@@ -361,10 +366,12 @@ private fun RendererChip(onClick: () -> Unit) {
 private sealed interface DbrInstallState {
     data object Idle : DbrInstallState
     data object Preparing : DbrInstallState
-    data object Installing : DbrInstallState
+    /** [attempt] > 1 = reintento automático tras un corte de red. */
+    data class Installing(val attempt: Int = 1) : DbrInstallState
     data class Syncing(val done: Int, val total: Int) : DbrInstallState
     data object Success : DbrInstallState
-    data class Error(val th: Throwable) : DbrInstallState
+    /** [retry] repite la operación que falló (instalar o sincronizar). */
+    data class Error(val th: Throwable, val retry: (() -> Unit)? = null) : DbrInstallState
     /** El sync falló pero hay mods de un sync anterior: se puede jugar con ellos. */
     data class SyncFailedCanPlay(val onLaunch: () -> Unit) : DbrInstallState
 }
@@ -378,12 +385,33 @@ private class DbrInstallViewModel : ViewModel() {
     fun install(context: Context) {
         if (state is DbrInstallState.Preparing || state is DbrInstallState.Installing) return
         state = DbrInstallState.Preparing
+        install(context, attempt = 1)
+    }
+
+    /**
+     * Un intento de instalación. Ante un corte de red reintenta solo hasta [MAX_INSTALL_ATTEMPTS]:
+     * GameInstaller salta los archivos ya bajados (SHA-1 OK), así que reanuda barato.
+     */
+    private fun install(context: Context, attempt: Int) {
+        val fail: (Throwable) -> Unit = { th ->
+            installer = null
+            Logger.error("DbrInstall", "Instalación DBR falló (intento $attempt/$MAX_INSTALL_ATTEMPTS)", th)
+            if (th.isNetworkError() && attempt < MAX_INSTALL_ATTEMPTS) {
+                state = DbrInstallState.Installing(attempt + 1)
+                viewModelScope.launch {
+                    delay(2_000L * attempt)
+                    install(context, attempt + 1)
+                }
+            } else {
+                state = DbrInstallState.Error(th) { install(context) }
+            }
+        }
         viewModelScope.launch {
             val info = runCatching { DbrInstall.buildInfo() }.getOrElse { th ->
-                state = DbrInstallState.Error(th)
+                fail(th)
                 return@launch
             }
-            state = DbrInstallState.Installing
+            state = DbrInstallState.Installing(attempt)
             installer = GameInstaller(context, info, viewModelScope).also { gi ->
                 gi.installGame(
                     onInstalled = { version ->
@@ -391,10 +419,7 @@ private class DbrInstallViewModel : ViewModel() {
                         VersionsManager.refresh("[DBR] provision", version)
                         state = DbrInstallState.Success
                     },
-                    onError = { th ->
-                        installer = null
-                        state = DbrInstallState.Error(th)
-                    },
+                    onError = fail,
                     onGameAlreadyInstalled = {
                         installer = null
                         VersionsManager.refresh("[DBR] already", DbrInstall.VERSION_NAME)
@@ -436,7 +461,12 @@ private class DbrInstallViewModel : ViewModel() {
             }.onFailure { th ->
                 //Con un cambio de variante pendiente los mods del disco son de la otra variante.
                 val canPlay = !DbrSync.neverSynced(gameDir) && !AllSettings.dbrModpackSyncPending.getValue()
-                state = if (canPlay) DbrInstallState.SyncFailedCanPlay(onLaunch) else DbrInstallState.Error(th)
+                Logger.error("DbrInstall", "Sync del modpack falló", th)
+                state = if (canPlay) {
+                    DbrInstallState.SyncFailedCanPlay(onLaunch)
+                } else {
+                    DbrInstallState.Error(th) { syncThenLaunch(version, onSynced, onLaunch) }
+                }
             }
         }
     }
@@ -445,6 +475,12 @@ private class DbrInstallViewModel : ViewModel() {
         val current = state as? DbrInstallState.SyncFailedCanPlay ?: return
         state = DbrInstallState.Idle
         current.onLaunch()
+    }
+
+    fun retry() {
+        val current = state as? DbrInstallState.Error ?: return
+        state = DbrInstallState.Idle
+        current.retry?.invoke()
     }
 
     fun dismissError() {
@@ -456,6 +492,12 @@ private class DbrInstallViewModel : ViewModel() {
     }
 }
 
+private const val MAX_INSTALL_ATTEMPTS = 3
+
+/** Corte de red, timeout o archivos que no bajaron: vale la pena reintentar. */
+private fun Throwable.isNetworkError(): Boolean =
+    generateSequence(this) { it.cause }.any { it is IOException || it is DownloadFailedException }
+
 @Composable
 private fun rememberDbrInstallViewModel(): DbrInstallViewModel = viewModel { DbrInstallViewModel() }
 
@@ -466,6 +508,7 @@ private fun DbrInstallDialog(
 ) {
     when (val state = viewModel.state) {
         is DbrInstallState.Preparing, is DbrInstallState.Installing -> {
+            KeepScreenOn()
             Dialog(onDismissRequest = {}) {
                 Surface(
                     shape = MaterialTheme.shapes.extraLarge,
@@ -482,11 +525,18 @@ private fun DbrInstallDialog(
                             text = stringResource(R.string.dbr_installing_message),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        if (state is DbrInstallState.Installing && state.attempt > 1) {
+                            Text(
+                                text = stringResource(R.string.dbr_retrying, state.attempt, MAX_INSTALL_ATTEMPTS),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
                     }
                 }
             }
         }
         is DbrInstallState.Syncing -> {
+            KeepScreenOn()
             Dialog(onDismissRequest = {}) {
                 Surface(
                     shape = MaterialTheme.shapes.extraLarge,
@@ -528,15 +578,29 @@ private fun DbrInstallDialog(
                             text = stringResource(R.string.dbr_install_error_title),
                             style = MaterialTheme.typography.titleMedium
                         )
+                        val network = state.th.isNetworkError()
+                        if (network) {
+                            Text(
+                                text = stringResource(R.string.dbr_net_error_friendly),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                         Text(
                             text = state.th.localizedMessage ?: state.th.toString(),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = if (network) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium
                         )
-                        Button(
+                        Row(
                             modifier = Modifier.align(Alignment.End),
-                            onClick = { viewModel.dismissError() }
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(stringResource(R.string.generic_close))
+                            TextButton(onClick = { viewModel.dismissError() }) {
+                                Text(stringResource(R.string.generic_close))
+                            }
+                            if (state.retry != null) {
+                                Button(onClick = { viewModel.retry() }) {
+                                    Text(stringResource(R.string.dbr_retry))
+                                }
+                            }
                         }
                     }
                 }
