@@ -4,7 +4,7 @@ CREDITOS Y LICENCIAS - Paquete principal y lite de Dragon Block Resurrection
 Los textos completos de cada licencia estan en la carpeta LICENCIAS.
 
 -----------------------------------------------------------------------------
-1. DbrOptimizer 5.1.0-m7  (dentro de DbrServerPack-5.1.0.jar)
+1. DbrOptimizer 5.3.0  (dentro de DbrServerPack-5.3.0.jar)
 -----------------------------------------------------------------------------
 Autor: Machitos (Dragon Block Resurrection).
 Licencia: todos los derechos reservados. Codigo propio, sin codigo de
@@ -19,7 +19,7 @@ licencia (p. ej. SpongeMixins: GNU LGPL v3; Mixin de SpongePowered: MIT).
 Codigo fuente: https://github.com/LegacyModdingMC/UniMixins
 
 -----------------------------------------------------------------------------
-3. CustomNPC+ DBC Addon (npcdbc) 1.1.7  (npcdbc-1.1.7.jar)
+3. CustomNPC+ DBC Addon (npcdbc) 5.3.0  (npcdbc-5.3.0.jar)
 -----------------------------------------------------------------------------
 Autores originales: KAMKEEL (Kam), bigguy345 (Goatee), somehussar (Hussar)
 y contribuidores. Creditos adicionales: @PopsicleNate (texturas), @mtbarr
