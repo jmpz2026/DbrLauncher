@@ -39,7 +39,7 @@ echo [3b/5] Generando manifest EXPERIMENTAL...
 rem Mods en pruebas para que los jugadores los testeen (no aptos para el servidor).
 rem Se ponen en experimental\mods y experimental\config, igual que lite.
 if exist "%~dp0experimental\mods\*.jar" (
-  node "%GEN%" --dir "%~dp0experimental" --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks --out "%~dp0manifest-experimental.json"
+  node "%GEN%" --dir "%~dp0experimental" --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks,shaderpacks --out "%~dp0manifest-experimental.json"
   if errorlevel 1 goto :error
 ) else (
   echo   ^(experimental\mods vacio: se omite el manifest experimental^)

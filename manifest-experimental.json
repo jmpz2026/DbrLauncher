@@ -439,10 +439,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.3.0.jar",
-      "sha1": "4b73ec0c8195e79a5aeb365c3ed90c6145cb9520",
-      "size": 47179508,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.3.0.jar"
+      "path": "mods/DbrServerPack-5.5.0.jar",
+      "sha1": "0887ae8a64ecb3c17d0b47c60a62af49d881bf1d",
+      "size": 47578590,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.5.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -537,6 +537,12 @@
       "sha1": "6c082d9a7f03685e873e62525dd2d224eba50a4c",
       "size": 4334396,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/resourcepacks/DbrTexture%20v6.zip"
+    },
+    {
+      "path": "shaderpacks/Dbr Shaders.zip",
+      "sha1": "753014f5223307381428e73116c0a44dc9826b99",
+      "size": 17967,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/shaderpacks/Dbr%20Shaders.zip"
     }
   ],
   "androidFiles": [
