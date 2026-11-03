@@ -17,6 +17,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # parches delta: compara con los jars del commit anterior
 
       - uses: actions/setup-node@v4
         with:
