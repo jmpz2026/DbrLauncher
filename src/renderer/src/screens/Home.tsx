@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { LaunchPhase } from '../../../shared/launch'
 import { useStore } from '../store'
 import { useT } from '../i18n'
@@ -180,8 +180,37 @@ function LaunchBar(): JSX.Element {
   )
 }
 
+/** 1536 -> "1.5 KB"; para la línea de bytes de la sync. */
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`
+  const units = ['KB', 'MB', 'GB']
+  let v = n / 1024
+  let i = 0
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024
+    i++
+  }
+  return `${v.toFixed(1)} ${units[i]}`
+}
+
+/** Velocidad de descarga en bytes/s, media de los últimos ~3 s. */
+function useSpeed(bytesDone: number | undefined): number {
+  const samples = useRef<Array<[number, number]>>([])
+  if (bytesDone === undefined) {
+    samples.current = []
+    return 0
+  }
+  const now = Date.now()
+  const s = samples.current
+  if (s.length === 0 || s[s.length - 1][0] !== bytesDone) s.push([bytesDone, now])
+  while (s.length > 2 && now - s[0][1] > 3000) s.shift()
+  const [b0, t0] = s[0]
+  return now > t0 ? Math.max(0, ((bytesDone - b0) * 1000) / (now - t0)) : 0
+}
+
 function SyncBar(): JSX.Element {
   const p = useStore((s) => s.syncProgress)
+  const cancelSync = useStore((s) => s.cancelSync)
   const tr = useT()
   // En descarga la barra va por bytes si el manifest trae tamaños; si no, por archivos.
   const byBytes = p?.phase === 'download' && !!p.bytesTotal
@@ -203,6 +232,7 @@ function SyncBar(): JSX.Element {
   else if (p?.phase === 'done') label = tr('sync.listo')
 
   const indeterminate = !p || p.phase === 'check'
+  const speed = useSpeed(byBytes ? p.bytesDone : undefined)
 
   return (
     <div className="mt-1 w-full max-w-md">
@@ -216,6 +246,18 @@ function SyncBar(): JSX.Element {
         {label}
         {!indeterminate && <span className="ml-2 text-gold">{pct}%</span>}
       </p>
+      {byBytes && (
+        <p className="mt-1 text-center text-xs text-muted mc-text-sm">
+          {formatBytes(p.bytesDone ?? 0)} / {formatBytes(p.bytesTotal!)}
+          {speed > 0 && ` · ${formatBytes(Math.round(speed))}/s`}
+        </p>
+      )}
+      <div className="mt-2 flex flex-col items-center gap-1">
+        <button type="button" className="mc-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]" onClick={cancelSync}>
+          {tr('comun.cancelar')}
+        </button>
+        <p className="text-center text-[10px] text-muted">{tr('sync.cancelar_hint')}</p>
+      </div>
     </div>
   )
 }

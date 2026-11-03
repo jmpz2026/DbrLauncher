@@ -59,7 +59,10 @@ interface State {
   syncProgress: SyncProgress | null
   syncSummary: SyncSummary | null
   syncError: string
+  /** La última sync la paró el jugador: no hay error que mostrar, pero tampoco se lanza. */
+  syncCancelled: boolean
   startSync: () => Promise<void>
+  cancelSync: () => void
 
   // Lanzamiento
   launching: boolean // preparando/descargando antes de arrancar
@@ -176,18 +179,23 @@ export const useStore = create<State>((set, get) => ({
   syncProgress: null,
   syncSummary: null,
   syncError: '',
+  syncCancelled: false,
   startSync: async () => {
     if (!window.dbr?.sync) return
-    set({ syncing: true, syncError: '', syncSummary: null, syncProgress: null })
+    set({ syncing: true, syncError: '', syncCancelled: false, syncSummary: null, syncProgress: null })
     const off = window.dbr.sync.onProgress((p) => set({ syncProgress: p }))
     try {
       const res = await window.dbr.sync.start()
       if (res.ok) set({ syncSummary: res.summary })
+      else if (res.cancelled) set({ syncCancelled: true })
       else set({ syncError: res.error })
     } finally {
       off()
       set({ syncing: false, syncProgress: null })
     }
+  },
+  cancelSync: () => {
+    void window.dbr?.sync?.cancel()
   },
 
   launching: false,
@@ -202,7 +210,7 @@ export const useStore = create<State>((set, get) => ({
     // 1) Sincronizar mods (ver mustSync). Si el pre-calentamiento ya sincronizó bien, se salta.
     if (mustSync(get()) && !get().prewarmDone) {
       await get().startSync()
-      if (get().syncError) return
+      if (get().syncError || get().syncCancelled) return
     }
 
     // 2) Preparar + lanzar. El listener de estado vive hasta que el juego termina
@@ -247,7 +255,7 @@ export const useStore = create<State>((set, get) => ({
       let synced = true
       if (mustSync(get())) {
         await get().startSync()
-        synced = !get().syncError
+        synced = !get().syncError && !get().syncCancelled
       }
       // Si mientras sincronizábamos cambió la variante, este resultado ya no vale.
       set({ prewarmDone: synced && gen === syncGeneration })

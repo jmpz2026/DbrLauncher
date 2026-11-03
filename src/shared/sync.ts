@@ -38,4 +38,5 @@ export interface SyncSummary {
   version: string
 }
 
-export type SyncResult = { ok: true; summary: SyncSummary } | { ok: false; error: string }
+// cancelled: el jugador paró la sync; no es un error que mostrar.
+export type SyncResult = { ok: true; summary: SyncSummary } | { ok: false; error: string; cancelled?: boolean }

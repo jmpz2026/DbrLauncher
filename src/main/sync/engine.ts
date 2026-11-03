@@ -1,11 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
-import { join, normalize, sep } from 'path'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { dirname, join, normalize, sep } from 'path'
 import type { ManifestFile, SyncProgress, SyncSummary } from '../../shared/sync'
 import { flushHashCache, sha1FileCached } from './hash'
 import { fetchManifest } from './manifest'
-import { ensureFile } from '../net'
+import { ensureFile, partFor } from '../net'
 import { CONFIG } from '../../shared/config'
 import { aplicarLang, langActual } from './lang'
+import { PATCH_MIN_SIZE, modKey, tryPatch } from './patch'
 
 export interface SyncOptions {
   gameDir: string // dónde viven los mods/configs
@@ -17,6 +18,8 @@ export interface SyncOptions {
   // Idioma de Minecraft (es_ES, en_US, pt_BR) para la primera siembra de options.txt: el
   // elegido en el launcher o el del sistema. Sin él, no se toca el lang: del archivo.
   langInicial?: string
+  /** Cancela la sync. Lo bajado a medias queda en `.part` y la próxima sync sigue desde ahí. */
+  signal?: AbortSignal
 }
 
 type OnProgress = (p: SyncProgress) => void
@@ -60,7 +63,7 @@ export function safeJoin(base: string, rel: string): string {
 
 /** Sincroniza los archivos locales con el manifest. Reporta progreso por callback. */
 export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promise<SyncSummary> {
-  const { gameDir, managedFile, manifestUrl, reseed = false, langInicial } = opts
+  const { gameDir, managedFile, manifestUrl, reseed = false, langInicial, signal } = opts
   const manifest = await fetchManifest(manifestUrl)
   mkdirSync(gameDir, { recursive: true })
 
@@ -72,6 +75,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   const needed: boolean[] = new Array(checkTotal).fill(false)
   let checked = 0
   await pool(manifest.files, CONCURRENCY, async (f, i) => {
+    signal?.throwIfAborted()
     const dest = safeJoin(gameDir, f.path)
     let needs = true
     if (existsSync(dest)) {
@@ -99,15 +103,38 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   const total = toDownload.length + toDelete.length
   let done = 0
 
+  // Temporales de syncs anteriores que ya no sirven (otra versión del archivo, parches a
+  // medias). Los de lo que hay que bajar ahora se quedan: la descarga sigue donde quedó.
+  const keepParts = new Set(toDownload.filter((f) => f.sha1).map((f) => partFor(safeJoin(gameDir, f.path), f.sha1!)))
+  for (const dir of new Set(manifest.files.map((f) => dirname(safeJoin(gameDir, f.path))))) {
+    let names: string[]
+    try {
+      names = readdirSync(dir)
+    } catch {
+      continue
+    }
+    for (const n of names) {
+      const full = join(dir, n)
+      if ((n.endsWith('.part') || n.endsWith('.patched')) && !keepParts.has(full)) rmSync(full, { force: true })
+    }
+  }
+
   // 3) Descargar en paralelo (pool acotado). `done` es un contador compartido: como JS es
   // monohilo entre awaits, el ++ no compite; solo la barra ve el orden de finalización.
   // La barra va por bytes (con el `size` del manifest) y el texto nombra el archivo que lleva
   // más tiempo bajando: con solo archivos terminados, un jar lento en un POP frío del CDN
   // dejaba la barra quieta y el nombre de un config de 1 KB que ya había acabado.
-  const bytesTotal = toDownload.every((f) => typeof f.size === 'number')
-    ? toDownload.reduce((s, f) => s + (f.size ?? 0), 0)
-    : 0
+  const knownSizes = toDownload.every((f) => typeof f.size === 'number')
+  let bytesTotal = knownSizes ? toDownload.reduce((s, f) => s + (f.size ?? 0), 0) : 0
   const received = new Map<string, number>() // bytes por archivo; un reintento lo devuelve a 0
+  const expected = new Map<string, number>() // lo que se espera bajar de cada archivo
+  /** Un archivo pasa a bajar `bytes` (el parche en vez del jar, o al revés). */
+  const expect = (path: string, bytes: number): void => {
+    if (!knownSizes) return
+    bytesTotal += bytes - (expected.get(path) ?? 0)
+    expected.set(path, bytes)
+  }
+  for (const f of toDownload) expected.set(f.path, f.size ?? 0)
   const inFlight = new Set<string>() // orden de inserción = orden de arranque
   let lastEmit = 0
   const emit = (force = false): void => {
@@ -131,25 +158,45 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
     inFlight.add(f.path)
     emit(true)
     try {
+      const dest = safeJoin(gameDir, f.path)
+      // Jar grande con su versión anterior en el disco: basta un parche de ~3 MB en vez de 47.
+      // Candidatos: el mismo archivo (cambió el contenido) o el obsoleto del mismo mod (cambió
+      // el nombre); los obsoletos se borran después, así que aún están.
+      if (f.sha1 && (f.size ?? 0) >= PATCH_MIN_SIZE && /\.jar$/i.test(f.path)) {
+        const key = modKey(f.path)
+        const candidates = [dest, ...toDelete.filter((p) => modKey(p) === key).map((p) => safeJoin(gameDir, p))]
+        const patched = await tryPatch(dest, f.sha1.toLowerCase(), candidates, (n, t) => {
+          if (t > 0) expect(f.path, t)
+          received.set(f.path, n)
+          emit()
+        }, signal)
+        if (patched) {
+          received.set(f.path, expected.get(f.path) ?? 0)
+          return
+        }
+        expect(f.path, f.size ?? 0)
+        received.set(f.path, 0)
+      }
       // El release de assets guarda cada archivo con su sha1 por nombre: si raw bloquea la IP
       // del jugador, se baja de ahí. Un sha1 aún sin subir da 404 y se pasa al siguiente mirror.
       const mirrors = f.sha1 ? [CONFIG.assetMirrorBase + f.sha1.toLowerCase()] : []
       await ensureFile(
-        safeJoin(gameDir, f.path),
+        dest,
         f.url,
         f.sha1,
         (n) => {
           received.set(f.path, n)
           emit()
         },
-        mirrors
+        mirrors,
+        { size: f.size, signal }
       )
+      received.set(f.path, f.size ?? 0)
     } finally {
       inFlight.delete(f.path)
+      done++
+      emit(true)
     }
-    received.set(f.path, f.size ?? 0)
-    done++
-    emit(true)
   })
 
   if (opciones && langInicial !== undefined) {

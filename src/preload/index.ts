@@ -35,6 +35,7 @@ const api = {
 
   sync: {
     start: (): Promise<SyncResult> => ipcRenderer.invoke('sync:start'),
+    cancel: (): Promise<void> => ipcRenderer.invoke('sync:cancel'),
     // Progreso de la sincronización. Devuelve una función para desuscribir.
     onProgress: (cb: (p: SyncProgress) => void): (() => void) => {
       const listener = (_e: unknown, p: SyncProgress): void => cb(p)

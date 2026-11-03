@@ -5,6 +5,7 @@ import { loadSettings, saveSettings } from '../settings'
 import { getGameDir, getManagedFile } from './paths'
 import { runSync } from './engine'
 import { errMsg } from '../errors'
+import { isAbortError } from '../http'
 import { langInicial } from '../idioma'
 
 export { runSync } from './engine'
@@ -21,9 +22,17 @@ function manifestUrlForVariant(): string {
   }
 }
 
+/** Sync en curso, para poder cancelarla desde el renderer. */
+let current: AbortController | null = null
+
 /** Registra el handler IPC de sincronización. Llamar una vez al arrancar. */
 export function registerSync(): void {
+  // Lo bajado a medias queda en .part: la próxima sync sigue desde ahí.
+  ipcMain.handle('sync:cancel', () => current?.abort())
+
   ipcMain.handle('sync:start', async (e): Promise<SyncResult> => {
+    const ctrl = new AbortController()
+    current = ctrl
     try {
       // Sin repo de modpack configurado no hay nada que sincronizar: se omite (no es error),
       // así se puede lanzar vanilla igualmente.
@@ -39,7 +48,8 @@ export function registerSync(): void {
           managedFile: getManagedFile(),
           manifestUrl: manifestUrlForVariant(),
           reseed,
-          langInicial: langInicial()
+          langInicial: langInicial(),
+          signal: ctrl.signal
         },
         (p) => e.sender.send('sync:progress', p)
       )
@@ -48,7 +58,10 @@ export function registerSync(): void {
       if (loadSettings().modpackSyncPending) saveSettings({ modpackSyncPending: false })
       return { ok: true, summary }
     } catch (err) {
+      if (ctrl.signal.aborted || isAbortError(err)) return { ok: false, error: '', cancelled: true }
       return { ok: false, error: errMsg(err) }
+    } finally {
+      if (current === ctrl) current = null
     }
   })
 }

@@ -7,6 +7,7 @@
 //   2. undici ignora el proxy configurado en Windows; el `net` de Electron lo respeta.
 // Además los errores de Chromium traen código (ERR_CERT_AUTHORITY_INVALID, ERR_NAME_NOT_RESOLVED…),
 // que traducimos a un mensaje accionable para el jugador.
+import { closeSync, existsSync, openSync, rmSync, statSync, writeSync } from 'fs'
 import { net } from 'electron'
 import { existe } from '../shared/i18n'
 import { tr } from './idioma'
@@ -21,7 +22,25 @@ export interface HttpInit {
   idleTimeoutMs?: number
   /** URLs alternativas con el mismo contenido; se prueban tras el origen y antes de los CDN. */
   mirrors?: string[]
+  /**
+   * Escribe el cuerpo en este archivo en vez de en memoria (`body` queda vacío). Si ya tiene
+   * bytes se pide `Range` desde ahí: un corte, un reintento o una sync cancelada siguen donde
+   * quedaron. `onProgress` cuenta los bytes del archivo, no solo los de esta petición.
+   */
+  toFile?: string
+  /** Cancela la petición y los reintentos pendientes (rechaza con un error `AbortError`). */
+  signal?: AbortSignal
 }
+
+/** Error con el que se rechaza una petición cancelada con `HttpInit.signal`. */
+export function abortError(): Error {
+  const e = new Error('Cancelado')
+  e.name = 'AbortError'
+  return e
+}
+
+export const isAbortError = (e: unknown): boolean => e instanceof Error && e.name === 'AbortError'
+
 
 // `net.request` de Electron no trae timeout: una conexión que se queda colgada (wifi que
 // pierde paquetes, POP saturado que acepta y no responde) dejaba el launch esperando para
@@ -73,16 +92,32 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
   const hasType = Object.keys(headers).some((h) => h.toLowerCase() === 'content-type')
 
   return new Promise((resolve, reject) => {
+    if (init.signal?.aborted) return reject(abortError())
     const req = net.request({ method, url, redirect: 'follow' })
     const idleMs = init.idleTimeoutMs ?? IDLE_TIMEOUT_MS
     let settled = false
     let timer: NodeJS.Timeout | undefined
+    let fd: number | null = null // archivo destino abierto (solo con toFile)
+    const closeFile = (): void => {
+      if (fd !== null) closeSync(fd)
+      fd = null
+    }
+    const onAbort = (): void => {
+      finish(() => reject(abortError()))
+      req.abort()
+    }
     const finish = (fn: () => void): void => {
       if (settled) return
       settled = true
       clearTimeout(timer)
+      closeFile()
+      init.signal?.removeEventListener('abort', onAbort)
       fn()
     }
+    init.signal?.addEventListener('abort', onAbort, { once: true })
+    // Descarga a archivo: se pide solo lo que falta.
+    const offset = init.toFile && existsSync(init.toFile) ? statSync(init.toFile).size : 0
+    if (offset > 0) req.setHeader('Range', `bytes=${offset}-`)
     const arm = (): void => {
       clearTimeout(timer)
       timer = setTimeout(() => {
@@ -97,17 +132,41 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
     }
 
     req.on('response', (res) => {
-      const total = Number(res.headers['content-length'] ?? 0)
+      const length = Number(res.headers['content-length'] ?? 0)
       const chunks: Buffer[] = []
       let received = 0
+      // Con toFile solo un 200/206 va al archivo (206 = continúa, 200 = el servidor ignoró el
+      // Range y manda todo). Un error (página HTML) se queda en memoria como siempre. Un 416
+      // es un archivo a medias que ya no casa: se borra y el reintento empieza de 0.
+      let base = 0
+      if (init.toFile && (res.statusCode === 200 || res.statusCode === 206)) {
+        base = res.statusCode === 206 ? offset : 0
+        fd = openSync(init.toFile, res.statusCode === 206 ? 'a' : 'w')
+      } else if (init.toFile && res.statusCode === 416) {
+        rmSync(init.toFile, { force: true })
+      }
+      const total = length > 0 ? base + length : 0
       arm()
       res.on('data', (chunk: Buffer) => {
+        if (settled) return
         arm()
-        chunks.push(chunk)
+        if (fd !== null) {
+          try {
+            writeSync(fd, chunk)
+          } catch (e) {
+            finish(() => reject(e as Error))
+            req.abort()
+            return
+          }
+        } else chunks.push(chunk)
         received += chunk.length
-        onProgress?.(received, total)
+        onProgress?.(base + received, total)
       })
       res.on('end', () => {
+        if (fd !== null && length > 0 && received !== length) {
+          finish(() => reject(describe(url, new Error('net::ERR_CONTENT_LENGTH_MISMATCH'))))
+          return
+        }
         const norm: Record<string, string> = {}
         for (const [k, v] of Object.entries(res.headers)) {
           norm[k.toLowerCase()] = Array.isArray(v) ? v.join(', ') : String(v)
@@ -129,7 +188,8 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
 // Fallos pasajeros del edge (Fastly/Varnish delante de raw.githubusercontent y de los CDN de
 // Mojang): "503 Backend.max_conn reached" cuando el POP no tiene el archivo en caché y el origen
 // rechaza la conexión. Sin reintento un 503 de un segundo tumbaba el launch completo.
-const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504])
+// 416: Range de un archivo a medias que ya no casa; requestOnce lo borra y se reintenta de 0.
+const RETRY_STATUS = new Set([408, 416, 425, 429, 500, 502, 503, 504])
 const RETRIES = 3
 const BACKOFF_MS = 1000 // base: 1s, 2s, 4s (antes de aplicar el jitter)
 const MAX_RETRY_AFTER_MS = 10_000
@@ -191,6 +251,7 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
     const isMirror = i > 0
     for (let attempt = 1; attempt <= attempts; attempt++) {
       const backoff = jitter(BACKOFF_MS * 2 ** (attempt - 1))
+      if (init.signal?.aborted) throw abortError()
       try {
         const res = await requestOnce(target, init)
         // Del mirror solo vale un 2xx: su 404 (archivo no cacheado, repo privado, jar de más de
@@ -205,6 +266,7 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
           break // status definitivo del mirror: pasar al siguiente sin gastar reintentos
         }
       } catch (e) {
+        if (isAbortError(e)) throw e
         lastErr = e
         if (attempt < attempts) await sleep(backoff)
       }

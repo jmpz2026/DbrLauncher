@@ -137,6 +137,11 @@ const T = {
   'sync.descargando': { es: 'Descargando — {done}/{total}', en: 'Downloading — {done}/{total}', pt: 'Baixando — {done}/{total}' },
   'sync.limpiando': { es: 'Limpiando {done}/{total}', en: 'Cleaning up {done}/{total}', pt: 'Limpando {done}/{total}' },
   'sync.listo': { es: 'Listo', en: 'Done', pt: 'Pronto' },
+  'sync.cancelar_hint': {
+    es: 'Si cancelas, la descarga sigue donde quedó la próxima vez.',
+    en: 'If you cancel, the download picks up where it left off next time.',
+    pt: 'Se cancelar, o download continua de onde parou na próxima vez.'
+  },
 
   // Ajustes
   'ajustes.titulo': { es: 'Ajustes', en: 'Settings', pt: 'Ajustes' },
