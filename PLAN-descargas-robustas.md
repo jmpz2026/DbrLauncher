@@ -59,3 +59,4 @@ El fix se distribuye con el updater nuevo: el salto v27 → v28 todavía usa el 
 - 2026-10-29: plan creado. Al implementar, copiar a `DbrLauncher-android/PLAN-descargas-robustas.md` + puntero en su CLAUDE.md.
 - 2026-10-29: implementado pasos 1-5 (updater con timeouts/reintentos/Range/sha256, diálogo con error + Reintentar, instalación DBR con 3 intentos automáticos, KeepScreenOn en descarga/instalación/sync, strings es/en/pt, CI escribe sha256). Compila (`compileDebugKotlin` + `processDebugResources` desde `C:\dev\dbr-wt`).
 - Siguiente paso: commit en `android-zalith` + tag `android-v28` para que el CI genere el APK; prueba manual en el teléfono.
+- 2026-10-29: android-v28 publicado (commit 4b8b521, CI OK, version.json build 28 con sha256). Siguiente: prueba manual del usuario en el teléfono.

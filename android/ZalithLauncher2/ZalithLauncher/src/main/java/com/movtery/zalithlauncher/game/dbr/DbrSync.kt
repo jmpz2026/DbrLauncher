@@ -13,19 +13,26 @@ import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
 import com.movtery.zalithlauncher.utils.GSON
+import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.net.URL
 import java.security.MessageDigest
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 object DbrSync {
+    private const val TAG = "DbrSync"
+
     /** Nombre del índice de archivos gestionados, dentro del gameDir. */
     private const val MANAGED_FILE = ".dbr_managed.json"
 
@@ -135,33 +142,156 @@ object DbrSync {
         throw first ?: IllegalStateException("Sin URLs")
     }
 
+    /** Reintentos por URL ante cortes de red, reanudando desde el `.part`. */
+    private const val MAX_ATTEMPTS = 5
+
+    /** Jars desde este tamaño se intentan actualizar con parche delta (mismo umbral que make-patches.mjs). */
+    private const val PATCH_MIN_SIZE = 5L * 1024 * 1024
+
+    /**
+     * Temporal de la descarga de [dest]. Lleva el sha esperado en el nombre: un `.part` de otra
+     * versión del mismo archivo nunca se reanuda.
+     */
+    private fun partFor(dest: File, sha1: String?): File =
+        File(dest.path + "." + (sha1?.take(8)?.lowercase() ?: "nosha") + ".part")
+
+    /** Mueve [src] a [dest], pisando lo que hubiera. */
+    private fun replace(src: File, dest: File) {
+        if (dest.exists()) dest.delete()
+        if (!src.renameTo(dest)) throw IOException(GlobalContext.getString(R.string.dbr_error_write, dest.path))
+    }
+
+    /**
+     * Baja [url] en [part] reintentando los cortes de red con backoff y reanudando desde lo que
+     * ya haya. Un 4xx no se reintenta. El `.part` se conserva si falla o se cancela.
+     */
+    private suspend fun fetchWithRetry(url: String, part: File, onProgress: suspend (Long, Long) -> Unit) {
+        var delayMs = 1_000L
+        var attempt = 0
+        while (true) {
+            try {
+                DbrHttp.fetchResumable(url, part, onProgress)
+                return
+            } catch (e: IOException) {
+                if (e is DbrHttp.HttpStatusException && !e.retryable) throw e
+                attempt++
+                if (attempt >= MAX_ATTEMPTS) throw e
+                Logger.warning(TAG, "Descarga cortada ($attempt/$MAX_ATTEMPTS): $url", e)
+            }
+            delay(delayMs)
+            delayMs = (delayMs * 2).coerceAtMost(10_000L)
+        }
+    }
+
     /**
      * Baja a [dest] desde la primera de [urls] que responda y case con [sha1]. Se escribe en un
-     * temporal: una descarga cortada o de un mirror malo no deja el archivo a medias.
+     * `.part` que sobrevive a cortes y a cancelar: la próxima sync sigue donde quedó (las URLs
+     * sirven el mismo contenido, así que el `.part` vale para todas).
      * Si fallan todas se lanza el error del origen, que es el que explica el problema.
      */
-    private fun downloadFirst(urls: List<String>, dest: File, sha1: String?) {
-        val tmp = File(dest.path + ".part")
+    private suspend fun downloadFirst(urls: List<String>, dest: File, sha1: String?, meter: ByteCounter.Meter) {
+        val part = partFor(dest, sha1)
         var first: Exception? = null
         for (u in urls) {
             try {
-                openOk(u).use { input -> tmp.outputStream().use { output -> input.copyTo(output) } }
-                if (!sha1.isNullOrEmpty() && !sha1(tmp).equals(sha1, ignoreCase = true)) {
-                    throw java.io.IOException(GlobalContext.getString(R.string.dbr_error_hash, u))
+                fetchWithRetry(u, part) { received, _ -> meter.progress(received) }
+                if (!sha1.isNullOrEmpty() && !sha1(part).equals(sha1, ignoreCase = true)) {
+                    part.delete()
+                    meter.progress(0)
+                    throw IOException(GlobalContext.getString(R.string.dbr_error_hash, u))
                 }
-                if (dest.exists()) dest.delete()
-                if (!tmp.renameTo(dest)) throw java.io.IOException(GlobalContext.getString(R.string.dbr_error_write, dest.path))
+                replace(part, dest)
                 return
-            } catch (e: Exception) {
-                tmp.delete()
+            } catch (e: IOException) {
                 if (first == null) first = e
             }
         }
         throw first ?: IllegalStateException("Sin URLs")
     }
 
-    /** Progreso reportado por callback. phase: check|download|delete|done */
-    data class Progress(val phase: String, val done: Int, val total: Int, val file: String)
+    /** Nombre de un jar sin la versión, para emparejar versiones: `mods/DbrServerPack-5.5.0.jar` -> `mods/dbrserverpack`. */
+    private val VERSIONED_JAR = Regex("""^(.+?)[-_ ]v?\d[^/]*\.jar$""", RegexOption.IGNORE_CASE)
+
+    private fun modKey(path: String): String {
+        val dir = path.substringBeforeLast('/', "")
+        val name = path.substringAfterLast('/')
+        val base = VERSIONED_JAR.find(name)?.groupValues?.get(1) ?: name
+        return "$dir/${base.lowercase()}"
+    }
+
+    /**
+     * Intenta reconstruir [f] desde una versión vieja del mismo jar que ya esté en el disco y un
+     * parche delta del release (ver [DbrPatch]). Devuelve false si no hay parche para ninguna
+     * versión vieja o algo falla: entonces se baja el jar completo.
+     */
+    private suspend fun tryPatch(f: ManifestFile, dest: File, candidates: List<File>, meter: ByteCounter.Meter): Boolean {
+        val newSha = f.sha1?.lowercase()?.takeIf { it.isNotEmpty() } ?: return false
+        for (old in candidates.distinct()) {
+            if (!old.isFile) continue
+            val oldSha = runCatching { sha1(old) }.getOrNull() ?: continue
+            if (oldSha == newSha) continue
+            val patch = File(dest.path + "." + oldSha.take(8) + "-" + newSha.take(8) + ".dbrpatch.part")
+            val out = File(dest.path + "." + newSha.take(8) + ".patched")
+            try {
+                fetchWithRetry(ASSET_MIRROR_BASE + DbrPatch.assetName(oldSha, newSha), patch) { received, total ->
+                    if (total > 0) meter.expect(total)
+                    meter.progress(received)
+                }
+                DbrPatch.apply(old, patch, out)
+                replace(out, dest)
+                return true
+            } catch (e: DbrHttp.HttpStatusException) {
+                //404: no hay parche para esta pareja de versiones.
+            } catch (e: IOException) {
+                Logger.warning(TAG, "Parche de ${f.path} falló, se baja completo", e)
+            } finally {
+                patch.delete()
+            }
+            meter.progress(0)
+            meter.expect(f.size ?: 0L)
+        }
+        return false
+    }
+
+    /**
+     * Bytes de toda la sync, sumados por los archivos que bajan en paralelo. Cada archivo tiene
+     * su [Meter], que solo usa la corrutina de ese archivo.
+     */
+    private class ByteCounter(total: Long, private val emit: () -> Unit) {
+        val done = AtomicLong(0)
+        val total = AtomicLong(total)
+
+        inner class Meter(private var expected: Long) {
+            private var counted = 0L
+
+            /** [received] = bytes que lleva este archivo (puede bajar si la descarga se reinicia). */
+            fun progress(received: Long) {
+                done.addAndGet(received - counted)
+                counted = received
+                emit()
+            }
+
+            /** Cambia lo que se espera bajar de este archivo (el parche en vez del jar, o al revés). */
+            fun expect(bytes: Long) {
+                total.addAndGet(bytes - expected)
+                expected = bytes
+            }
+        }
+    }
+
+    /**
+     * Progreso reportado por callback. phase: check|download|delete|done.
+     * En download, [bytesDone]/[bytesTotal] cuentan lo que baja de verdad (parches incluidos) y
+     * [file] es el archivo más grande de los que se están bajando.
+     */
+    data class Progress(
+        val phase: String,
+        val done: Int,
+        val total: Int,
+        val file: String,
+        val bytesDone: Long = 0L,
+        val bytesTotal: Long = 0L
+    )
 
     /** Une base + ruta relativa impidiendo path traversal. */
     private fun safeJoin(base: File, rel: String): File {
@@ -297,14 +427,47 @@ object DbrSync {
         val total = toDownload.size + toDelete.size
         val done = AtomicInteger(0)
 
-        // 3) Descargar en paralelo (con verificación de SHA-1).
+        //Temporales de syncs anteriores que ya no sirven (otra versión del archivo, parches).
+        //Los de lo que hay que bajar ahora se quedan: la descarga sigue donde quedó.
+        val keepParts = toDownload.map { partFor(safeJoin(gameDir, it.path), it.sha1).path }.toSet()
+        files.mapNotNull { safeJoin(gameDir, it.path).parentFile }.toSet().forEach { dir ->
+            dir.listFiles()?.filter {
+                (it.name.endsWith(".part") || it.name.endsWith(".patched")) && it.path !in keepParts
+            }?.forEach { it.delete() }
+        }
+
+        // 3) Descargar en paralelo (con verificación de SHA-1), contando bytes.
+        val active = ConcurrentHashMap<String, Long>()
+        val lastEmit = AtomicLong(0)
+        lateinit var bytes: ByteCounter
+        fun emitDownload(force: Boolean) {
+            val now = System.currentTimeMillis()
+            val prev = lastEmit.get()
+            if (!force && (now - prev < 250 || !lastEmit.compareAndSet(prev, now))) return
+            val file = active.maxByOrNull { it.value }?.key ?: ""
+            onProgress(Progress("download", done.get(), total, file, bytes.done.get(), bytes.total.get()))
+        }
+        bytes = ByteCounter(toDownload.sumOf { it.size ?: 0L }) { emitDownload(false) }
         pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
-            //Origen y, si falla (p. ej. 403 de raw a la IP del jugador), la copia del release.
-            val mirror = f.sha1?.takeIf { it.isNotEmpty() }?.let { ASSET_MIRROR_BASE + it.lowercase() }
-            downloadFirst(listOfNotNull(f.url, mirror), dest, f.sha1)
-            onProgress(Progress("download", done.incrementAndGet(), total, f.path))
+            val meter = bytes.Meter(f.size ?: 0L)
+            active[f.path] = f.size ?: 0L
+            try {
+                //Jar grande con versión vieja en el disco: basta un parche de 1-2 MB.
+                val key = modKey(f.path)
+                val patched = (f.size ?: 0L) >= PATCH_MIN_SIZE && f.path.endsWith(".jar", ignoreCase = true) &&
+                    tryPatch(f, dest, listOf(dest) + toDelete.filter { modKey(it) == key }.map { safeJoin(gameDir, it) }, meter)
+                if (!patched) {
+                    //Origen y, si falla (p. ej. 403 de raw a la IP del jugador), la copia del release.
+                    val mirror = f.sha1?.takeIf { it.isNotEmpty() }?.let { ASSET_MIRROR_BASE + it.lowercase() }
+                    downloadFirst(listOfNotNull(f.url, mirror), dest, f.sha1, meter)
+                }
+            } finally {
+                active.remove(f.path)
+            }
+            done.incrementAndGet()
+            emitDownload(true)
         }
 
         //El options.txt de DBR-ASSETS dice lang:es_ES para todos.

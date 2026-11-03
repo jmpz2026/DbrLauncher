@@ -100,8 +100,10 @@ import com.movtery.zalithlauncher.viewmodel.DbrModsViewModel
 import com.movtery.zalithlauncher.viewmodel.DbrServerViewModel
 import android.content.Context
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -127,8 +129,13 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Color
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import com.movtery.zalithlauncher.utils.file.formatFileSize
 import java.io.IOException
 
 @Composable
@@ -368,7 +375,13 @@ private sealed interface DbrInstallState {
     data object Preparing : DbrInstallState
     /** [attempt] > 1 = reintento automático tras un corte de red. */
     data class Installing(val attempt: Int = 1) : DbrInstallState
-    data class Syncing(val done: Int, val total: Int) : DbrInstallState
+    data class Syncing(
+        val done: Int,
+        val total: Int,
+        val bytesDone: Long = 0L,
+        val bytesTotal: Long = 0L,
+        val file: String = ""
+    ) : DbrInstallState
     data object Success : DbrInstallState
     /** [retry] repite la operación que falló (instalar o sincronizar). */
     data class Error(val th: Throwable, val retry: (() -> Unit)? = null) : DbrInstallState
@@ -445,10 +458,16 @@ private class DbrInstallViewModel : ViewModel() {
         //Si el jugador aceptó la config recomendada al cambiar de variante, esta sync la
         //re-aplica y consume el flag.
         val reseed = AllSettings.dbrModpackSeedPending.getValue()
-        viewModelScope.launch {
+        val previous = syncJob
+        syncJob = viewModelScope.launch {
+            //Una sync cancelada puede seguir unos segundos bloqueada en una lectura de red: se
+            //espera a que suelte los .part antes de escribir en ellos otra vez.
+            previous?.cancelAndJoin()
+            val self = coroutineContext.job
             runCatching {
                 DbrSync.sync(gameDir, reseed) { p ->
-                    state = DbrInstallState.Syncing(p.done, p.total)
+                    if (!self.isActive) return@sync
+                    state = DbrInstallState.Syncing(p.done, p.total, p.bytesDone, p.bytesTotal, p.file)
                 }
             }.onSuccess {
                 if (reseed) AllSettings.dbrModpackSeedPending.save(false)
@@ -459,6 +478,8 @@ private class DbrInstallViewModel : ViewModel() {
                 state = DbrInstallState.Idle
                 onLaunch()
             }.onFailure { th ->
+                //Cancelada por el jugador: los .part se quedan y la próxima sync sigue desde ahí.
+                if (th is CancellationException) return@onFailure
                 //Con un cambio de variante pendiente los mods del disco son de la otra variante.
                 val canPlay = !DbrSync.neverSynced(gameDir) && !AllSettings.dbrModpackSyncPending.getValue()
                 Logger.error("DbrInstall", "Sync del modpack falló", th)
@@ -469,6 +490,15 @@ private class DbrInstallViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    private var syncJob: Job? = null
+
+    /** Para la sync en curso. Lo ya bajado se conserva para la próxima vez. */
+    fun cancelSync() {
+        if (state !is DbrInstallState.Syncing) return
+        syncJob?.cancel()
+        state = DbrInstallState.Idle
     }
 
     fun playAnyway() {
@@ -500,6 +530,44 @@ private fun Throwable.isNetworkError(): Boolean =
 
 @Composable
 private fun rememberDbrInstallViewModel(): DbrInstallViewModel = viewModel { DbrInstallViewModel() }
+
+/** Barra en bytes + "12,3 MB / 47,7 MB · 850 KB/s" + archivo que se está bajando. */
+@Composable
+private fun SyncBytesProgress(state: DbrInstallState.Syncing) {
+    //Velocidad: media sobre una ventana de ~3 s de muestras (bytes, instante).
+    val samples = remember { ArrayDeque<Pair<Long, Long>>() }
+    val now = System.currentTimeMillis()
+    samples.addLast(state.bytesDone to now)
+    while (samples.size > 2 && now - samples.first().second > 3_000) samples.removeFirst()
+    val (firstBytes, firstTime) = samples.first()
+    val speed = if (now > firstTime) ((state.bytesDone - firstBytes) * 1000 / (now - firstTime)).coerceAtLeast(0) else 0L
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        LinearProgressIndicator(
+            progress = { (state.bytesDone.toFloat() / state.bytesTotal).coerceIn(0f, 1f) },
+            modifier = Modifier.width(240.dp)
+        )
+        Text(
+            text = buildString {
+                append(formatFileSize(state.bytesDone)).append(" / ").append(formatFileSize(state.bytesTotal))
+                if (speed > 0) append(" · ").append(formatFileSize(speed)).append("/s")
+            },
+            style = MaterialTheme.typography.labelMedium
+        )
+        if (state.file.isNotEmpty()) {
+            Text(
+                text = state.file.substringAfterLast('/'),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -553,11 +621,22 @@ private fun DbrInstallDialog(
                             text = stringResource(R.string.dbr_syncing_message),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        if (state.bytesTotal > 0) {
+                            SyncBytesProgress(state)
+                        }
                         if (state.total > 0) {
                             Text(
                                 text = "${state.done} / ${state.total}",
                                 style = MaterialTheme.typography.labelMedium
                             )
+                        }
+                        Text(
+                            text = stringResource(R.string.dbr_sync_cancel_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextButton(onClick = { viewModel.cancelSync() }) {
+                            Text(stringResource(R.string.generic_cancel))
                         }
                     }
                 }

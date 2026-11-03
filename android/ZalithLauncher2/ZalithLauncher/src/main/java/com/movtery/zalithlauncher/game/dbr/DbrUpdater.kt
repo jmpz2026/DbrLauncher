@@ -16,15 +16,11 @@ import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
-import kotlin.coroutines.coroutineContext
 
 object DbrUpdater {
     private const val TAG = "DbrUpdater"
@@ -111,51 +107,17 @@ object DbrUpdater {
         return apk
     }
 
-    /** Baja (o reanuda) [url] en [part]. Lanza IOException si la conexión se corta o se cuelga. */
+    /** Baja (o reanuda) [url] en [part], con el progreso en % entregado en Main. */
     private suspend fun fetch(url: String, part: File, onProgress: (Int) -> Unit) {
-        var offset = if (part.isFile) part.length() else 0L
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 15_000
-        conn.readTimeout = 20_000
-        if (offset > 0) conn.setRequestProperty("Range", "bytes=$offset-")
-        try {
-            val code = conn.responseCode
-            when (code) {
-                HttpURLConnection.HTTP_PARTIAL -> {}
-                HttpURLConnection.HTTP_OK -> offset = 0L //el server ignoró el Range: desde 0
-                416 -> { //Range fuera de rango: el .part ya estaba completo o es basura
-                    part.delete()
-                    throw IOException("HTTP 416, reiniciando descarga")
-                }
-                else -> throw IOException("HTTP $code")
-            }
-            val total = offset + conn.contentLengthLong.coerceAtLeast(0L)
-            var received = offset
-            var lastPercent = -1
-            conn.inputStream.use { input ->
-                FileOutputStream(part, offset > 0).use { output ->
-                    val buf = ByteArray(1 shl 16)
-                    while (true) {
-                        coroutineContext.ensureActive()
-                        val n = input.read(buf)
-                        if (n < 0) break
-                        output.write(buf, 0, n)
-                        received += n
-                        if (total > 0) {
-                            val p = ((received * 100) / total).toInt()
-                            if (p != lastPercent) {
-                                lastPercent = p
-                                withContext(Dispatchers.Main) { onProgress(p) }
-                            }
-                        }
-                    }
+        var lastPercent = -1
+        DbrHttp.fetchResumable(url, part) { received, total ->
+            if (total > 0) {
+                val p = ((received * 100) / total).toInt()
+                if (p != lastPercent) {
+                    lastPercent = p
+                    withContext(Dispatchers.Main) { onProgress(p) }
                 }
             }
-            if (total > offset && received != total) {
-                throw IOException("Descarga incompleta ($received de $total bytes)")
-            }
-        } finally {
-            conn.disconnect()
         }
     }
 

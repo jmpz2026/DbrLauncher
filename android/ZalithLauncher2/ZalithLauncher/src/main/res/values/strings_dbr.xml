@@ -24,6 +24,7 @@
     <string name="dbr_update_later">Later</string>
     <string name="dbr_update_downloading">Downloading update…</string>
     <string name="dbr_syncing_message">Syncing the DBR modpack…</string>
+    <string name="dbr_sync_cancel_hint">If you cancel, the download picks up where it left off next time.</string>
     <string name="dbr_install_button">Install DBR</string>
     <string name="dbr_installing_message">Installing DBR (Minecraft 1.7.10 + Forge).
 This may take a few minutes…</string>
