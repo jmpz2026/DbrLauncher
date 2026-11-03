@@ -439,10 +439,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.3.0.jar",
-      "sha1": "4b73ec0c8195e79a5aeb365c3ed90c6145cb9520",
-      "size": 47179508,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-5.3.0.jar"
+      "path": "mods/DbrServerPack-5.5.0.jar",
+      "sha1": "46e7a4c588f52f802b7f69e9169d44852e418968",
+      "size": 47745822,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/DbrServerPack-5.5.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -499,10 +499,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-5.3.0.jar",
-      "sha1": "258bb719cb136365cbe6f9e0d8d062f6cf9d59b4",
-      "size": 4381487,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/npcdbc-5.3.0.jar"
+      "path": "mods/npcdbc-5.4.0.jar",
+      "sha1": "80fcd59b15ea456bae0acdb5cb32bfb3b3830903",
+      "size": 4391172,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/mods/npcdbc-5.4.0.jar"
     },
     {
       "path": "options.txt",
