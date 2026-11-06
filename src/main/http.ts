@@ -197,7 +197,10 @@ const MAX_RETRY_AFTER_MS = 10_000
 // raw.githubusercontent responde 403 cuando bloquea la IP del cliente (VPN, proxy, CGNAT
 // compartido, IP marcada por abuso). Reintentar contra el origen no sirve, pero los mirrors
 // sirven el mismo archivo desde otra red: se salta directo a ellos.
-const MIRROR_STATUS = new Set([403])
+// 3xx: net.request ya sigue las redirecciones válidas, así que un 3xx que llega aquí no se pudo
+// seguir (sin Location, destino bloqueado). Lo devuelve un intermediario del usuario (antivirus
+// con escaneo HTTPS, filtro del ISP, proxy), nunca raw: los mirrors van por otra red.
+const MIRROR_STATUS = new Set([301, 302, 303, 307, 308, 403])
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
