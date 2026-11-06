@@ -439,10 +439,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.6.0.jar",
-      "sha1": "7a3f974c3f32a1b348afefb3159b60835b757487",
-      "size": 37252094,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.6.0.jar"
+      "path": "mods/DbrServerPack-5.7.0.jar",
+      "sha1": "a55a3131ddee9cecf1db35634f187e152755a356",
+      "size": 37435972,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.7.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -534,8 +534,8 @@
     },
     {
       "path": "resourcepacks/DbrTexture v6.zip",
-      "sha1": "6c082d9a7f03685e873e62525dd2d224eba50a4c",
-      "size": 4334396,
+      "sha1": "235025f93ccbf9621f1764cbcd9f932df7a8da78",
+      "size": 4335133,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/resourcepacks/DbrTexture%20v6.zip"
     },
     {
