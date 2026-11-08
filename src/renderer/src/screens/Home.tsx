@@ -10,6 +10,7 @@ export default function Home(): JSX.Element {
   const launching = useStore((s) => s.launching)
   const gameRunning = useStore((s) => s.gameRunning)
   const play = useStore((s) => s.play)
+  const relogin = useStore((s) => s.relogin)
   const ping = useStore((s) => s.ping)
   const experimental = useStore((s) => s.modpackVariant === 'experimental')
   const tr = useT()
@@ -58,6 +59,21 @@ export default function Home(): JSX.Element {
             {label}
           </button>
         </div>
+
+        {account?.needsRelogin && (
+          <div
+            role="alert"
+            className="mc-panel flex max-w-lg items-center gap-4 !border-gold-deep px-4 py-3 text-xs text-text"
+          >
+            <span className="flex-1">{tr('home.sesion_caducada')}</span>
+            <button
+              onClick={relogin}
+              className="mc-btn-gold shrink-0 px-3 py-1.5 text-xs font-semibold uppercase"
+            >
+              {tr('home.volver_entrar')}
+            </button>
+          </div>
+        )}
 
         {experimental && (
           <div className="mc-panel !border-red-600 max-w-lg px-4 py-2 text-center text-xs text-red-300">

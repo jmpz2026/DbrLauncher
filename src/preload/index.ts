@@ -24,12 +24,19 @@ const api = {
     loginPirata: (username: string): Promise<AuthResult> =>
       ipcRenderer.invoke('auth:login-pirata', username),
     loginPremium: (): Promise<AuthResult> => ipcRenderer.invoke('auth:login-premium'),
+    cancelPremium: (): Promise<void> => ipcRenderer.invoke('auth:cancel-premium'),
     logout: (): Promise<void> => ipcRenderer.invoke('auth:logout'),
     // Suscripción al device code durante el login premium. Devuelve una función para desuscribir.
     onDeviceCode: (cb: (info: DeviceCodeInfo) => void): (() => void) => {
       const listener = (_e: unknown, info: DeviceCodeInfo): void => cb(info)
       ipcRenderer.on('auth:device-code', listener)
       return () => ipcRenderer.removeListener('auth:device-code', listener)
+    },
+    // La sesión cambió en segundo plano (renovación: nombre nuevo o sesión premium caducada).
+    onSessionChanged: (cb: (account: Account | null) => void): (() => void) => {
+      const listener = (_e: unknown, account: Account | null): void => cb(account)
+      ipcRenderer.on('auth:session-changed', listener)
+      return () => ipcRenderer.removeListener('auth:session-changed', listener)
     }
   },
 

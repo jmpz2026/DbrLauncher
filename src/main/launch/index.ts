@@ -68,6 +68,8 @@ export async function launch(
   if (!account) throw new Error(tr('err.sin_sesion'))
 
   const settings = loadSettings()
+  // Primero la sesión: si la premium caducó, avisar antes de preparar Java y librerías.
+  const accessToken = (await ensureMcToken()) ?? '0'
 
   const java = await ensureJava((jp) => onProgress({ phase: 'java', percent: jp.percent }))
 
@@ -79,7 +81,7 @@ export async function launch(
   const ctx: LaunchContext = {
     username: account.username,
     uuid: account.uuid.replace(/-/g, ''),
-    accessToken: (await ensureMcToken()) ?? '0',
+    accessToken,
     userType: account.type === 'premium' ? 'msa' : 'legacy',
     versionName: prep.version.id,
     gameDir: getGameDir(),

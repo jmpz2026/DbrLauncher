@@ -53,6 +53,8 @@ interface State {
   setAccount: (a: Account | null) => void
   hydrate: () => Promise<void>
   logout: () => Promise<void>
+  /** Sesión premium caducada: vuelve a la pantalla de login sin borrar la cuenta guardada. */
+  relogin: () => void
 
   // Sincronización de mods
   syncing: boolean
@@ -155,6 +157,10 @@ export const useStore = create<State>((set, get) => ({
       account = null
     }
     set({ account, ready: true })
+    // La renovación en segundo plano puede cambiar el nombre o marcar la sesión como caducada.
+    window.dbr?.auth?.onSessionChanged?.((a) => {
+      if (get().account) set({ account: a })
+    })
     // Un fallo al cargar ajustes NO debe deslogear al usuario: se queda con los defaults.
     try {
       await get().loadSettings()
@@ -174,6 +180,7 @@ export const useStore = create<State>((set, get) => ({
     await window.dbr.auth.logout()
     set({ account: null, tab: 'home' })
   },
+  relogin: () => set({ account: null, tab: 'home' }),
 
   syncing: false,
   syncProgress: null,

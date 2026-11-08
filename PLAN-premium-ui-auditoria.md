@@ -1,0 +1,151 @@
+# Plan: Premium login (live.com flow) + device code card + optional music + UI polish + audit fixes
+
+## Context
+
+A player's portable build of DbrLauncher showed that Microsoft login works without the Mojang approval of our Azure app. It does this by using the client ID of the official Minecraft Launcher (`00000000402b5328`) through `login.live.com`. The user decided: **do the same as the player**, but implement it cleanly, for Windows and Linux. The top priority is that the premium session lasts as long as possible before the player has to log in again.
+
+The player's patch has bugs that we must not copy. Its refresh goes to the Azure endpoint with our client ID, so it always fails and asks for login on every start. It sends `RpsTicket: d=`. Its download errors fail silently.
+
+Risk the user accepted: `00000000402b5328` is not our client ID. Microsoft can block it at any time. We keep the Azure flow in the code, behind a config switch, so we can move to it if the review is ever approved or the live flow breaks.
+
+User decisions:
+- Premium uses the live.com flow with the official client ID (like the portable).
+- Music: optional, off by default, a track with a clear license.
+- UI: targeted polish, not a full redesign. The review found "AI look" patterns, and the code base is small and coherent.
+
+## Phase 1 — Premium login that lasts (main process)
+
+Files: `src/shared/config.ts`, `src/main/auth/{index,microsoft,minecraft,store}.ts`, `src/shared/account.ts`, `src/preload/index.ts`, `src/main/launch/index.ts:82`, `src/shared/i18n.ts`.
+
+1. **Provider config.** `CONFIG.auth.provider: 'live' | 'azure'`, default `'live'`. Add a `live` block: clientId `00000000402b5328`, scope `service::user.auth.xboxlive.com::MBI_SSL`, `deviceCodeUrl` `https://login.live.com/oauth20_connect.srf`, `tokenUrl` `https://login.live.com/oauth20_token.srf`. Keep the `azure` block as it is today. `isPremiumEnabled()` becomes true for `live`. Remove the "Próximamente" path.
+2. **One OAuth module for both providers** (`microsoft.ts`). `requestDeviceCode`, `pollForToken` and `refreshToken` take the provider endpoints. For live, add `response_type=device_code` and send `scope` in the refresh. Keep the existing `slow_down` / `authorization_declined` / `expired_token` handling.
+   - Return `errorKind: 'expired' | 'network' | 'other'`: `invalid_grant` / `interaction_required` / `bad_verification_code` mean `expired`; timeout / 5xx / no response mean `network`.
+3. **RpsTicket by provider** (`minecraft.ts`). Azure uses `d=<token>`. Live uses `t=<token>`, with one retry using `d=` if XBL answers 400. Confirm on the first real login and remove the retry once the right prefix is known.
+4. **Keep the Minecraft token.** `login_with_xbox` returns `expires_in` (about 24 h). Return `expiresAt` from `fetchMinecraftProfile`.
+5. **Persistence that survives** (`store.ts`):
+   - Store `provider`, `refreshTokenEnc`, `mcTokenEnc`, `mcExpiresAt` and `needsRelogin`.
+   - Write atomically: write `account.json.tmp`, then rename. A half-written file loses the session today.
+   - **Linux without a keyring** (Electron 22: `safeStorage.isEncryptionAvailable()` can be false): fall back to plain storage in a file with mode `0600` and flag `insecureStorage: true`. Today the refresh token is not saved at all in this case, so login is needed on every start.
+   - If decryption fails (keyring changed): set `needsRelogin`, do not crash.
+6. **Silent renewal with a single flight** (`auth/index.ts`). `ensureSession(): Promise<SessionState>` with one shared in-flight promise, so launch and startup never refresh twice in parallel.
+   - If the MC token is valid for more than 10 min: use it, no network.
+   - Else refresh MS. **Save the rotated refresh token immediately**, before the Xbox chain. Then run XBL → XSTS → MC, save the MC token and `expiresAt`, and update `username`/`uuid` from the profile (name changes).
+   - Error `expired`: set `needsRelogin=true` and keep the username for the UI.
+   - Error `network`: keep the session and retry 2 times with backoff.
+7. **Keep the refresh token alive.** Call `ensureSession()` in the background when the app starts (premium only), and every 12 h while the launcher stays open. Each use renews the Microsoft refresh token, so the session only expires if the launcher is not opened for a long time (about 90 days by Microsoft policy).
+8. **Never launch premium with token `'0'`** (`launch/index.ts:82`). If there is no valid token: if `needsRelogin`, stop the launch with "Tu sesión de Microsoft caducó, vuelve a entrar". If it is a network error, show the network error. Offline accounts keep `'0'`.
+9. **Cancel and robustness.** `auth:cancel-premium` IPC with an `AbortController` passed to `pollForToken` and `httpRequest`. Check `sender.isDestroyed()` before `send`. Open only `https://` URLs on `login.live.com`, `microsoft.com` or `www.microsoft.com` with `shell.openExternal`.
+10. **IPC for the UI.** `auth:get` returns `{ account, needsRelogin }`. Add an `auth:session-changed` event so the renderer shows a banner when renewal finds an expired session.
+
+## Phase 2 — Device code card and optional music (renderer, portable point 7)
+
+Files: `src/renderer/src/screens/Login.tsx`, `store.ts`, `screens/Home.tsx`, `screens/Settings.tsx`, `src/shared/settings.ts`, `src/main/settings/index.ts`, i18n.
+
+1. **Device code card** in the premium card (`Login.tsx`, `device` block):
+   - The code is large, is copied to the clipboard automatically when it arrives, and has a "Copiar" / "Copiado" button. Reuse the keys `comun.copiar` / `comun.copiado` and the `FuseBanner.tsx` pattern.
+   - Add an "Abrir enlace" button, a countdown from `expiresIn`, and a "Cancelar" button.
+   - Add `busy` and `catch` to both logins.
+2. **Session banner.** When `needsRelogin` is set, Home shows "Tu sesión de Microsoft caducó" with a "Volver a entrar" button that starts the device code flow with the same account.
+3. **Optional music:**
+   - Setting `musica: { activa: false, volumen: 0.3 }`, with a toggle and slider in Settings.
+   - A single `<audio loop>` in `App.tsx`. It pauses while the game is running (`launch` status) and when the window is minimized.
+   - Track: generate it with the `mc-musica` skill (Stable Audio, ACRCloud check, credit in COPYRIGHT). Do **not** use the portable's `cancion.mp3`.
+
+## Phase 3 — UI polish (no redesign)
+
+Target the patterns that look AI-made, in priority order:
+1. **Two-level typography.** Pixelify only for titles and the PLAY button. A readable sans for body text and labels. Uppercase with wide tracking only on the main button.
+2. **One brand: "Dbr Launcher"** (user decision). Use it in the window title, the title bar (replacing "Resurrection") and the installer.
+3. **Shared components:**
+   - `Btn`, `Modal` (role=dialog, Escape, focus trap), `Progress` (with a real animated indeterminate mode) and `PanelTitle`.
+   - These replace the copies in Home, Settings, UpdateOverlay and the modals.
+   - A visible `focus-visible` style everywhere.
+4. **Home:** the "Mods al día" chip shows the real state (sync off or failed). The ki-style progress bar has a real indeterminate mode. There is no art for now (user decision): a later phase.
+5. **Saga palette:** orange `#f26a1b` + blue `#1f4fa8` with ki gold for states. Use one single error color.
+6. **Settings** in tabs (Juego / Modpack / Sistema), with real toggles that use `aria-pressed`.
+
+**Order of work:** Phase 1 → 2 → Phase 4 high priority → 3 → the rest of 4. Each phase ends with its own commit and a line in the log.
+
+## Phase 4 — Code audit fixes
+
+### Renderer (verified by the review)
+- **Gold button hover** (`Settings.tsx:275`, `LiteProposalModal.tsx:43`, `UpdateOverlay.tsx:70`): text becomes unreadable because of `.mc-btn:hover`. Remove `mc-btn` when `mc-btn-gold` is set.
+- **Listener leak** (`store.ts:220-235`): `launch.onStatus` stays alive if `launch.start()` returns `!ok`. Remove it in that branch.
+- **Settings inputs** (`Settings.tsx:351,363,383`, `store.ts:332-355`): one IPC call per key press can reorder answers, and `Number('')` sends 0. Save on blur or with a 300 ms debounce. Also merge the duplicated mapping at `store.ts:318-330` / `345-355`.
+- **Logout** (`store.ts:173`): reset `prewarmPromise`, `prewarmDone` and `syncSummary`.
+- **Ping** (`store.ts:361`): add a `catch`, and set `lastPingAt` only after success.
+- **Missing optional call** (`Home.tsx:296`): `getVersion` needs `?.`.
+- **Timer cleanup:** clear the `setTimeout` calls in `FuseBanner.tsx:29` and `GameLogModal.tsx:19` on unmount.
+- **Impure render:** move the `useSpeed` ref update into an effect.
+- **Dead code:** Tailwind tokens `stone2`, `stone-light`, `stone-dark`, `line`, `accent`, fonts `pixel` / `display`, `splash-pulse`. Class `.bg-blocks`. Store field `prewarming`.
+- **Text without `tr()`:** "No-Premium", "Premium", "GB RAM", "Build v", "Forge · Java 8". Make `<html lang>` dynamic.
+- **Motion:** the chispas follow `prefers-reduced-motion`.
+
+### Main process — high priority (players get stuck, or a security hole)
+
+1. **Updater error** (`updater/index.ts:52`): send `state:'error'` and let `UpdateOverlay` retry or close. Today a failed download leaves the player trapped on the overlay.
+2. **Packaging** (`electron-builder.yml:5-10`): use a whitelist `files: ['out/**','package.json']`. The local asar weighs 736 MB with `.npmcache`, `.claude/settings.local.json`, `scripts/` and the docs inside.
+3. **Electron hardening** (Electron 22 stays for Win7/8, so compensate):
+   - `sandbox:true`.
+   - `will-navigate` → `preventDefault`.
+   - CSP in `index.html`, with `media-src 'self'` for the music.
+   - `setWindowOpenHandler`: only `https:` URLs to a list of known hosts.
+   - `ELECTRON_RENDERER_URL` only when `!app.isPackaged`.
+4. **`settings:set` validation** (`settings/index.ts:79`): check types and keys, and clamp `ramGb`. For `jvmArgs`, reject `-javaagent`, `-XX:OnError` and `-XX:OnOutOfMemoryError`.
+5. **Single instance:** `app.requestSingleInstanceLock()` and focus the existing window on `second-instance`. In main, keep one in-flight promise per operation: sync, launch, ensureJava.
+6. **Linux AppImage:** remove `LD_LIBRARY_PATH` / `LD_PRELOAD` from Java's env when `APPIMAGE` is set (`launch/index.ts:113`). Document the AppArmor issue on Ubuntu 24.04+ and recommend the `.deb`.
+7. **Windows natives:** when `userData` has non-ASCII characters (tildes, ñ), put the natives in an ASCII path (`args.ts:53`). LWJGL2 fails to load them otherwise.
+
+### Main process — medium priority
+
+- **Case-only renames** (`sync/engine.ts:100,211`): compare paths in lowercase on win32. Today a rename of only the capitalization deletes the mod.
+- **"Reinstalar" Java does nothing:** add `java:reinstall`.
+- **`http.ts:144,146`:** wrap `openSync`/`rmSync` in try/catch, then reject and abort.
+- **`modpackSyncPending`** (`sync/index.ts:58`): clear the flag only if the variant did not change during the sync.
+- **First-start language:** `electronLanguages` is missing `pt-BR` and `es-419`. Or use `app.getPreferredSystemLanguages()`.
+- **JRE download:** stream it to disk with `toFile`, which also makes it resumable. Use async inflate in `zip.ts`, because the sync one freezes the UI.
+- **`readGameLogTail`:** read only the last 64 KB.
+- **Libraries:** download them with the shared pool and pass `size`, so the resumable download is used.
+- **Optional requests** (manifest headSha, forge cache): an option for fewer retries.
+
+### Low priority and dead code
+
+- **Timeouts:** `dns.resolveSrv` (2 s) and `java -version` (15 s).
+- **Small fixes:** fd leak in `patch.ts:43`. In `zip.ts:89`, mask with `0o777`. Add `.catch` to `openExternal`/`loadURL`.
+- **Caches:** cache the language in `tr()`. Keep content-addressed assets out of `hash-cache`.
+- **Dead code:**
+  - The `natives` phase and its i18n key.
+  - The `idle` / `preparing` / `error` states nobody emits.
+  - The `runSync` / `pingServer` re-exports and `LauncherConfig`.
+  - `isManifestConfigured` / `isForgeConfigured` and their branches.
+  - The mac config and the `build:mac` script.
+  - About 13 exports used only inside their own file.
+- **Duplications to merge:** `pool` (engine + assets), `safeJoin`/`safeDest`, settings `persist()`, the `on<T>` helper in the preload, `readJson`/`readJsonOr`, and the double update check at startup.
+- **Tooling:** CI uses `npm ci`. Fix or remove `scripts/make-icon.mjs` (its deps are missing). Add `tsx` as the itest runner.
+- **Later (needs its own plan):** sign the manifest with ed25519, verify the JRE sha256, Windows code signing (AUDITORIA-SEGURIDAD.md).
+
+## Verification
+
+- `npm run typecheck` and `npm run build`. Run the existing itests (`scripts/*-itest.ts`).
+- **Real premium login on Windows:**
+  1. Device code, copy, authorize.
+  2. Close and reopen the launcher: no login is asked (MC token reused).
+  3. Edit `mcExpiresAt` to the past in `account.json`, reopen: silent refresh, rotated refresh token saved.
+  4. Corrupt the refresh token: banner "sesión caducada", launch blocked, re-login works.
+  5. No network: clear message, the session is not deleted.
+- **Linux (VM or a PC without a keyring):** AppImage and deb. Login, restart, the session persists (fallback `0600`). Check the file permissions.
+- Join an online-mode server with the premium account (a valid token, not `'0'`).
+- UI: captures with `scripts/shot.cjs` in es/en/pt, reviewed by a subagent. Keyboard navigation through Login and Settings.
+- Music: off by default; when turned on it sounds, pauses when the game opens, and the volume is remembered.
+
+## Files
+
+- **Plan copy:** `DbrLauncher/PLAN-premium-ui-auditoria.md`, with a dated log ("bitácora").
+- **Pointer:** a line in `DbrLauncher/CLAUDE.md`.
+- **Branch:** `feat/premium-live`. Commits in Spanish, with no AI attribution (skill `dbr-git`).
+
+## Bitácora
+
+- 2026-11-08: plan aprobado. Rama `feat/premium-live` creada desde `main` (`6946783`). Siguiente paso: Fase 1 (login premium).
+- 2026-11-08: Fase 1 hecha. Proveedor `live` (client ID oficial, login.live.com) con `azure` de reserva; errores clasificados caducada/red; prefijo RPS t= con reintento d=; tokens de Minecraft guardados con caducidad; escritura atómica; respaldo 0600 en Linux sin llavero; renovación única en curso, al abrir (si quedan <12 h) y cada 6 h; nunca se lanza premium con token '0'; cancelar login. Endpoint de device code de live.com probado con curl (responde user_code, verification_uri, interval, expires_in). Falta: login real con una cuenta.
+- 2026-11-08: Fase 2 parcial. Tarjeta del código con copia automática, botón Copiar, Abrir enlace, Cancelar y cuenta atrás; aviso "sesión caducada" en Home con "Volver a entrar". Falta: música opcional.

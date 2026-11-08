@@ -62,7 +62,7 @@ app.whenReady().then(() => {
   ipcMain.handle('app:read-log', () => readGameLogTail(200))
 
   // Autenticación (pirata + premium Microsoft)
-  registerAuth()
+  registerAuth(() => mainWindow)
   // Sincronización de mods/configs desde el manifest
   registerSync()
   // Runtime de Java 8 (descarga Temurin/Adoptium)
