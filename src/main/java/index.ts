@@ -8,6 +8,8 @@ import { getRuntimeDir, getRuntimeInfoFile } from './paths'
 import { errMsg } from '../errors'
 
 let cached: JavaInfo | null | undefined
+// Instalación en curso: dos ensureJava a la vez borraban la carpeta que el otro extraía.
+let installing: Promise<JavaInfo> | null = null
 
 /** JRE ya instalado (lee el marcador y comprueba que el ejecutable sigue ahí), o null. */
 export function getJavaInfo(): JavaInfo | null {
@@ -26,7 +28,11 @@ export async function ensureJava(onProgress: (p: JavaProgress) => void): Promise
   const existing = getJavaInfo()
   if (existing && existsSync(existing.path)) return existing
   cached = undefined // marcador obsoleto (ejecutable borrado): reinstalar
+  installing ??= install(onProgress).finally(() => (installing = null))
+  return installing
+}
 
+async function install(onProgress: (p: JavaProgress) => void): Promise<JavaInfo> {
   const pl = currentPlatform()
   const { javaPath, version } = await installJava(getRuntimeDir(), pl, onProgress)
   const info: JavaInfo = { path: javaPath, version, os: pl.os, arch: pl.arch }

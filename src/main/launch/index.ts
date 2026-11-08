@@ -1,13 +1,13 @@
 import { app, ipcMain } from 'electron'
 import { spawn } from 'child_process'
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync } from 'fs'
+import { closeSync, existsSync, fstatSync, mkdirSync, openSync, readSync } from 'fs'
 import { join } from 'path'
 import { CONFIG, isForgeConfigured } from '../../shared/config'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../../shared/launch'
 import { loadAccount } from '../auth/store'
 import { ensureMcToken } from '../auth'
 import { ensureJava } from '../java'
-import { loadSettings } from '../settings'
+import { loadSettings, sanitizeJvmArgs } from '../settings'
 import { buildLaunchArgs, type LaunchContext } from './args'
 import { mergeVersions, type VersionJson } from './version'
 import { fetchVanilla, fetchForge } from './mojang'
@@ -25,8 +25,37 @@ type OnProgress = (p: LaunchProgress) => void
 export function readGameLogTail(lines = 60): string {
   const logPath = join(getGameDir(), 'launcher-game.log')
   if (!existsSync(logPath)) return ''
-  const all = readFileSync(logPath, 'utf-8').split(/\r?\n/)
-  return all.slice(-lines).join('\n').trim()
+  // Solo los últimos 64 KB: el log de una partida larga pesa decenas de MB y se lee al arrancar.
+  const fd = openSync(logPath, 'r')
+  try {
+    const size = fstatSync(fd).size
+    const len = Math.min(size, 64 * 1024)
+    const buf = Buffer.alloc(len)
+    readSync(fd, buf, 0, len, size - len)
+    const all = buf.toString('utf-8').split(/\r?\n/)
+    if (len < size) all.shift() // la primera línea seguramente quedó cortada
+    return all.slice(-lines).join('\n').trim()
+  } finally {
+    closeSync(fd)
+  }
+}
+
+/**
+ * Carpeta de natives. Java 8 + LWJGL2 en Windows no cargan DLLs desde rutas con caracteres fuera
+ * de ASCII (usuarios con tilde o ñ, habituales en la comunidad): el juego fallaba con
+ * UnsatisfiedLinkError. En ese caso las natives van a %ProgramData%, que siempre es ASCII.
+ */
+function nativesDirFor(vDir: string, versionId: string): string {
+  const normal = join(vDir, 'natives')
+  // eslint-disable-next-line no-control-regex
+  if (process.platform !== 'win32' || /^[\x00-\x7f]*$/.test(normal)) return normal
+  const alt = join(process.env.ProgramData ?? 'C:\\ProgramData', 'DbrLauncher', 'natives', versionId)
+  try {
+    mkdirSync(alt, { recursive: true })
+    return alt
+  } catch {
+    return normal
+  }
 }
 
 interface Prepared {
@@ -42,7 +71,7 @@ async function prepare(onProgress: OnProgress): Promise<Prepared> {
   const version = isForgeConfigured() ? mergeVersions(vanilla, await fetchForge()) : vanilla
 
   const vDir = join(versionsDir(), version.id)
-  const nativesDir = join(vDir, 'natives')
+  const nativesDir = nativesDirFor(vDir, version.id)
   const clientJar = join(vDir, `${version.id}.jar`)
 
   if (version.downloads?.client) {
@@ -70,6 +99,7 @@ export async function launch(
   const settings = loadSettings()
   // Primero la sesión: si la premium caducó, avisar antes de preparar Java y librerías.
   const accessToken = (await ensureMcToken()) ?? '0'
+  const jvmExtra = sanitizeJvmArgs(settings.jvmArgs)
 
   const java = await ensureJava((jp) => onProgress({ phase: 'java', percent: jp.percent }))
 
@@ -92,7 +122,7 @@ export async function launch(
     mainClass: prep.version.mainClass,
     minecraftArguments: prep.version.minecraftArguments,
     ramGb: settings.ramGb,
-    extraJvm: settings.jvmArgs.trim() ? settings.jvmArgs.trim().split(/\s+/) : undefined,
+    extraJvm: jvmExtra ? jvmExtra.split(' ') : undefined,
     width: settings.width,
     height: settings.height,
     fullscreen: settings.fullscreen
@@ -114,6 +144,7 @@ export async function launch(
   const logFd = openSync(join(gameDir, 'launcher-game.log'), 'w')
   const child = spawn(exe, args, {
     cwd: gameDir,
+    env: gameEnv(),
     detached: true,
     stdio: ['ignore', logFd, logFd]
   })
@@ -139,9 +170,27 @@ export async function launch(
   })
 }
 
+/**
+ * Entorno del juego. Dentro de un AppImage, LD_LIBRARY_PATH y LD_PRELOAD apuntan a las librerías
+ * empaquetadas con Electron; Java las heredaba y LWJGL/OpenAL/GTK podían cargar versiones que no
+ * son las del sistema y fallar al abrir la ventana o el audio.
+ */
+function gameEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env }
+  if (process.platform === 'linux' && env.APPIMAGE) {
+    delete env.LD_LIBRARY_PATH
+    delete env.LD_PRELOAD
+  }
+  return env
+}
+
 /** Registra el handler IPC de lanzamiento. */
 export function registerLaunch(): void {
+  let launching = false
   ipcMain.handle('launch:start', async (e): Promise<LaunchResult> => {
+    // Un doble clic en Jugar no debe arrancar dos juegos.
+    if (launching) return { ok: false, error: tr('err.lanzando') }
+    launching = true
     try {
       await launch(
         (p) => e.sender.send('launch:progress', p),
@@ -154,8 +203,10 @@ export function registerLaunch(): void {
       return { ok: true }
     } catch (err) {
       const error = errMsg(err)
-      e.sender.send('launch:status', { state: 'error', error })
+      if (!e.sender.isDestroyed()) e.sender.send('launch:status', { state: 'error', error })
       return { ok: false, error }
+    } finally {
+      launching = false
     }
   })
 }

@@ -66,7 +66,7 @@ export default function UpdateOverlay(): JSX.Element | null {
             <button
               onClick={install}
               disabled={installing}
-              className="mc-btn mc-btn-gold px-5 py-2 text-xs font-semibold uppercase tracking-[0.12em] disabled:opacity-60"
+              className="mc-btn-gold px-5 py-2 text-xs font-semibold uppercase tracking-[0.12em] disabled:opacity-60"
             >
               {installing ? tr('comun.instalando') : failed ? tr('update.reintentar') : tr('update.ahora')}
             </button>

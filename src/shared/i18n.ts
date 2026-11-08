@@ -402,6 +402,7 @@ const T = {
     en: 'Could not get the Minecraft profile.',
     pt: 'Não foi possível obter o perfil do Minecraft.'
   },
+  'err.lanzando': { es: 'El juego ya se está iniciando.', en: 'The game is already starting.', pt: 'O jogo já está iniciando.' },
   'err.sin_sesion': { es: 'No hay sesión iniciada.', en: 'You are not logged in.', pt: 'Você não está logado.' },
   'err.java_descarga': { es: 'Descarga de Java falló ({status}).', en: 'Java download failed ({status}).', pt: 'O download do Java falhou ({status}).' },
   'err.java_no_8': {

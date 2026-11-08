@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, renameSync, writeFileSync } from 'fs'
 import { totalmem } from 'os'
 import { join } from 'path'
 import {
@@ -14,6 +14,26 @@ import {
 
 const filePath = (): string => join(app.getPath('userData'), 'settings.json')
 let cache: LauncherSettings | null = null
+
+/** Escritura atómica: un corte a mitad no deja settings.json roto (volvería a los defaults). */
+function persist(data: LauncherSettings): void {
+  const p = filePath()
+  writeFileSync(p + '.tmp', JSON.stringify(data), 'utf-8')
+  renameSync(p + '.tmp', p)
+}
+
+// Flags JVM que ejecutan código o comandos arbitrarios. Un renderer comprometido (o un
+// settings.json manipulado) no debe poder colarlos en el arranque del juego.
+const JVM_FORBIDDEN = /^-(javaagent|agentlib|agentpath|Xbootclasspath|XX:OnError|XX:OnOutOfMemoryError)/i
+
+/** Quita de los argumentos JVM los flags peligrosos. */
+export function sanitizeJvmArgs(args: string): string {
+  return args
+    .split(/\s+/)
+    .filter((a) => a && !JVM_FORBIDDEN.test(a))
+    .join(' ')
+    .slice(0, 2000)
+}
 
 /** RAM física total (GB, redondeada hacia abajo). */
 export function totalRamGb(): number {
@@ -45,7 +65,7 @@ export function loadSettings(): LauncherSettings {
     if (!cache.jvmArgs.trim()) cache.jvmArgs = DEFAULT_JVM_ARGS
     cache.jvmArgsMigrated = true
     try {
-      writeFileSync(filePath(), JSON.stringify(cache), 'utf-8')
+      persist(cache)
     } catch {
       /* si no se puede persistir, se reintentará al siguiente arranque */
     }
@@ -54,7 +74,7 @@ export function loadSettings(): LauncherSettings {
   if (cache.jvmArgs.trim() === OLD_DEFAULT_JVM_ARGS_32M) {
     cache.jvmArgs = DEFAULT_JVM_ARGS
     try {
-      writeFileSync(filePath(), JSON.stringify(cache), 'utf-8')
+      persist(cache)
     } catch {
       /* si no se puede persistir, se reintentará al siguiente arranque */
     }
@@ -69,15 +89,15 @@ export function loadSettings(): LauncherSettings {
 export function saveSettings(patch: Partial<LauncherSettings>): LauncherSettings {
   const next = { ...loadSettings(), ...patch }
   cache = next
-  writeFileSync(filePath(), JSON.stringify(next), 'utf-8')
+  persist(next)
   return next
 }
 
 export function registerSettings(): void {
   ipcMain.handle('settings:get', (): LauncherSettings => loadSettings())
   ipcMain.handle('settings:limits', (): RamLimits => ramLimits())
-  ipcMain.handle('settings:set', (_e, patch: Partial<LauncherSettings>): LauncherSettings =>
-    saveSettings(markVariantChange(clampPatch(patch)))
+  ipcMain.handle('settings:set', (_e, patch: unknown): LauncherSettings =>
+    saveSettings(markVariantChange(sanitizePatch(patch)))
   )
 }
 
@@ -90,8 +110,37 @@ function markVariantChange(patch: Partial<LauncherSettings>): Partial<LauncherSe
   return { ...patch, modpackSyncPending: true }
 }
 
-/** Aplica el tope de RAM también al guardar, por si el patch llega con un valor fuera de rango. */
-function clampPatch(patch: Partial<LauncherSettings>): Partial<LauncherSettings> {
-  if (typeof patch.ramGb !== 'number') return patch
-  return { ...patch, ramGb: Math.min(Math.max(patch.ramGb, MIN_RAM_GB), maxRamGb()) }
+const VARIANTS = new Set(['full', 'lite', 'experimental'])
+const LITE_ANSWERS = new Set(['none', 'accepted', 'rejected'])
+const int = (v: unknown, min: number, max: number): number | undefined =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(Math.max(Math.round(v), min), max) : undefined
+
+/**
+ * Valida el patch que llega del renderer: solo claves conocidas, con su tipo y en rango.
+ * Lo que no encaja se descarta en silencio (no se guarda NaN, ni una variante inventada).
+ */
+function sanitizePatch(raw: unknown): Partial<LauncherSettings> {
+  if (!raw || typeof raw !== 'object') return {}
+  const p = raw as Record<string, unknown>
+  const out: Partial<LauncherSettings> = {}
+  const ram = int(p.ramGb, MIN_RAM_GB, maxRamGb())
+  if (ram !== undefined) out.ramGb = ram
+  const w = int(p.width, 320, 7680)
+  if (w !== undefined) out.width = w
+  const h = int(p.height, 240, 4320)
+  if (h !== undefined) out.height = h
+  for (const k of ['fullscreen', 'autoSyncMods', 'modpackSeedPending', 'modpackSyncPending'] as const) {
+    if (typeof p[k] === 'boolean') out[k] = p[k] as boolean
+  }
+  if (typeof p.jvmArgs === 'string') out.jvmArgs = sanitizeJvmArgs(p.jvmArgs)
+  if (typeof p.modpackVariant === 'string' && VARIANTS.has(p.modpackVariant)) {
+    out.modpackVariant = p.modpackVariant as LauncherSettings['modpackVariant']
+  }
+  if (typeof p.liteProposal === 'string' && LITE_ANSWERS.has(p.liteProposal)) {
+    out.liteProposal = p.liteProposal as LauncherSettings['liteProposal']
+  }
+  if (p.idioma === null || (typeof p.idioma === 'string' && /^[a-z]{2}_[A-Z]{2}$/.test(p.idioma))) {
+    out.idioma = p.idioma as string | null
+  }
+  return out
 }

@@ -43,7 +43,7 @@ export default function LiteProposalModal(): JSX.Element | null {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => answer(true)}
-            className="mc-btn mc-btn-gold px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
+            className="mc-btn-gold px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
           >
             {tr('lite.pasar')}
           </button>

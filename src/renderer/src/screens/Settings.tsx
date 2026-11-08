@@ -272,7 +272,7 @@ function ModpackPanel(): JSX.Element {
               <button
                 onClick={() => apply(true)}
                 disabled={blocked}
-                className="mc-btn mc-btn-gold px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
+                className="mc-btn-gold px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
               >
                 {tr('ajustes.si_aplicar')}
               </button>
