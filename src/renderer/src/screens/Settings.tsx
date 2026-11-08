@@ -1,84 +1,151 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { ModpackVariant } from '../../../shared/settings'
 import { useStore } from '../store'
 import { useT } from '../i18n'
 import { LANGS, LANG_NAME, MC_LANG, existe, type Clave } from '../../../shared/i18n'
+import { Btn, Modal, PanelTitle, Progress, Toggle, btnClass } from '../components/ui'
+
+type TabId = 'juego' | 'modpack' | 'sistema'
+const TABS: { id: TabId; label: Clave }[] = [
+  { id: 'juego', label: 'ajustes.tab_juego' },
+  { id: 'modpack', label: 'ajustes.tab_modpack' },
+  { id: 'sistema', label: 'ajustes.tab_sistema' }
+]
 
 export default function Settings(): JSX.Element {
-  const ram = useStore((s) => s.ramGb)
-  const setRam = useStore((s) => s.setRamGb)
-  const maxRam = useStore((s) => s.maxRamGb)
-  const totalRam = useStore((s) => s.totalRamGb)
   const loadJava = useStore((s) => s.loadJava)
+  const [tab, setTab] = useState<TabId>('juego')
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({ juego: null, modpack: null, sistema: null })
   const tr = useT()
 
   useEffect(() => {
     void loadJava()
   }, [loadJava])
 
+  // Flechas izquierda/derecha entre pestañas (patrón WAI-ARIA de tabs).
+  const onTabKey = (e: KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+    e.preventDefault()
+    const i = TABS.findIndex((t) => t.id === tab)
+    const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length].id
+    setTab(next)
+    tabRefs.current[next]?.focus()
+  }
+
+  return (
+    <div className="flex h-full flex-col px-12 pt-8">
+      <div className="mb-4 flex items-center gap-6">
+        <PanelTitle size="lg">{tr('ajustes.titulo')}</PanelTitle>
+        <div role="tablist" aria-label={tr('ajustes.titulo')} className="flex gap-2" onKeyDown={onTabKey}>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              ref={(el) => (tabRefs.current[t.id] = el)}
+              type="button"
+              role="tab"
+              id={`tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls={`panel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
+              onClick={() => setTab(t.id)}
+              className={btnClass({ size: 'md', on: tab === t.id, className: 'px-5' })}
+            >
+              {tr(t.label)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-8 pr-1"
+      >
+        {tab === 'juego' && (
+          <>
+            <RamPanel />
+            <GamePanel />
+            <JavaPanel />
+          </>
+        )}
+        {tab === 'modpack' && (
+          <>
+            <ModpackPanel />
+            <AutoSyncPanel />
+          </>
+        )}
+        {tab === 'sistema' && (
+          <>
+            <IdiomaPanel />
+            <MusicaPanel />
+            <DiagnosticsPanel />
+            <CreditsPanel />
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Panel de ajustes: título en sans, contenido debajo. */
+function Panel({ title, children, aside }: { title: ReactNode; children?: ReactNode; aside?: ReactNode }): JSX.Element {
+  return (
+    <section className="mc-panel space-y-3 p-5">
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-[15px] font-semibold text-text">{title}</h3>
+        {aside}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+/** Panel con descripción a la izquierda y un control (interruptor o botón) a la derecha. */
+function RowPanel({ title, desc, control }: { title: ReactNode; desc: ReactNode; control: ReactNode }): JSX.Element {
+  return (
+    <section className="mc-panel p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-[15px] font-semibold text-text">{title}</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">{desc}</p>
+        </div>
+        {control}
+      </div>
+    </section>
+  )
+}
+
+function RamPanel(): JSX.Element {
+  const ram = useStore((s) => s.ramGb)
+  const setRam = useStore((s) => s.setRamGb)
+  const maxRam = useStore((s) => s.maxRamGb)
+  const totalRam = useStore((s) => s.totalRamGb)
+  const tr = useT()
   // El slider nunca deja pasar del tope del equipo, pero avisamos cuando el usuario ya está
   // en el máximo para que entienda por qué no puede subir más.
   const atMax = ram >= maxRam
 
   return (
-    <div className="h-full space-y-4 overflow-y-auto px-12 py-8">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="h-5 w-2 bg-gold" />
-        <h2 className="mc-text text-2xl font-bold uppercase tracking-wide text-gold">{tr('ajustes.titulo')}</h2>
-      </div>
-
-      {/* Idioma del launcher y del juego */}
-      <IdiomaPanel />
-
-      {/* Variante del modpack */}
-      <ModpackPanel />
-
-      {/* Actualización automática de mods */}
-      <AutoSyncPanel />
-
-      {/* Música del launcher */}
-      <MusicaPanel />
-
-      {/* Memoria RAM */}
-      <div className="mc-panel p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <label htmlFor="ram" className="text-sm font-semibold uppercase tracking-wider">
-            {tr('ajustes.ram')}
-          </label>
-          <span className="mc-text-sm text-lg font-bold text-gold">{ram} GB</span>
-        </div>
-        <input
-          id="ram"
-          type="range"
-          min={2}
-          max={Math.max(2, maxRam)}
-          step={1}
-          value={Math.min(ram, Math.max(2, maxRam))}
-          onChange={(e) => setRam(Number(e.target.value))}
-          className="mc-range"
-        />
-        <p className="mt-2 text-xs leading-relaxed text-muted">
-          {totalRam > 0
-            ? tr('ajustes.ram_equipo', { total: totalRam, max: maxRam })
-            : tr('ajustes.ram_generico')}
-          {atMax && totalRam > 0 && (
-            <span className="text-gold">{tr('ajustes.ram_maximo')}</span>
-          )}
-        </p>
-      </div>
-
-      {/* Ventana y JVM */}
-      <GamePanel />
-
-      {/* Runtime de Java */}
-      <JavaPanel />
-
-      {/* Diagnóstico */}
-      <DiagnosticsPanel />
-
-      {/* Créditos y permisos de terceros */}
-      <CreditsPanel />
-    </div>
+    <Panel
+      title={<label htmlFor="ram">{tr('ajustes.ram')}</label>}
+      aside={<span className="text-lg font-bold text-gold">{ram} GB</span>}
+    >
+      <input
+        id="ram"
+        type="range"
+        min={2}
+        max={Math.max(2, maxRam)}
+        step={1}
+        value={Math.min(ram, Math.max(2, maxRam))}
+        onChange={(e) => setRam(Number(e.target.value))}
+        className="mc-range"
+      />
+      <p className="text-[13px] leading-relaxed text-muted">
+        {totalRam > 0 ? tr('ajustes.ram_equipo', { total: totalRam, max: maxRam }) : tr('ajustes.ram_generico')}
+        {atMax && totalRam > 0 && <span className="text-gold">{tr('ajustes.ram_maximo')}</span>}
+      </p>
+    </Panel>
   )
 }
 
@@ -107,31 +174,22 @@ const CREDITS: { title: string; text: Clave; links: { label: Clave | string; hre
 function CreditsPanel(): JSX.Element {
   const tr = useT()
   return (
-    <div className="mc-panel space-y-4 p-5">
-      <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.creditos')}</span>
+    <Panel title={tr('ajustes.creditos')}>
       {CREDITS.map((c) => (
         <div key={c.title} className="space-y-1.5">
-          <span className="mc-text-sm block text-sm font-bold text-gold">{c.title}</span>
-          <p className="text-xs leading-relaxed text-muted">{tr(c.text)}</p>
+          <span className="block text-sm font-semibold text-gold">{c.title}</span>
+          <p className="text-[13px] leading-relaxed text-muted">{tr(c.text)}</p>
           <div className="flex flex-wrap gap-2">
             {c.links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                target="_blank"
-                rel="noreferrer"
-                className="mc-btn px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
-              >
+              <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className={btnClass()}>
                 {existe(l.label) ? tr(l.label) : l.label}
               </a>
             ))}
           </div>
         </div>
       ))}
-      <p className="text-xs leading-relaxed text-muted">
-        {tr('ajustes.independiente')}
-      </p>
-    </div>
+      <p className="text-[13px] leading-relaxed text-muted">{tr('ajustes.independiente')}</p>
+    </Panel>
   )
 }
 
@@ -145,26 +203,26 @@ function IdiomaPanel(): JSX.Element {
   const otro = juego !== null && !LANGS.some((l) => MC_LANG[l] === juego)
 
   return (
-    <div className="mc-panel space-y-3 p-5">
-      <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.idioma')}</span>
+    <Panel title={tr('ajustes.idioma')}>
       <div className="flex gap-3">
         {LANGS.map((l) => (
-          <button
+          <Btn
             key={l}
+            size="md"
+            on={lang === l && !otro}
+            aria-pressed={lang === l && !otro}
             onClick={() => void setIdioma(l)}
-            className={`mc-btn flex-1 px-4 py-3 text-sm font-semibold uppercase tracking-[0.12em] ${
-              lang === l && !otro ? 'mc-btn-on' : ''
-            }`}
+            className="flex-1 py-3"
           >
             {LANG_NAME[l]}
-          </button>
+          </Btn>
         ))}
       </div>
-      <p className="text-xs leading-relaxed text-muted">
+      <p className="text-[13px] leading-relaxed text-muted">
         {tr('ajustes.idioma_desc')}
         {otro && <span className="text-gold"> {tr('ajustes.idioma_otro', { juego })}</span>}
       </p>
-    </div>
+    </Panel>
   )
 }
 
@@ -173,22 +231,15 @@ function DiagnosticsPanel(): JSX.Element {
   const tr = useT()
 
   return (
-    <div className="mc-panel p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.diagnostico')}</span>
-          <p className="mt-1 text-xs leading-relaxed text-muted">
-            {tr('ajustes.diagnostico_desc')}
-          </p>
-        </div>
-        <button
-          onClick={() => void openLog()}
-          className="mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
-        >
+    <RowPanel
+      title={tr('ajustes.diagnostico')}
+      desc={tr('ajustes.diagnostico_desc')}
+      control={
+        <Btn size="md" onClick={() => void openLog()} className="shrink-0">
           {tr('ajustes.ver_ultimo_log')}
-        </button>
-      </div>
-    </div>
+        </Btn>
+      }
+    />
   )
 }
 
@@ -222,86 +273,58 @@ function ModpackPanel(): JSX.Element {
   }
 
   return (
-    <div className="mc-panel space-y-3 p-5">
-      <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.modpack')}</span>
+    <Panel title={tr('ajustes.modpack')}>
       <div className="flex gap-3">
         {options.map((o) => (
           <button
             key={o.id}
+            type="button"
+            aria-pressed={variant === o.id}
             onClick={() => {
               if (o.id !== variant) choose(o.id)
             }}
-            className={`mc-btn flex-1 px-4 py-3 text-left ${variant === o.id ? 'mc-btn-on' : ''}`}
+            className={`${btnClass({ size: 'md', on: variant === o.id })} flex-1 py-3 text-left`}
           >
-            <span className="block text-sm font-semibold uppercase tracking-[0.12em]">
-              {o.label}
-            </span>
-            <span className="mt-0.5 block text-xs normal-case tracking-normal text-muted">
+            <span className="block text-sm font-semibold">{o.label}</span>
+            <span className={`mt-0.5 block text-[13px] font-normal ${variant === o.id ? 'text-white/85' : 'text-[#d2cbbd]'}`}>
               {o.desc}
             </span>
           </button>
         ))}
       </div>
-      <p className="text-xs leading-relaxed text-muted">
-        {tr('ajustes.modpack_nota')}
-      </p>
+      <p className="text-[13px] leading-relaxed text-muted">{tr('ajustes.modpack_nota')}</p>
 
       {pending && (
-        <div className="fixed inset-0 z-[95] grid place-items-center bg-bg/80 p-8">
-          <div className="mc-panel flex w-full max-w-md flex-col gap-3 p-5">
-            <div className="flex items-center gap-3">
-              <span className="h-5 w-2 bg-gold" />
-              <h2 className="mc-text text-lg font-bold uppercase tracking-wide text-gold">
-                {tr('ajustes.cambiar_a', { variante: labelOf(pending) })}
-              </h2>
+        <Modal title={tr('ajustes.cambiar_a', { variante: labelOf(pending) })} onClose={() => setPending(null)}>
+          {pending === 'experimental' && (
+            <div className="mc-inset space-y-2 !border-error p-3">
+              <p className="text-[13px] font-semibold leading-relaxed text-error">{tr('ajustes.exp_aviso')}</p>
+              <p className="text-[13px] leading-relaxed text-muted">{tr('ajustes.exp_detalle')}</p>
+              <label className="flex cursor-pointer items-center gap-2 text-[13px]">
+                <input
+                  type="checkbox"
+                  checked={ackExperimental}
+                  onChange={(e) => setAckExperimental(e.target.checked)}
+                />
+                {tr('ajustes.exp_entiendo')}
+              </label>
             </div>
-            {pending === 'experimental' && (
-              <div className="mc-inset space-y-2 !border-red-600 p-3">
-                <p className="text-xs font-semibold leading-relaxed text-red-300">
-                  {tr('ajustes.exp_aviso')}
-                </p>
-                <p className="text-xs leading-relaxed text-muted">
-                  {tr('ajustes.exp_detalle')}
-                </p>
-                <label className="flex cursor-pointer items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={ackExperimental}
-                    onChange={(e) => setAckExperimental(e.target.checked)}
-                  />
-                  {tr('ajustes.exp_entiendo')}
-                </label>
-              </div>
-            )}
-            <p className="text-xs leading-relaxed text-muted">
-              {tr('ajustes.config_recomendada')}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => apply(true)}
-                disabled={blocked}
-                className="mc-btn-gold px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
-              >
-                {tr('ajustes.si_aplicar')}
-              </button>
-              <button
-                onClick={() => apply(false)}
-                disabled={blocked}
-                className="mc-btn px-4 py-2 disabled:opacity-50 text-xs font-semibold uppercase tracking-[0.12em]"
-              >
-                {tr('ajustes.conservar')}
-              </button>
-              <button
-                onClick={() => setPending(null)}
-                className="mc-btn ml-auto px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
-              >
-                {tr('comun.cancelar')}
-              </button>
-            </div>
+          )}
+          <p className="text-[13px] leading-relaxed text-muted">{tr('ajustes.config_recomendada')}</p>
+          <div className="flex flex-wrap gap-3">
+            <Btn variant="primary" size="md" onClick={() => apply(true)} disabled={blocked}>
+              {tr('ajustes.si_aplicar')}
+            </Btn>
+            <Btn size="md" onClick={() => apply(false)} disabled={blocked}>
+              {tr('ajustes.conservar')}
+            </Btn>
+            <Btn size="md" onClick={() => setPending(null)} className="ml-auto">
+              {tr('comun.cancelar')}
+            </Btn>
           </div>
-        </div>
+        </Modal>
       )}
-    </div>
+    </Panel>
   )
 }
 
@@ -311,28 +334,18 @@ function AutoSyncPanel(): JSX.Element {
   const tr = useT()
 
   return (
-    <div className="mc-panel p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <span className="text-sm font-semibold uppercase tracking-wider">
-            {tr('ajustes.autosync')}
-          </span>
-          <p className="mt-1 text-xs leading-relaxed text-muted">
-            {autoSync
-              ? tr('ajustes.autosync_on')
-              : tr('ajustes.autosync_off')}
-          </p>
-        </div>
-        <button
-          onClick={() => void setSetting({ autoSyncMods: !autoSync })}
-          className={`mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
-            autoSync ? 'mc-btn-on' : ''
-          }`}
-        >
-          {autoSync ? tr('ajustes.activada') : tr('ajustes.desactivada')}
-        </button>
-      </div>
-    </div>
+    <RowPanel
+      title={tr('ajustes.autosync')}
+      desc={autoSync ? tr('ajustes.autosync_on') : tr('ajustes.autosync_off')}
+      control={
+        <Toggle
+          on={autoSync}
+          onChange={(v) => void setSetting({ autoSyncMods: v })}
+          label={tr('ajustes.autosync')}
+          text={autoSync ? tr('ajustes.activada') : tr('ajustes.desactivada')}
+        />
+      }
+    />
   )
 }
 
@@ -345,25 +358,22 @@ function MusicaPanel(): JSX.Element {
   const guardar = (): void => void setSetting({ musicaVolumen: useStore.getState().musicaVolumen })
 
   return (
-    <div className="mc-panel p-5">
+    <section className="mc-panel p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.musica')}</span>
-          <p className="mt-1 text-xs leading-relaxed text-muted">{tr('ajustes.musica_desc')}</p>
+          <h3 className="text-[15px] font-semibold text-text">{tr('ajustes.musica')}</h3>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">{tr('ajustes.musica_desc')}</p>
         </div>
-        <button
-          onClick={() => void setSetting({ musicaActiva: !activa })}
-          aria-pressed={activa}
-          className={`mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
-            activa ? 'mc-btn-on' : ''
-          }`}
-        >
-          {activa ? tr('ajustes.activada') : tr('ajustes.desactivada')}
-        </button>
+        <Toggle
+          on={activa}
+          onChange={(v) => void setSetting({ musicaActiva: v })}
+          label={tr('ajustes.musica')}
+          text={activa ? tr('ajustes.activada') : tr('ajustes.desactivada')}
+        />
       </div>
       {activa && (
         <div className="mt-4 flex items-center gap-3">
-          <label htmlFor="musica-vol" className="text-xs uppercase tracking-wider text-muted">
+          <label htmlFor="musica-vol" className="text-[13px] text-muted">
             {tr('ajustes.volumen')}
           </label>
           <input
@@ -378,12 +388,10 @@ function MusicaPanel(): JSX.Element {
             onKeyUp={guardar}
             className="mc-range flex-1"
           />
-          <span className="mc-text-sm w-10 text-right text-sm font-bold text-gold">
-            {Math.round(volumen * 100)}%
-          </span>
+          <span className="w-12 text-right text-sm font-bold text-gold">{Math.round(volumen * 100)}%</span>
         </div>
       )}
-    </div>
+    </section>
   )
 }
 
@@ -396,11 +404,9 @@ function GamePanel(): JSX.Element {
   const tr = useT()
 
   return (
-    <div className="mc-panel space-y-4 p-5">
-      <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.ventana')}</span>
-
+    <Panel title={tr('ajustes.ventana')}>
       <div className="flex items-end gap-4">
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-wider text-muted">
+        <label className="flex flex-col gap-1 text-[13px] text-muted">
           {tr('ajustes.ancho')}
           <input
             type="number"
@@ -411,8 +417,10 @@ function GamePanel(): JSX.Element {
             className="mc-inset w-24 px-2 py-1.5 text-text outline-none disabled:opacity-50"
           />
         </label>
-        <span className="pb-2 text-muted">×</span>
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-wider text-muted">
+        <span className="pb-2 text-muted" aria-hidden>
+          ×
+        </span>
+        <label className="flex flex-col gap-1 text-[13px] text-muted">
           {tr('ajustes.alto')}
           <input
             type="number"
@@ -423,17 +431,18 @@ function GamePanel(): JSX.Element {
             className="mc-inset w-24 px-2 py-1.5 text-text outline-none disabled:opacity-50"
           />
         </label>
-        <button
-          onClick={() => void setSetting({ fullscreen: !fullscreen })}
-          className={`mc-btn ml-auto px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
-            fullscreen ? 'mc-btn-on' : ''
-          }`}
-        >
-          {tr('ajustes.pantalla_completa')}
-        </button>
+        <div className="ml-auto flex items-center gap-3 pb-1">
+          <span className="text-[13px] text-muted">{tr('ajustes.pantalla_completa')}</span>
+          <Toggle
+            on={fullscreen}
+            onChange={(v) => void setSetting({ fullscreen: v })}
+            label={tr('ajustes.pantalla_completa')}
+            text={fullscreen ? tr('ajustes.activada') : tr('ajustes.desactivada')}
+          />
+        </div>
       </div>
 
-      <label className="flex flex-col gap-1 text-xs uppercase tracking-wider text-muted">
+      <label className="flex flex-col gap-1 text-[13px] text-muted">
         {tr('ajustes.jvm')}
         <input
           type="text"
@@ -443,7 +452,7 @@ function GamePanel(): JSX.Element {
           className="mc-inset w-full px-3 py-2 font-mono text-xs text-text outline-none placeholder:text-muted/50"
         />
       </label>
-    </div>
+    </Panel>
   )
 }
 
@@ -459,50 +468,43 @@ function JavaPanel(): JSX.Element {
   if (progress?.phase === 'download') phaseLabel = tr('ajustes.java_descargando', { pct: progress.percent ?? 0 })
   else if (progress?.phase === 'extract') phaseLabel = tr('ajustes.java_extrayendo')
   else if (progress?.phase === 'verify') phaseLabel = tr('ajustes.java_verificando')
-  const pct = progress?.phase === 'download' ? (progress.percent ?? 0) : 100
-  const indeterminate = !progress || progress.phase !== 'download'
+  const downloading = progress?.phase === 'download'
 
   return (
-    <div className="mc-panel p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.java')}</span>
-        {info ? (
+    <Panel
+      title={tr('ajustes.java')}
+      aside={
+        info ? (
           <span className="mc-inset flex items-center gap-2 px-2.5 py-1 text-xs text-grass">
-            <span className="h-2 w-2 bg-grass" />
+            <span className="h-2 w-2 bg-grass" aria-hidden />
             {info.version} · {info.arch}
           </span>
         ) : (
           <span className="mc-inset px-2.5 py-1 text-xs text-muted">{tr('ajustes.java_no_instalado')}</span>
-        )}
-      </div>
-
+        )
+      }
+    >
       {busy ? (
         <div className="w-full">
-          <div className="mc-inset h-5 w-full overflow-hidden p-[2px]">
-            <div
-              className="h-full bg-gold transition-[width] duration-150"
-              style={{ width: indeterminate ? '25%' : `${pct}%` }}
-            />
-          </div>
-          <p className="mt-2 text-xs uppercase tracking-wider text-muted mc-text-sm">{phaseLabel}</p>
+          <Progress value={downloading ? (progress.percent ?? 0) : null} label={phaseLabel} />
+          <p className="mt-2 text-xs text-muted">{phaseLabel}</p>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-4">
-          <p className="text-xs leading-relaxed text-muted">
-            {info
-              ? tr('ajustes.java_listo')
-              : tr('ajustes.java_auto')}
+          <p className="text-[13px] leading-relaxed text-muted">
+            {info ? tr('ajustes.java_listo') : tr('ajustes.java_auto')}
           </p>
-          <button
-            onClick={() => void ensureJava()}
-            className="mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em]"
-          >
+          <Btn size="md" onClick={() => void ensureJava()} className="shrink-0">
             {info ? tr('ajustes.java_reinstalar') : tr('ajustes.java_descargar')}
-          </button>
+          </Btn>
         </div>
       )}
 
-      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
-    </div>
+      {error && (
+        <p role="alert" className="text-[13px] text-error">
+          {error}
+        </p>
+      )}
+    </Panel>
   )
 }

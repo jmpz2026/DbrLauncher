@@ -111,6 +111,16 @@ const T = {
   'home.descartar': { es: 'Descartar', en: 'Dismiss', pt: 'Descartar' },
   'home.en_marcha': { es: 'Minecraft en marcha', en: 'Minecraft is running', pt: 'Minecraft em execução' },
   'home.mods_al_dia': { es: 'Mods al día', en: 'Mods up to date', pt: 'Mods em dia' },
+  'home.mods_comprobando': { es: 'Comprobando mods…', en: 'Checking mods…', pt: 'Verificando mods…' },
+  'home.mods_sin_comprobar': { es: 'Mods sin comprobar', en: 'Mods not checked', pt: 'Mods não verificados' },
+  'home.mods_sync_off': {
+    es: 'Actualización de mods apagada',
+    en: 'Mod updates off',
+    pt: 'Atualização de mods desligada'
+  },
+  'home.mods_error': { es: 'Fallo al actualizar mods', en: 'Mod update failed', pt: 'Falha ao atualizar mods' },
+  'home.ram': { es: '{gb} GB de RAM', en: '{gb} GB RAM', pt: '{gb} GB de RAM' },
+  'home.build': { es: 'Versión {v}', en: 'Version {v}', pt: 'Versão {v}' },
   'home.listo_version': {
     es: 'Listo · v{version} — {updated} actualizados',
     en: 'Ready · v{version} — {updated} updated',
@@ -149,6 +159,9 @@ const T = {
 
   // Ajustes
   'ajustes.titulo': { es: 'Ajustes', en: 'Settings', pt: 'Ajustes' },
+  'ajustes.tab_juego': { es: 'Juego', en: 'Game', pt: 'Jogo' },
+  'ajustes.tab_modpack': { es: 'Modpack', en: 'Modpack', pt: 'Modpack' },
+  'ajustes.tab_sistema': { es: 'Sistema', en: 'System', pt: 'Sistema' },
   'ajustes.idioma': { es: 'Idioma', en: 'Language', pt: 'Idioma' },
   'ajustes.idioma_desc': {
     es: 'Cambia el idioma del launcher y el del juego. El servidor te habla en el idioma de tu Minecraft.',

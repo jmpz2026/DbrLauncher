@@ -72,7 +72,7 @@ function Loading(): JSX.Element {
   const tr = useT()
   return (
     <div className="grid h-full place-items-center">
-      <p className="text-sm uppercase tracking-[0.3em] text-muted mc-text-sm">
+      <p role="status" className="text-sm text-muted">
         {tr('comun.cargando')}<span className="animate-blink">_</span>
       </p>
     </div>

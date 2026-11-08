@@ -27,7 +27,7 @@ let syncGeneration = 0
  * obliga igualmente: ese interruptor sirve para no bajar mods nuevos, no para acabar jugando
  * con el modpack de la otra variante.
  */
-const mustSync = (s: {
+export const mustSync = (s: {
   autoSyncMods: boolean
   modpackSyncPending: boolean
   modpackSeedPending: boolean
