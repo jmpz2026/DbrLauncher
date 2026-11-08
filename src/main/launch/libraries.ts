@@ -5,6 +5,10 @@ import { extractArchive } from '../java/install'
 import type { Library } from './version'
 import { resolveArtifact, resolveNative, rulesAllow } from './resolve'
 import { ensureFile } from '../net'
+import { pool } from '../util'
+
+// Librerías en paralelo, como mods y assets: en serie el primer arranque iba jar a jar.
+const CONCURRENCY = 6
 
 type OnProgress = (p: LaunchProgress) => void
 
@@ -19,15 +23,11 @@ export async function installLibraries(
   onProgress: OnProgress
 ): Promise<string[]> {
   const applicable = libs.filter((l) => rulesAllow(l.rules))
-  const classpath: string[] = []
+  // Por índice: el classpath sale en el orden de la versión aunque terminen desordenadas.
+  const classpath: Array<string | undefined> = new Array(applicable.length)
+  let done = 0
 
-  for (let i = 0; i < applicable.length; i++) {
-    const lib = applicable[i]
-    onProgress({
-      phase: 'libraries',
-      percent: Math.round(((i + 1) / applicable.length) * 100),
-      detail: lib.name
-    })
+  await pool(applicable, CONCURRENCY, async (lib, i) => {
 
     // Natives: descargar el jar del classifier y extraerlo al nativesDir.
     const native = resolveNative(lib)
@@ -35,7 +35,9 @@ export async function installLibraries(
       // Se extrae solo si el jar es nuevo o nunca se extrajo: antes se re-extraía en cada
       // launch. La marca vive dentro del nativesDir, así que borrarlo fuerza la extracción.
       const nativeJar = join(librariesDir, native.path)
-      const downloaded = await ensureFile(nativeJar, native.url, native.sha1)
+      const downloaded = await ensureFile(nativeJar, native.url, native.sha1, undefined, undefined, {
+        size: native.size
+      })
       const marker = join(nativesDir, `.${basename(nativeJar)}.extracted`)
       if (downloaded || !existsSync(marker)) {
         await extractArchive(nativeJar, nativesDir, native.exclude)
@@ -48,10 +50,16 @@ export async function installLibraries(
     if (hasArtifact) {
       const art = resolveArtifact(lib)
       const dest = join(librariesDir, art.path)
-      await ensureFile(dest, art.url, art.sha1)
-      classpath.push(dest)
+      await ensureFile(dest, art.url, art.sha1, undefined, undefined, { size: art.size })
+      classpath[i] = dest
     }
-  }
+    done++
+    onProgress({
+      phase: 'libraries',
+      percent: Math.round((done / applicable.length) * 100),
+      detail: lib.name
+    })
+  })
 
-  return classpath
+  return classpath.filter((p): p is string => p !== undefined)
 }

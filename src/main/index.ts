@@ -18,6 +18,29 @@ app.disableHardwareAcceleration()
 
 let mainWindow: BrowserWindow | null = null
 
+// Hosts que la UI puede abrir en el navegador del sistema (Discord, GitHub, web del server y
+// la página del código de Microsoft). Cualquier otra URL, file:// o protocolo raro se ignora.
+const EXTERNAL_HOSTS = new Set([
+  'discord.gg',
+  'github.com',
+  'main.jingames.net',
+  'www.microsoft.com',
+  'microsoft.com',
+  'login.live.com',
+  'stability.ai'
+])
+
+function openExternalSafe(raw: string): void {
+  try {
+    const u = new URL(raw)
+    if (u.protocol === 'https:' && EXTERNAL_HOSTS.has(u.hostname)) {
+      shell.openExternal(u.toString()).catch(() => {})
+    }
+  } catch {
+    /* URL inválida */
+  }
+}
+
 function createWindow(): void {
   const win = new BrowserWindow({
     width: 1000,
@@ -30,7 +53,8 @@ function createWindow(): void {
     title: 'Dbr Launcher',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
+      // El preload solo usa contextBridge + ipcRenderer: corre en sandbox sin problema.
+      sandbox: true,
       contextIsolation: true,
       nodeIntegration: false
     }
@@ -41,28 +65,44 @@ function createWindow(): void {
   win.on('closed', () => (mainWindow = null))
 
   win.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    openExternalSafe(details.url)
     return { action: 'deny' }
   })
+  // Soltar un enlace o un .html sobre la ventana la hacía navegar a esa página, que heredaba
+  // window.dbr. La ventana nunca sale de la UI propia.
+  win.webContents.on('will-navigate', (e) => e.preventDefault())
 
-  if (process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    win.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+  // La URL del servidor de desarrollo solo vale sin empaquetar: en la app instalada, una
+  // variable de entorno no debe poder cargar otra página con acceso a window.dbr.
+  const devUrl = !app.isPackaged ? process.env['ELECTRON_RENDERER_URL'] : undefined
+  const load = devUrl ? win.loadURL(devUrl) : win.loadFile(join(__dirname, '../renderer/index.html'))
+  load.catch((e) => console.error('[window] no se pudo cargar la UI:', e))
+}
+
+// Una sola instancia: dos launchers abiertos hacían dos syncs sobre los mismos archivos y se
+// pisaban settings.json y la sesión. El segundo arranque solo trae al frente la ventana abierta.
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow) return
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  })
 }
 
 app.whenReady().then(() => {
+  if (!app.hasSingleInstanceLock()) return
   // Controles de ventana (barra de título propia)
   ipcMain.on('window:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize())
   ipcMain.on('window:close', (e) => BrowserWindow.fromWebContents(e.sender)?.close())
-  ipcMain.on('app:open-folder', () => shell.openPath(app.getPath('userData')))
+  ipcMain.on('app:open-folder', () => void shell.openPath(app.getPath('userData')))
   ipcMain.handle('app:version', () => app.getVersion())
   // Log del último arranque del juego (para el visor / diagnóstico de crashes).
   ipcMain.handle('app:read-log', () => readGameLogTail(200))
 
   // Autenticación (pirata + premium Microsoft)
-  registerAuth()
+  registerAuth(() => mainWindow)
   // Sincronización de mods/configs desde el manifest
   registerSync()
   // Runtime de Java 8 (descarga Temurin/Adoptium)

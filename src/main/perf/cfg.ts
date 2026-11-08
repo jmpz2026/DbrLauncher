@@ -17,7 +17,7 @@ import { getGameDir } from '../sync/paths'
  */
 const CAT = 'rendimiento'
 
-export const perfCfgPath = (): string =>
+const perfCfgPath = (): string =>
   join(getGameDir(), 'config', 'dbrcore', 'rendimiento.cfg')
 
 function read(): string {

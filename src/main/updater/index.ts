@@ -40,16 +40,24 @@ export function registerUpdater(getWindow: () => BrowserWindow | null): void {
   autoUpdater.on('download-progress', (p) =>
     send({ state: 'downloading', percent: Math.round(p.percent) })
   )
+  let downloaded = false
   autoUpdater.on('update-downloaded', (info) => {
+    downloaded = true
     send({ state: 'ready', version: info.version, manual })
     if (manual) return
     // Opción B (forzado): instala y reinicia solo → el jugador siempre entra con la última
     // versión. El breve margen deja ver "Reiniciando…" en la pantalla de actualización.
     setTimeout(() => autoUpdater.quitAndInstall(), 2500)
   })
-  // Un fallo al buscar/descargar updates NO debe alarmar al jugador (p.ej. sin red):
-  // se registra en el log y no se muestra nada.
-  autoUpdater.on('error', (e) => console.error('[updater]', e.message))
+  // Un fallo al buscar/descargar updates NO debe alarmar al jugador (p.ej. sin red): se registra
+  // y se manda 'error', que quita la pantalla bloqueante. Sin esto, una descarga cortada dejaba
+  // al jugador atrapado para siempre en "Descargando…". Sigue con la versión actual.
+  autoUpdater.on('error', (e) => {
+    console.error('[updater]', e.message)
+    // Tras la descarga, un error viene de la instalación (.deb: contraseña cancelada) y lo
+    // gestiona update:install con su valor de retorno: la pantalla debe seguir para reintentar.
+    if (!downloaded) send({ state: 'error', error: e.message })
+  })
 
   ipcMain.handle('update:check', async (): Promise<void> => {
     if (!app.isPackaged) {
@@ -78,8 +86,5 @@ export function registerUpdater(getWindow: () => BrowserWindow | null): void {
     return !failed
   })
 
-  // Chequeo automático al arrancar (solo en la app instalada).
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdates().catch(() => {})
-  }
+  // El chequeo al arrancar lo pide el renderer (update:check) cuando ya puede recibir los eventos.
 }

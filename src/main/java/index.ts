@@ -8,9 +8,11 @@ import { getRuntimeDir, getRuntimeInfoFile } from './paths'
 import { errMsg } from '../errors'
 
 let cached: JavaInfo | null | undefined
+// Instalación en curso: dos ensureJava a la vez borraban la carpeta que el otro extraía.
+let installing: Promise<JavaInfo> | null = null
 
 /** JRE ya instalado (lee el marcador y comprueba que el ejecutable sigue ahí), o null. */
-export function getJavaInfo(): JavaInfo | null {
+function getJavaInfo(): JavaInfo | null {
   if (cached !== undefined) return cached
   try {
     const info = JSON.parse(readFileSync(getRuntimeInfoFile(), 'utf-8')) as JavaInfo
@@ -21,12 +23,20 @@ export function getJavaInfo(): JavaInfo | null {
   return cached
 }
 
-/** Garantiza un JRE 8 disponible: usa el cacheado (si el ejecutable sigue ahí) o lo descarga. */
-export async function ensureJava(onProgress: (p: JavaProgress) => void): Promise<JavaInfo> {
-  const existing = getJavaInfo()
+/**
+ * Garantiza un JRE 8 disponible: usa el cacheado (si el ejecutable sigue ahí) o lo descarga.
+ * Con `force` lo baja de nuevo aunque exista (botón «Reinstalar», JRE roto a medias).
+ */
+export async function ensureJava(onProgress: (p: JavaProgress) => void, force = false): Promise<JavaInfo> {
+  if (installing) return installing
+  const existing = force ? null : getJavaInfo()
   if (existing && existsSync(existing.path)) return existing
   cached = undefined // marcador obsoleto (ejecutable borrado): reinstalar
+  installing ??= install(onProgress).finally(() => (installing = null))
+  return installing
+}
 
+async function install(onProgress: (p: JavaProgress) => void): Promise<JavaInfo> {
   const pl = currentPlatform()
   const { javaPath, version } = await installJava(getRuntimeDir(), pl, onProgress)
   const info: JavaInfo = { path: javaPath, version, os: pl.os, arch: pl.arch }
@@ -40,9 +50,9 @@ export async function ensureJava(onProgress: (p: JavaProgress) => void): Promise
 /** Registra los handlers IPC del runtime de Java. */
 export function registerJava(): void {
   ipcMain.handle('java:get', (): JavaInfo | null => getJavaInfo())
-  ipcMain.handle('java:ensure', async (e): Promise<JavaResult> => {
+  ipcMain.handle('java:ensure', async (e, force?: unknown): Promise<JavaResult> => {
     try {
-      const info = await ensureJava((p) => e.sender.send('java:progress', p))
+      const info = await ensureJava((p) => e.sender.send('java:progress', p), force === true)
       return { ok: true, info }
     } catch (err) {
       return { ok: false, error: errMsg(err) }

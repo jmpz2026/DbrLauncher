@@ -21,13 +21,20 @@ let prewarmPromise: Promise<void> | null = null
 // Un sync que arrancó antes del cambio no puede marcar prewarmDone: bajó la variante vieja.
 let syncGeneration = 0
 
+// Cambios de ajustes agrupados: un solo IPC cada 300 ms con el patch acumulado, y solo la
+// última respuesta se aplica (si no, una respuesta vieja que llega tarde pisa lo tecleado).
+let pendingSettings: Partial<LauncherSettings> = {}
+let settingsTimer: ReturnType<typeof setTimeout> | null = null
+let settingsFlush: Promise<void> | null = null
+let settingsSeq = 0
+
 /**
  * ¿Hay que sincronizar antes de jugar? Normalmente manda el interruptor de actualización
  * automática, pero un cambio de variante pendiente (o una config recomendada por aplicar)
  * obliga igualmente: ese interruptor sirve para no bajar mods nuevos, no para acabar jugando
  * con el modpack de la otra variante.
  */
-const mustSync = (s: {
+export const mustSync = (s: {
   autoSyncMods: boolean
   modpackSyncPending: boolean
   modpackSeedPending: boolean
@@ -53,6 +60,8 @@ interface State {
   setAccount: (a: Account | null) => void
   hydrate: () => Promise<void>
   logout: () => Promise<void>
+  /** Sesión premium caducada: vuelve a la pantalla de login sin borrar la cuenta guardada. */
+  relogin: () => void
 
   // Sincronización de mods
   syncing: boolean
@@ -90,7 +99,7 @@ interface State {
   javaProgress: JavaProgress | null
   javaError: string
   loadJava: () => Promise<void>
-  ensureJava: () => Promise<void>
+  ensureJava: (force?: boolean) => Promise<void>
 
   // Ajustes (persistidos)
   ramGb: number
@@ -102,10 +111,13 @@ interface State {
   autoSyncMods: boolean // sincronizar mods al dar Jugar
   modpackSeedPending: boolean // aplicar la config recomendada en la próxima sync
   modpackSyncPending: boolean // cambio de variante sin sincronizar todavía
+  musicaActiva: boolean // música de fondo del launcher
+  musicaVolumen: number // 0..1
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
   setSetting: (patch: Partial<LauncherSettings>) => Promise<void>
+  flushSettings: () => Promise<void>
   setRamGb: (n: number) => void
 
   // Estado del servidor
@@ -117,6 +129,23 @@ interface State {
   updateStatus: UpdateStatus | null
   setUpdateStatus: (s: UpdateStatus) => void
   installUpdate: () => Promise<boolean>
+}
+
+/** Campos de los ajustes persistidos que el store refleja (una sola copia del mapeo). */
+function fromSettings(s: LauncherSettings): Partial<State> {
+  return {
+    ramGb: s.ramGb,
+    width: s.width,
+    height: s.height,
+    fullscreen: s.fullscreen,
+    jvmArgs: s.jvmArgs,
+    modpackVariant: s.modpackVariant,
+    autoSyncMods: s.autoSyncMods,
+    modpackSeedPending: s.modpackSeedPending,
+    modpackSyncPending: s.modpackSyncPending,
+    musicaActiva: s.musicaActiva,
+    musicaVolumen: s.musicaVolumen
+  }
 }
 
 export const useStore = create<State>((set, get) => ({
@@ -155,6 +184,10 @@ export const useStore = create<State>((set, get) => ({
       account = null
     }
     set({ account, ready: true })
+    // La renovación en segundo plano puede cambiar el nombre o marcar la sesión como caducada.
+    window.dbr?.auth?.onSessionChanged?.((a) => {
+      if (get().account) set({ account: a })
+    })
     // Un fallo al cargar ajustes NO debe deslogear al usuario: se queda con los defaults.
     try {
       await get().loadSettings()
@@ -172,8 +205,12 @@ export const useStore = create<State>((set, get) => ({
   },
   logout: async () => {
     await window.dbr.auth.logout()
-    set({ account: null, tab: 'home' })
+    // El pre-calentamiento y el resumen del sync eran de la sesión anterior.
+    syncGeneration++
+    prewarmPromise = null
+    set({ account: null, tab: 'home', prewarmDone: false, syncSummary: null })
   },
+  relogin: () => set({ account: null, tab: 'home' }),
 
   syncing: false,
   syncProgress: null,
@@ -182,6 +219,7 @@ export const useStore = create<State>((set, get) => ({
   syncCancelled: false,
   startSync: async () => {
     if (!window.dbr?.sync) return
+    await get().flushSettings() // la variante elegida hace un momento tiene que estar en el main
     set({ syncing: true, syncError: '', syncCancelled: false, syncSummary: null, syncProgress: null })
     const off = window.dbr.sync.onProgress((p) => set({ syncProgress: p }))
     try {
@@ -206,6 +244,8 @@ export const useStore = create<State>((set, get) => ({
     if (!window.dbr?.launch) return
     // 0) Si hay un pre-calentamiento en curso, esperarlo (evita doble sync / doble Java).
     if (prewarmPromise) await prewarmPromise.catch(() => {})
+    // Ajustes recién tocados (RAM, ventana, JVM) tienen que llegar al main antes de lanzar.
+    await get().flushSettings()
 
     // 1) Sincronizar mods (ver mustSync). Si el pre-calentamiento ya sincronizó bien, se salta.
     if (mustSync(get()) && !get().prewarmDone) {
@@ -231,7 +271,13 @@ export const useStore = create<State>((set, get) => ({
     })
     try {
       const res = await window.dbr.launch.start()
-      if (!res.ok) set({ launchError: res.error })
+      if (!res.ok) {
+        set({ launchError: res.error })
+        offS()
+      }
+    } catch (e) {
+      offS()
+      throw e
     } finally {
       offP()
       set({ launching: false })
@@ -284,12 +330,12 @@ export const useStore = create<State>((set, get) => ({
     const javaInfo = await window.dbr.java.get()
     set({ javaInfo })
   },
-  ensureJava: async () => {
+  ensureJava: async (force = false) => {
     if (!window.dbr?.java) return
     set({ javaBusy: true, javaError: '', javaProgress: null })
     const off = window.dbr.java.onProgress((p) => set({ javaProgress: p }))
     try {
-      const res = await window.dbr.java.ensure()
+      const res = await window.dbr.java.ensure(force)
       if (res.ok) set({ javaInfo: res.info })
       else set({ javaError: res.error })
     } finally {
@@ -307,6 +353,8 @@ export const useStore = create<State>((set, get) => ({
   autoSyncMods: true,
   modpackSeedPending: false,
   modpackSyncPending: false,
+  musicaActiva: false,
+  musicaVolumen: 0.05,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -315,19 +363,7 @@ export const useStore = create<State>((set, get) => ({
       window.dbr.settings.get(),
       window.dbr.settings.limits()
     ])
-    set({
-      ramGb: s.ramGb,
-      width: s.width,
-      height: s.height,
-      fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs,
-      modpackVariant: s.modpackVariant,
-      autoSyncMods: s.autoSyncMods,
-      modpackSeedPending: s.modpackSeedPending,
-      modpackSyncPending: s.modpackSyncPending,
-      maxRamGb: limits.maxGb,
-      totalRamGb: limits.totalGb
-    })
+    set({ ...fromSettings(s), maxRamGb: limits.maxGb, totalRamGb: limits.totalGb })
   },
   setSetting: async (patch) => {
     set(patch)
@@ -341,18 +377,30 @@ export const useStore = create<State>((set, get) => ({
       set({ prewarmDone: false })
     }
     if (!window.dbr?.settings) return
-    const s = await window.dbr.settings.set(patch)
-    set({
-      ramGb: s.ramGb,
-      width: s.width,
-      height: s.height,
-      fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs,
-      modpackVariant: s.modpackVariant,
-      autoSyncMods: s.autoSyncMods,
-      modpackSeedPending: s.modpackSeedPending,
-      modpackSyncPending: s.modpackSyncPending
-    })
+    pendingSettings = { ...pendingSettings, ...patch }
+    if (settingsTimer) clearTimeout(settingsTimer)
+    settingsTimer = setTimeout(() => void get().flushSettings(), 300)
+  },
+  flushSettings: async () => {
+    if (settingsTimer) {
+      clearTimeout(settingsTimer)
+      settingsTimer = null
+    }
+    if (settingsFlush) await settingsFlush.catch(() => {})
+    if (!window.dbr?.settings || Object.keys(pendingSettings).length === 0) return
+    const patch = pendingSettings
+    pendingSettings = {}
+    const seq = ++settingsSeq
+    settingsFlush = (async () => {
+      const s = await window.dbr.settings.set(patch)
+      // Si mientras tanto se tocó otro ajuste, esa respuesta vale más que esta.
+      if (seq === settingsSeq && Object.keys(pendingSettings).length === 0) set(fromSettings(s))
+    })()
+    try {
+      await settingsFlush
+    } finally {
+      settingsFlush = null
+    }
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),
 
@@ -360,12 +408,14 @@ export const useStore = create<State>((set, get) => ({
   pinging: false,
   ping: async () => {
     if (!window.dbr?.status) return
-    if (Date.now() - lastPingAt < 30_000) return // cachea 30s
-    lastPingAt = Date.now()
+    if (get().pinging || Date.now() - lastPingAt < 30_000) return // cachea 30s
     set({ pinging: true })
     try {
       const serverStatus = await window.dbr.status.ping()
       set({ serverStatus })
+      lastPingAt = Date.now() // solo tras un ping bueno: si falla, el siguiente reintenta
+    } catch {
+      /* sin red: se queda el estado anterior */
     } finally {
       set({ pinging: false })
     }

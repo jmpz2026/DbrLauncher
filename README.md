@@ -7,7 +7,7 @@ Launcher de la comunidad **Dbr** para Minecraft **Forge 1.7.10** (Java 8).
 - JRE 8 auto-descargado por SO/arquitectura (Temurin/Adoptium).
 - Descarga vanilla (Mojang) + Forge y lanza el juego.
 - Estado del servidor en vivo (ping), ajustes (RAM/resolución/JVM).
-- Multiplataforma: Windows, macOS, Linux. Auto-update por GitHub Releases.
+- Multiplataforma: Windows y Linux. Auto-update por GitHub Releases.
 - UI estilo **Minecraft pixel** (fuente Pixelify Sans, paneles de piedra, acento oro).
 
 ## Stack
@@ -119,18 +119,27 @@ Alternativa sin instalar nada (fuerza la extracción):
 Si el launcher **sí** abre sin libfuse2 (modo extract-and-run), muestra un aviso in-app
 con el comando y un botón «Instalar ahora» (usa `pkexec`, con diálogo gráfico de contraseña).
 
+**Ubuntu 24.04 o más nuevo:** AppArmor bloquea los namespaces de usuario sin privilegios y el
+sandbox de Chromium no arranca, así que el AppImage se cierra sin abrir ventana. En esas
+versiones usa el **`.deb`**, que se instala con su propio perfil y no tiene el problema. Como
+último recurso: `./Dbr-Launcher-*.AppImage --no-sandbox`.
+
+**Sesión premium sin llavero:** si el escritorio no tiene llavero (gnome-keyring, KWallet), el
+launcher no puede cifrar la sesión de Microsoft. En ese caso la guarda en claro en
+`~/.config/Dbr Launcher/account.json` con permisos `0600` (solo tu usuario puede leerla).
+
 ## Tests
 
-Scripts de verificación (Node + esbuild, sin abrir la app):
+Scripts de verificación (esbuild + Electron sin ventana; la capa HTTP usa `net` de Electron):
 
 ```bash
 # núcleo de sync, java (descarga real), launch (comando), ping (real), manifest (e2e)
-node -e "require('esbuild').build({entryPoints:['scripts/<test>.ts'],bundle:true,\
-  platform:'node',format:'esm',external:['electron'],outfile:'.tmp/t.mjs'})" && node .tmp/t.mjs
+npm run itest -- sync-itest
 ```
 
 `scripts/`: `sync-itest.ts`, `java-itest.ts`, `launch-itest.ts`, `status-itest.ts`,
-`manifest-itest.ts`, `gen-manifest.mjs` (generador), `shot.cjs` (screenshot offscreen).
+`manifest-itest.ts`, `seed-itest.ts`, `idioma-itest.ts`, `i18n-test.ts`, `itest.mjs` (runner),
+`gen-manifest.mjs` (generador), `shot.cjs` (screenshot offscreen).
 
 ## Roadmap
 

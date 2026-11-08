@@ -22,7 +22,7 @@ const SOFTWARE = ['gdi generic', 'llvmpipe', 'softpipe', 'swrast', 'microsoft ba
 
 const NONE: LiteProposal = { propose: false, reason: '', fromGame: false }
 
-export async function checkLite(): Promise<LiteProposal> {
+async function checkLite(): Promise<LiteProposal> {
   const s = loadSettings()
   if (s.modpackVariant !== 'full') return NONE
   if (getKey('recomendarLite') === 'true') {
@@ -81,7 +81,7 @@ function intelAntigua(t: string): boolean {
  * El cambio de variante lo pide el renderer con settings:set: así pasa por la misma lógica
  * que el selector de Ajustes y re-sincroniza.
  */
-export function answerLite(accept: boolean): void {
+function answerLite(accept: boolean): void {
   saveSettings({ liteProposal: accept ? 'accepted' : 'rejected' })
   try {
     setKey('recomendarLite', 'false', 'B')

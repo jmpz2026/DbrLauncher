@@ -1,6 +1,7 @@
 import { useStore, type Tab } from '../store'
 import discordIcon from '../assets/discord.png'
 import { useT } from '../i18n'
+import { Btn } from './ui'
 import type { Clave } from '../../../shared/i18n'
 
 const items: { id: Tab; label: Clave }[] = [
@@ -21,32 +22,31 @@ export default function NavBar(): JSX.Element {
         target="_blank"
         rel="noreferrer"
         title={tr('nav.discord')}
+        aria-label={tr('nav.discord')}
         className="mc-btn absolute left-3 inset-y-0 my-auto grid h-10 w-10 place-items-center hover:!border-[#8ea1e1]"
       >
-        <img src={discordIcon} alt="Discord" className="h-6 w-6" />
+        <img src={discordIcon} alt="" className="h-6 w-6" />
       </a>
 
       {items.map((it) => {
         const active = tab === it.id
         return (
-          <button
+          <Btn
             key={it.id}
+            size="md"
+            on={active}
+            aria-current={active ? 'page' : undefined}
             onClick={() => setTab(it.id)}
-            className={`mc-btn px-5 py-2 text-sm font-semibold uppercase tracking-[0.14em] ${
-              active ? 'mc-btn-on' : ''
-            }`}
+            className="px-5"
           >
             {tr(it.label)}
-          </button>
+          </Btn>
         )
       })}
-      <span className="mx-1 h-6 w-[2px] bg-black" />
-      <button
-        onClick={() => window.dbr.openGameFolder()}
-        className="mc-btn px-4 py-2 text-sm font-semibold uppercase tracking-[0.14em]"
-      >
+      <span className="mx-1 h-6 w-[2px] bg-black" aria-hidden />
+      <Btn size="md" onClick={() => window.dbr.openGameFolder()}>
         {tr('nav.carpeta')}
-      </button>
+      </Btn>
     </nav>
   )
 }

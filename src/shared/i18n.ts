@@ -71,24 +71,28 @@ const T = {
     en: 'Official Minecraft account (Microsoft). Your browser will open.',
     pt: 'Conta oficial do Minecraft (Microsoft). Seu navegador vai abrir.'
   },
-  'login.premium_pronto_desc': {
-    es: 'Las cuentas oficiales de Minecraft (Microsoft) llegarán pronto. Por ahora entra con No-Premium.',
-    en: 'Official Minecraft accounts (Microsoft) are coming soon. For now log in with No-Premium.',
-    pt: 'As contas oficiais do Minecraft (Microsoft) chegam em breve. Por enquanto entre com No-Premium.'
-  },
-  'login.pronto': { es: 'Próximamente', en: 'Coming soon', pt: 'Em breve' },
   'login.conectando': { es: 'Conectando…', en: 'Connecting…', pt: 'Conectando…' },
   'login.con_microsoft': { es: 'Entrar con Microsoft', en: 'Log in with Microsoft', pt: 'Entrar com Microsoft' },
-  'login.abre': { es: 'Abre', en: 'Open', pt: 'Abra' },
-  'login.introduce_codigo': {
-    es: 'e introduce este código:',
-    en: 'and enter this code:',
-    pt: 'e digite este código:'
+  'login.no_premium': { es: 'No-Premium', en: 'Non-Premium', pt: 'Não-Premium' },
+  'login.premium': { es: 'Premium', en: 'Premium', pt: 'Premium' },
+  'login.pega_codigo': {
+    es: 'Se abrió tu navegador. Pega este código (ya está copiado) y acepta con tu cuenta de Minecraft:',
+    en: 'Your browser opened. Paste this code (already copied) and accept with your Minecraft account:',
+    pt: 'Seu navegador abriu. Cole este código (já está copiado) e aceite com sua conta do Minecraft:'
   },
+  'login.codigo': { es: 'Código de acceso', en: 'Access code', pt: 'Código de acesso' },
+  'login.abrir_enlace': { es: 'Abrir enlace', en: 'Open link', pt: 'Abrir link' },
+  'login.caduca': { es: 'Caduca en {t}', en: 'Expires in {t}', pt: 'Expira em {t}' },
   'login.esperando': { es: 'Esperando autorización', en: 'Waiting for authorization', pt: 'Aguardando autorização' },
 
   // Inicio
   'home.bienvenido': { es: 'Bienvenido de vuelta', en: 'Welcome back', pt: 'Bem-vindo de volta' },
+  'home.sesion_caducada': {
+    es: 'Tu sesión de Microsoft caducó. Vuelve a entrar para jugar con tu cuenta premium.',
+    en: 'Your Microsoft session expired. Log in again to play with your premium account.',
+    pt: 'Sua sessão da Microsoft expirou. Entre de novo para jogar com sua conta premium.'
+  },
+  'home.volver_entrar': { es: 'Volver a entrar', en: 'Log in again', pt: 'Entrar de novo' },
   'home.jugador': { es: 'Jugador', en: 'Player', pt: 'Jogador' },
   'home.jugando': { es: 'Jugando…', en: 'Playing…', pt: 'Jogando…' },
   'home.sincronizando': { es: 'Sincronizando…', en: 'Syncing…', pt: 'Sincronizando…' },
@@ -107,6 +111,16 @@ const T = {
   'home.descartar': { es: 'Descartar', en: 'Dismiss', pt: 'Descartar' },
   'home.en_marcha': { es: 'Minecraft en marcha', en: 'Minecraft is running', pt: 'Minecraft em execução' },
   'home.mods_al_dia': { es: 'Mods al día', en: 'Mods up to date', pt: 'Mods em dia' },
+  'home.mods_comprobando': { es: 'Comprobando mods…', en: 'Checking mods…', pt: 'Verificando mods…' },
+  'home.mods_sin_comprobar': { es: 'Mods sin comprobar', en: 'Mods not checked', pt: 'Mods não verificados' },
+  'home.mods_sync_off': {
+    es: 'Actualización de mods apagada',
+    en: 'Mod updates off',
+    pt: 'Atualização de mods desligada'
+  },
+  'home.mods_error': { es: 'Fallo al actualizar mods', en: 'Mod update failed', pt: 'Falha ao atualizar mods' },
+  'home.ram': { es: '{gb} GB de RAM', en: '{gb} GB RAM', pt: '{gb} GB de RAM' },
+  'home.build': { es: 'Versión {v}', en: 'Version {v}', pt: 'Versão {v}' },
   'home.listo_version': {
     es: 'Listo · v{version} — {updated} actualizados',
     en: 'Ready · v{version} — {updated} updated',
@@ -120,7 +134,6 @@ const T = {
   // Progreso del lanzamiento
   'launch.version': { es: 'Resolviendo versión', en: 'Resolving version', pt: 'Resolvendo versão' },
   'launch.libraries': { es: 'Descargando librerías', en: 'Downloading libraries', pt: 'Baixando bibliotecas' },
-  'launch.natives': { es: 'Extrayendo natives', en: 'Extracting natives', pt: 'Extraindo natives' },
   'launch.assets': { es: 'Descargando assets', en: 'Downloading assets', pt: 'Baixando assets' },
   'launch.client': { es: 'Descargando cliente', en: 'Downloading client', pt: 'Baixando cliente' },
   'launch.java': { es: 'Preparando Java', en: 'Preparing Java', pt: 'Preparando Java' },
@@ -145,6 +158,8 @@ const T = {
 
   // Ajustes
   'ajustes.titulo': { es: 'Ajustes', en: 'Settings', pt: 'Ajustes' },
+  'ajustes.tab_juego': { es: 'Modpack y juego', en: 'Modpack and game', pt: 'Modpack e jogo' },
+  'ajustes.tab_sistema': { es: 'Sistema', en: 'System', pt: 'Sistema' },
   'ajustes.idioma': { es: 'Idioma', en: 'Language', pt: 'Idioma' },
   'ajustes.idioma_desc': {
     es: 'Cambia el idioma del launcher y el del juego. El servidor te habla en el idioma de tu Minecraft.',
@@ -172,11 +187,28 @@ const T = {
     en: ' You are at the recommended maximum for your computer.',
     pt: ' Você está no máximo recomendado para o seu computador.'
   },
+  'ajustes.musica': { es: 'Música del launcher', en: 'Launcher music', pt: 'Música do launcher' },
+  'ajustes.musica_desc': {
+    es: 'Música de fondo mientras el launcher está abierto. Se calla al iniciar el juego.',
+    en: 'Background music while the launcher is open. It stops when the game starts.',
+    pt: 'Música de fundo com o launcher aberto. Para quando o jogo inicia.'
+  },
+  'ajustes.volumen': { es: 'Volumen', en: 'Volume', pt: 'Volume' },
+  'ajustes.credito_musica': {
+    es: 'La música del launcher es nuestra, generada en local con Stable Audio Open 1.0 de Stability AI (Stability AI Community License).',
+    en: 'The launcher music is ours, generated locally with Stable Audio Open 1.0 by Stability AI (Stability AI Community License).',
+    pt: 'A música do launcher é nossa, gerada localmente com o Stable Audio Open 1.0 da Stability AI (Stability AI Community License).'
+  },
   'ajustes.creditos': { es: 'Créditos y permisos', en: 'Credits and permissions', pt: 'Créditos e permissões' },
   'ajustes.credito_npcdbc': {
     es: 'Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y somehussar (Hussar), por permitirnos distribuir a los jugadores, a través de este launcher, nuestra versión modificada (un fork no oficial) con los créditos a sus autores. Concedido el 05/10/2026.',
     en: 'Thanks to KAMKEEL (Kam), author of the addon together with bigguy345 (Goatee) and somehussar (Hussar), for allowing us to distribute to players, through this launcher, our modified version (an unofficial fork) with credit to its authors. Granted on 2026-10-05.',
     pt: 'Obrigado a KAMKEEL (Kam), autor do addon junto com bigguy345 (Goatee) e somehussar (Hussar), por nos permitir distribuir aos jogadores, por meio deste launcher, a nossa versão modificada (um fork não oficial) com os créditos aos autores. Concedido em 05/10/2026.'
+  },
+  'ajustes.credito_srajolote': {
+    es: 'Gracias a SrAjolote por aportar varias ideas que se implementaron en el launcher.',
+    en: 'Thanks to SrAjolote for contributing several ideas that were implemented in the launcher.',
+    pt: 'Obrigado a SrAjolote por contribuir com várias ideias que foram implementadas no launcher.'
   },
   'ajustes.credito_jingames': {
     es: 'Gracias a Benjámin Nagy (Ben), de JinGames, autores de Dragon Block C, JRMCore, JBRA Client, Family C y Years C, por permitirnos crear y usar addons que extienden sus mods. Concedido el 06/10/2026. Sus mods se usan sin modificar.',
@@ -346,6 +378,21 @@ const T = {
     en: 'The Microsoft session expired. Log in again.',
     pt: 'A sessão da Microsoft expirou. Entre de novo.'
   },
+  'err.premium_off': {
+    es: 'El inicio de sesión con Microsoft está desactivado en esta versión.',
+    en: 'Microsoft login is disabled in this version.',
+    pt: 'O login com a Microsoft está desativado nesta versão.'
+  },
+  'err.auth_servicio': {
+    es: '{host} no responde (HTTP {status}). Prueba en unos minutos.',
+    en: '{host} is not responding (HTTP {status}). Try again in a few minutes.',
+    pt: '{host} não está respondendo (HTTP {status}). Tente em alguns minutos.'
+  },
+  'err.ms_sesion_red': {
+    es: 'No se pudo renovar tu sesión de Microsoft por un problema de conexión: {detalle}',
+    en: 'Could not renew your Microsoft session because of a connection problem: {detalle}',
+    pt: 'Não foi possível renovar sua sessão da Microsoft por um problema de conexão: {detalle}'
+  },
   'err.xbox': { es: 'Fallo al autenticar con Xbox Live.', en: 'Xbox Live authentication failed.', pt: 'Falha ao autenticar no Xbox Live.' },
   'err.xbox_sin_perfil': {
     es: 'Esta cuenta Microsoft no tiene un perfil de Xbox. Crea uno en xbox.com.',
@@ -383,6 +430,7 @@ const T = {
     en: 'Could not get the Minecraft profile.',
     pt: 'Não foi possível obter o perfil do Minecraft.'
   },
+  'err.lanzando': { es: 'El juego ya se está iniciando.', en: 'The game is already starting.', pt: 'O jogo já está iniciando.' },
   'err.sin_sesion': { es: 'No hay sesión iniciada.', en: 'You are not logged in.', pt: 'Você não está logado.' },
   'err.java_descarga': { es: 'Descarga de Java falló ({status}).', en: 'Java download failed ({status}).', pt: 'O download do Java falhou ({status}).' },
   'err.java_no_8': {

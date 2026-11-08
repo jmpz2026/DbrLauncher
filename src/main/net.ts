@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
-import { httpRequest, readJson } from './http'
+import { httpRequest, readJson, type HttpInit } from './http'
 import { rememberSha1, sha1File, sha1FileCached } from './sync/hash'
 import { tr } from './idioma'
 
@@ -18,6 +18,8 @@ export interface EnsureOptions {
   /** Tamaño esperado (el `size` del manifest): decide si se baja a disco reanudable. */
   size?: number
   signal?: AbortSignal
+  /** No apuntar el sha1 en el hash-cache (archivos cuyo nombre ya es su sha1). */
+  noCache?: boolean
 }
 
 /** Descarga `url` a `dest` si falta o el sha1 no coincide. Devuelve true si descargó. */
@@ -47,7 +49,7 @@ export async function ensureFile(
     }
     rmSync(dest, { force: true })
     renameSync(part, dest)
-    rememberSha1(dest, sha1)
+    if (!opts.noCache) rememberSha1(dest, sha1)
     return true
   }
 
@@ -59,12 +61,12 @@ export async function ensureFile(
     if (got.toLowerCase() !== sha1.toLowerCase()) throw new Error(`SHA1 no coincide: ${url}`)
   }
   writeFileSync(dest, buf)
-  if (sha1) rememberSha1(dest, sha1)
+  if (sha1 && !opts.noCache) rememberSha1(dest, sha1)
   return true
 }
 
-export async function fetchJson<T>(url: string): Promise<T> {
-  const res = await httpRequest(url)
+export async function fetchJson<T>(url: string, init: Pick<HttpInit, 'retries'> = {}): Promise<T> {
+  const res = await httpRequest(url, init)
   if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`)
   return readJson<T>(res, url)
 }

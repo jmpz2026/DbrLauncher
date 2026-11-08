@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { LaunchPhase } from '../../../shared/launch'
-import { useStore } from '../store'
+import { mustSync, useStore } from '../store'
 import { useT } from '../i18n'
+import { Btn, Progress } from '../components/ui'
 
 export default function Home(): JSX.Element {
   const account = useStore((s) => s.account)
@@ -10,6 +11,7 @@ export default function Home(): JSX.Element {
   const launching = useStore((s) => s.launching)
   const gameRunning = useStore((s) => s.gameRunning)
   const play = useStore((s) => s.play)
+  const relogin = useStore((s) => s.relogin)
   const ping = useStore((s) => s.ping)
   const experimental = useStore((s) => s.modpackVariant === 'experimental')
   const tr = useT()
@@ -32,21 +34,21 @@ export default function Home(): JSX.Element {
       <BuildTag />
 
       <div className="flex h-full flex-col items-center justify-center gap-7 px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold-deep mc-text-sm">
-          {tr('home.bienvenido')}
-        </p>
-
-        <h1 className="mc-text -mt-1 text-[58px] font-bold uppercase leading-none tracking-tight text-gold">
-          {account?.username ?? tr('home.jugador')}
-        </h1>
+        <div className="text-center">
+          <p className="text-sm text-muted">{tr('home.bienvenido')}</p>
+          <h1 className="mc-text mt-1 font-pixel text-[58px] font-bold leading-none text-gold">
+            {account?.username ?? tr('home.jugador')}
+          </h1>
+        </div>
 
         <div className="relative mt-2 grid place-items-center">
           <button
             onClick={() => void play()}
             disabled={busy}
-            className="mc-btn-gold flex items-center gap-3 px-16 py-5 text-2xl font-bold uppercase tracking-[0.18em] disabled:opacity-70"
+            className="mc-btn-primary mc-btn-play flex items-center gap-3 px-16 py-5 font-pixel text-2xl font-bold uppercase tracking-[0.18em]"
           >
             <svg
+              aria-hidden
               width="18"
               height="18"
               viewBox="0 0 12 12"
@@ -59,8 +61,20 @@ export default function Home(): JSX.Element {
           </button>
         </div>
 
+        {account?.needsRelogin && (
+          <div
+            role="alert"
+            className="mc-panel flex max-w-lg items-center gap-4 !border-gold-deep px-4 py-3 text-sm text-text"
+          >
+            <span className="flex-1">{tr('home.sesion_caducada')}</span>
+            <Btn variant="primary" onClick={relogin} className="shrink-0">
+              {tr('home.volver_entrar')}
+            </Btn>
+          </div>
+        )}
+
         {experimental && (
-          <div className="mc-panel !border-red-600 max-w-lg px-4 py-2 text-center text-xs text-red-300">
+          <div className="mc-panel max-w-lg !border-error px-4 py-2 text-center text-sm text-error">
             {tr('home.experimental')}
           </div>
         )}
@@ -88,23 +102,11 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
 
   if (lastCrash && !gameRunning) {
     return (
-      <div className="mc-panel !border-red-600 mt-1 flex max-w-lg flex-col items-center gap-2 px-5 py-3 text-center">
-        <p className="text-xs uppercase tracking-wider text-red-300 mc-text-sm">
-          {tr('home.crash')}
-        </p>
+      <div role="alert" className="mc-panel mt-1 flex max-w-lg flex-col items-center gap-2 !border-error px-5 py-3 text-center">
+        <p className="text-sm text-error">{tr('home.crash')}</p>
         <div className="flex gap-3">
-          <button
-            onClick={() => void openLog()}
-            className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
-          >
-            {tr('home.ver_log')}
-          </button>
-          <button
-            onClick={dismissCrash}
-            className="mc-btn px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
-          >
-            {tr('home.descartar')}
-          </button>
+          <Btn onClick={() => void openLog()}>{tr('home.ver_log')}</Btn>
+          <Btn onClick={dismissCrash}>{tr('home.descartar')}</Btn>
         </div>
       </div>
     )
@@ -113,7 +115,7 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
   const error = launchError || syncError
   if (error) {
     return (
-      <div className="mc-panel !border-red-600 mt-1 max-w-lg px-4 py-2 text-center text-xs text-red-300">
+      <div role="alert" className="mc-panel mt-1 max-w-lg !border-error px-4 py-2 text-center text-sm text-error">
         {error}
       </div>
     )
@@ -121,8 +123,8 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
 
   if (gameRunning) {
     return (
-      <p className="mt-2 flex items-center gap-2 text-xs uppercase tracking-wider text-grass mc-text-sm">
-        <span className="h-2 w-2 animate-blink bg-grass" />
+      <p className="mt-2 flex items-center gap-2 text-sm text-grass">
+        <span className="h-2 w-2 animate-blink bg-grass" aria-hidden />
         {tr('home.en_marcha')}
       </p>
     )
@@ -131,12 +133,12 @@ function StatusArea({ ram }: { ram: number }): JSX.Element {
   return (
     <div className="mt-2 flex flex-col items-center gap-2.5">
       <div className="flex items-center gap-2.5">
-        <Chip online>{tr('home.mods_al_dia')}</Chip>
-        <Chip>{ram} GB RAM</Chip>
+        <ModsChip />
+        <Chip>{tr('home.ram', { gb: ram })}</Chip>
         <ServerChip />
       </div>
       {summary && summary.version && (
-        <p className="text-xs uppercase tracking-wider text-grass mc-text-sm">
+        <p className="text-xs text-grass">
           {tr('home.listo_version', { version: summary.version, updated: summary.updated })}
           {summary.removed > 0 ? tr('home.eliminados', { n: summary.removed }) : ''}
         </p>
@@ -155,7 +157,6 @@ function LaunchBar(): JSX.Element {
     java: tr('launch.java'),
     version: tr('launch.version'),
     libraries: tr('launch.libraries'),
-    natives: tr('launch.natives'),
     assets: tr('launch.assets'),
     client: tr('launch.client'),
     launching: tr('launch.launching'),
@@ -165,16 +166,11 @@ function LaunchBar(): JSX.Element {
 
   return (
     <div className="mt-1 w-full max-w-md">
-      <div className="mc-inset h-5 w-full overflow-hidden p-[2px]">
-        <div
-          className="h-full bg-gold transition-[width] duration-150"
-          style={{ width: hasPct ? `${pct}%` : '20%' }}
-        />
-      </div>
-      <p className="mt-2 truncate text-center text-xs uppercase tracking-wider text-muted mc-text-sm">
+      <Progress value={hasPct ? pct : null} label={label} />
+      <p className="mt-2 truncate text-center text-xs text-muted">
         {label}
-        {hasPct && <span className="ml-2 text-gold">{pct}%</span>}
-        {p?.detail ? <span className="ml-2 normal-case text-muted/70">{p.detail}</span> : null}
+        {hasPct && <span className="ml-2 font-semibold text-gold">{pct}%</span>}
+        {p?.detail ? <span className="ml-2 text-muted/70">{p.detail}</span> : null}
       </p>
     </div>
   )
@@ -196,16 +192,22 @@ function formatBytes(n: number): string {
 /** Velocidad de descarga en bytes/s, media de los últimos ~3 s. */
 function useSpeed(bytesDone: number | undefined): number {
   const samples = useRef<Array<[number, number]>>([])
-  if (bytesDone === undefined) {
-    samples.current = []
-    return 0
-  }
-  const now = Date.now()
-  const s = samples.current
-  if (s.length === 0 || s[s.length - 1][0] !== bytesDone) s.push([bytesDone, now])
-  while (s.length > 2 && now - s[0][1] > 3000) s.shift()
-  const [b0, t0] = s[0]
-  return now > t0 ? Math.max(0, ((bytesDone - b0) * 1000) / (now - t0)) : 0
+  const [speed, setSpeed] = useState(0)
+  // El ref se toca en un efecto, no durante el render (StrictMode renderiza dos veces).
+  useEffect(() => {
+    if (bytesDone === undefined) {
+      samples.current = []
+      setSpeed(0)
+      return
+    }
+    const now = Date.now()
+    const s = samples.current
+    if (s.length === 0 || s[s.length - 1][0] !== bytesDone) s.push([bytesDone, now])
+    while (s.length > 2 && now - s[0][1] > 3000) s.shift()
+    const [b0, t0] = s[0]
+    setSpeed(now > t0 ? Math.max(0, ((bytesDone - b0) * 1000) / (now - t0)) : 0)
+  }, [bytesDone])
+  return speed
 }
 
 function SyncBar(): JSX.Element {
@@ -236,27 +238,20 @@ function SyncBar(): JSX.Element {
 
   return (
     <div className="mt-1 w-full max-w-md">
-      <div className="mc-inset h-5 w-full overflow-hidden p-[2px]">
-        <div
-          className="h-full bg-gold transition-[width] duration-150"
-          style={{ width: indeterminate ? '15%' : `${pct}%` }}
-        />
-      </div>
-      <p className="mt-2 text-center text-xs uppercase tracking-wider text-muted mc-text-sm">
+      <Progress value={indeterminate ? null : pct} label={label} />
+      <p className="mt-2 text-center text-xs text-muted">
         {label}
-        {!indeterminate && <span className="ml-2 text-gold">{pct}%</span>}
+        {!indeterminate && <span className="ml-2 font-semibold text-gold">{pct}%</span>}
       </p>
       {byBytes && (
-        <p className="mt-1 text-center text-xs text-muted mc-text-sm">
+        <p className="mt-1 text-center text-xs text-muted">
           {formatBytes(p.bytesDone ?? 0)} / {formatBytes(p.bytesTotal!)}
           {speed > 0 && ` · ${formatBytes(Math.round(speed))}/s`}
         </p>
       )}
       <div className="mt-2 flex flex-col items-center gap-1">
-        <button type="button" className="mc-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]" onClick={cancelSync}>
-          {tr('comun.cancelar')}
-        </button>
-        <p className="text-center text-[10px] text-muted">{tr('sync.cancelar_hint')}</p>
+        <Btn onClick={cancelSync}>{tr('comun.cancelar')}</Btn>
+        <p className="text-center text-[11px] text-muted">{tr('sync.cancelar_hint')}</p>
       </div>
     </div>
   )
@@ -270,7 +265,7 @@ function ServerChip(): JSX.Element {
   if (pinging && !status) return <Chip>{tr('home.servidor')}</Chip>
   if (status?.online) {
     return (
-      <Chip online>
+      <Chip tone="ok">
         {tr('home.en_linea', { players: status.players ?? 0, max: status.max ?? 0 })}
       </Chip>
     )
@@ -278,10 +273,33 @@ function ServerChip(): JSX.Element {
   return <Chip>{tr('home.servidor_offline')}</Chip>
 }
 
-function Chip({ children, online }: { children: ReactNode; online?: boolean }): JSX.Element {
+/** Estado real de los mods: al día solo si la última sync terminó bien. */
+function ModsChip(): JSX.Element {
+  const tr = useT()
+  const must = useStore(mustSync)
+  const error = useStore((s) => s.syncError)
+  const summary = useStore((s) => s.syncSummary)
+  const checking = useStore((s) => s.prewarming || s.syncing)
+
+  if (!must) return <Chip tone="idle">{tr('home.mods_sync_off')}</Chip>
+  if (error) return <Chip tone="error">{tr('home.mods_error')}</Chip>
+  if (summary) return <Chip tone="ok">{tr('home.mods_al_dia')}</Chip>
+  if (checking) return <Chip tone="busy">{tr('home.mods_comprobando')}</Chip>
+  return <Chip tone="idle">{tr('home.mods_sin_comprobar')}</Chip>
+}
+
+type Tone = 'ok' | 'busy' | 'error' | 'idle'
+const DOT: Record<Tone, string> = {
+  ok: 'bg-grass',
+  busy: 'bg-gold animate-blink',
+  error: 'bg-error',
+  idle: 'bg-muted'
+}
+
+function Chip({ children, tone }: { children: ReactNode; tone?: Tone }): JSX.Element {
   return (
-    <span className="mc-inset flex items-center gap-2 px-3 py-1.5 text-xs text-text mc-text-sm">
-      {online && <span className="h-2 w-2 bg-grass" />}
+    <span className="mc-inset flex items-center gap-2 px-3 py-1.5 text-xs text-text">
+      {tone && <span className={`h-2 w-2 ${DOT[tone]}`} aria-hidden />}
       {children}
     </span>
   )
@@ -291,15 +309,16 @@ function BuildTag(): JSX.Element {
   // La versión se lee en runtime desde app.getVersion() (package.json),
   // así el tag se actualiza solo en cada release. No hardcodear.
   const [version, setVersion] = useState('')
+  const tr = useT()
 
   useEffect(() => {
-    void window.dbr.getVersion().then(setVersion)
+    void window.dbr?.getVersion?.().then(setVersion)
   }, [])
 
   return (
-    <div className="pointer-events-none absolute bottom-6 right-8 text-right text-[10px] font-medium uppercase leading-relaxed tracking-[0.22em] text-muted mc-text-sm">
-      <div>Build v{version}</div>
-      <div className="text-gold-deep">Forge · Java 8</div>
+    <div className="pointer-events-none absolute bottom-6 right-8 text-right text-[11px] leading-relaxed text-muted">
+      {version && <div>{tr('home.build', { v: version })}</div>}
+      <div>Forge 1.7.10 · Java 8</div>
     </div>
   )
 }

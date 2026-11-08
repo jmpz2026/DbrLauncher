@@ -28,35 +28,49 @@ export const CONFIG = {
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 
-  // Autenticación premium (Microsoft OAuth · device code flow).
-  // 1) Registrar una app en Azure Portal → Entra ID → App registrations (cuenta personal/consumers).
-  // 2) Tipo "public client / native", habilitar "Allow public client flows" = Yes.
-  // 3) Pegar el Application (client) ID aquí. Sin secreto (public client).
+  // Autenticación premium (Microsoft OAuth · device code flow). Dos proveedores:
+  // - 'live': client ID público del Minecraft Launcher oficial contra login.live.com. Mojang ya lo
+  //   tiene aprobado, así que login_with_xbox no da 403. No es nuestro: Microsoft puede cortarlo.
+  // - 'azure': nuestra app de Azure (consumers). Solo funciona cuando Mojang apruebe el client ID
+  //   en aka.ms/mce-reviewappid; hasta entonces login_with_xbox devuelve 403.
+  // Cambiar `provider` obliga a volver a entrar: cada refresh token solo vale con su client ID.
   auth: {
-    // Apagado hasta que Mojang apruebe el client ID (aka.ms/mce-reviewappid); sin aprobación
-    // login_with_xbox devuelve 403. Al aprobarlo, poner true y sacar release.
-    premiumEnabled: false,
-    azureClientId: 'cea6378f-0390-4f9f-8f41-a4f512877fe5',
-    scope: 'XboxLive.signin offline_access',
-    // Tenant 'consumers' = solo cuentas Microsoft personales (las de Minecraft/Xbox).
-    deviceCodeUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode',
-    tokenUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token'
+    premiumEnabled: true,
+    provider: 'live' as AuthProviderId,
+    providers: {
+      live: {
+        clientId: '00000000402b5328',
+        scope: 'service::user.auth.xboxlive.com::MBI_SSL',
+        deviceCodeUrl: 'https://login.live.com/oauth20_connect.srf',
+        tokenUrl: 'https://login.live.com/oauth20_token.srf',
+        // login.live.com espera el ticket RPS con prefijo t=; los tokens de Azure v2 usan d=.
+        rpsPrefix: 't='
+      },
+      azure: {
+        clientId: 'cea6378f-0390-4f9f-8f41-a4f512877fe5',
+        scope: 'XboxLive.signin offline_access',
+        // Tenant 'consumers' = solo cuentas Microsoft personales (las de Minecraft/Xbox).
+        deviceCodeUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode',
+        tokenUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+        rpsPrefix: 'd='
+      }
+    }
   }
 } as const
 
-// True cuando el client ID sigue sin configurarse.
-export const isAzureConfigured = (): boolean => {
-  const id: string = CONFIG.auth.azureClientId
-  return id !== 'YOUR_AZURE_CLIENT_ID' && id.length > 0
+export type AuthProviderId = 'live' | 'azure'
+
+export interface AuthProvider {
+  clientId: string
+  scope: string
+  deviceCodeUrl: string
+  tokenUrl: string
+  rpsPrefix: string
 }
 
-// True cuando el login premium está activado y configurado.
-export const isPremiumEnabled = (): boolean => CONFIG.auth.premiumEnabled && isAzureConfigured()
+export const authProvider = (id: AuthProviderId = CONFIG.auth.provider): AuthProvider =>
+  CONFIG.auth.providers[id]
 
-// True cuando ya se rellenó el OWNER/REPO del manifest.
-export const isManifestConfigured = (): boolean => !CONFIG.manifestUrl.includes('OWNER/REPO')
+// True cuando el login premium está activado.
+export const isPremiumEnabled = (): boolean => CONFIG.auth.premiumEnabled
 
-// True cuando ya se rellenó el JSON de Forge.
-export const isForgeConfigured = (): boolean => !CONFIG.forgeJsonUrl.includes('OWNER/REPO')
-
-export type LauncherConfig = typeof CONFIG

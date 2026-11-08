@@ -32,7 +32,7 @@ export function writeString(str: string): Buffer {
   return Buffer.concat([writeVarInt(data.length), data])
 }
 
-export function writeUShort(n: number): Buffer {
+function writeUShort(n: number): Buffer {
   const b = Buffer.alloc(2)
   b.writeUInt16BE(n, 0)
   return b

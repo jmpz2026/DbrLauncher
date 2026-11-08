@@ -1,14 +1,14 @@
 import type { Artifact, Library, Rule } from './version'
 
 /** Nombre de SO según el esquema de los JSON de Minecraft. */
-export function osName(platform: string = process.platform): 'windows' | 'osx' | 'linux' {
+function osName(platform: string = process.platform): 'windows' | 'osx' | 'linux' {
   if (platform === 'win32') return 'windows'
   if (platform === 'darwin') return 'osx'
   return 'linux'
 }
 
 /** '64' o '32' para sustituir ${arch} en clasificadores de natives. */
-export function archBits(arch: string = process.arch): '64' | '32' {
+function archBits(arch: string = process.arch): '64' | '32' {
   return arch === 'x64' || arch === 'arm64' ? '64' : '32'
 }
 

@@ -7,31 +7,28 @@ module.exports = {
         // Base piedra / deepslate (Minecraft neutro)
         bg: '#191614',
         stone: '#2b2b2b',
-        stone2: '#3a3a3a',
-        'stone-light': '#565656',
-        'stone-dark': '#1a1a1a',
-        line: '#000000',
-        muted: '#9b968c',
+        muted: '#a8a296',
         text: '#e8e2d4',
-        // Acento oro (identidad Dbr / Ki) — plano, sin degradado
-        accent: '#ffcf4a',
+        // Paleta Saga: naranja = acción principal, azul = seleccionado, oro ki = estados y valores
+        saga: '#f26a1b',
+        'saga-light': '#ff8a3d',
+        azul: '#1f4fa8',
+        'azul-light': '#4f7fd6',
         gold: '#ffcf4a',
         'gold-deep': '#e0951b',
-        'gold-light': '#ffe9a8',
-        // Verde "grass" para estados online
-        grass: '#5fa838'
+        // Verde "grass" para estados online / al día
+        grass: '#5fa838',
+        // Único color de error
+        error: '#f0625a'
       },
       fontFamily: {
+        // Pixelify solo para títulos y el botón Jugar; el resto, una sans legible del sistema
         pixel: ['"Pixelify Sans"', 'monospace'],
-        display: ['"Pixelify Sans"', 'monospace'],
-        sans: ['"Pixelify Sans"', 'monospace']
+        sans: ['"Segoe UI"', 'system-ui', '"Noto Sans"', 'Ubuntu', '"DejaVu Sans"', 'sans-serif']
       },
       keyframes: {
-        // Splash pulsante estilo pantalla de título de Minecraft
-        splashPulse: {
-          '0%, 100%': { transform: 'rotate(-18deg) scale(1)' },
-          '50%': { transform: 'rotate(-18deg) scale(1.08)' }
-        },
+        // Barra indeterminada: un bloque que recorre el carril
+        indeterminate: { '0%': { left: '-30%' }, '100%': { left: '100%' } },
         // Parpadeo de cursor / indicadores
         blink: { '0%, 49%': { opacity: '1' }, '50%, 100%': { opacity: '0.25' } },
         // Partícula de ki pixelada que asciende a saltos
@@ -43,7 +40,7 @@ module.exports = {
         }
       },
       animation: {
-        'splash-pulse': 'splashPulse 0.9s ease-in-out infinite',
+        indeterminate: 'indeterminate 1.4s steps(28) infinite',
         blink: 'blink 1s steps(1) infinite',
         'ki-rise': 'kiRise 7s steps(20) infinite'
       }

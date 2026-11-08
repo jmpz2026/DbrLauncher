@@ -9,6 +9,7 @@ import UpdateOverlay from './components/UpdateOverlay'
 import FuseBanner from './components/FuseBanner'
 import GameLogModal from './components/GameLogModal'
 import LiteProposalModal from './components/LiteProposalModal'
+import MusicaFondo from './components/MusicaFondo'
 import { useStore } from './store'
 import { useHtmlLang, useT } from './i18n'
 
@@ -62,6 +63,7 @@ export default function App(): JSX.Element {
       <GameLogModal />
       <FuseBanner />
       {ready && account && <LiteProposalModal />}
+      {ready && <MusicaFondo />}
     </div>
   )
 }
@@ -70,7 +72,7 @@ function Loading(): JSX.Element {
   const tr = useT()
   return (
     <div className="grid h-full place-items-center">
-      <p className="text-sm uppercase tracking-[0.3em] text-muted mc-text-sm">
+      <p role="status" className="text-sm text-muted">
         {tr('comun.cargando')}<span className="animate-blink">_</span>
       </p>
     </div>

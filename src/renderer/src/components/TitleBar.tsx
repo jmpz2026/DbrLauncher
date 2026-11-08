@@ -2,6 +2,7 @@ import { useStore } from '../store'
 import { useT } from '../i18n'
 import { LANGS, LANG_NAME } from '../../../shared/i18n'
 import logo from '../assets/logo.png'
+import { Btn } from './ui'
 
 export default function TitleBar(): JSX.Element {
   const account = useStore((s) => s.account)
@@ -11,37 +12,27 @@ export default function TitleBar(): JSX.Element {
 
   return (
     <header className="drag flex h-14 items-center justify-between border-b-2 border-black bg-stone/80 px-4">
-      {/* Marca — logo Resurrection + RESURRECTION en grande */}
+      {/* Marca única: Dbr Launcher (igual que la ventana y el instalador) */}
       <div className="flex items-center gap-2.5">
-        <img
-          src={logo}
-          alt="Resurrection"
-          className="h-11 w-11 shrink-0 object-contain [image-rendering:auto]"
-        />
-        <div className="mc-text text-2xl font-bold uppercase tracking-[0.14em] text-gold">
-          Resurrection
-        </div>
+        <img src={logo} alt="" className="h-10 w-10 shrink-0 object-contain [image-rendering:auto]" />
+        <div className="mc-text font-pixel text-2xl font-bold text-gold">Dbr Launcher</div>
       </div>
 
       <div className="no-drag flex items-center gap-3">
         <LangPicker />
         {account && (
           <div className="mc-inset flex items-center gap-2 px-3 py-1.5">
-            <span className={`h-2 w-2 ${isPremium ? 'bg-gold' : 'bg-muted'}`} />
-            <span className="text-xs text-text mc-text-sm">{account.username}</span>
-            <span className="text-[9px] uppercase tracking-wider text-gold-deep">
-              {isPremium ? 'Premium' : 'No-Premium'}
+            <span className={`h-2 w-2 ${isPremium ? 'bg-gold' : 'bg-muted'}`} aria-hidden />
+            <span className="text-xs text-text">{account.username}</span>
+            <span className="text-[11px] text-muted">
+              {isPremium ? tr('login.premium') : tr('login.no_premium')}
             </span>
           </div>
         )}
         {account && (
-          <button
-            onClick={() => void logout()}
-            className="mc-btn px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em]"
-            title={tr('titulo.cerrar_sesion')}
-          >
+          <Btn onClick={() => void logout()} title={tr('titulo.cerrar_sesion')}>
             {tr('titulo.salir')}
-          </button>
+          </Btn>
         )}
         <WindowButtons />
       </div>
@@ -61,12 +52,11 @@ function LangPicker(): JSX.Element {
       {LANGS.map((l) => (
         <button
           key={l}
+          type="button"
           onClick={() => void setIdioma(l)}
           aria-label={LANG_NAME[l]}
           aria-pressed={lang === l}
-          className={`mc-btn h-7 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] ${
-            lang === l ? 'mc-btn-on' : ''
-          }`}
+          className={`mc-btn h-7 px-2 text-[11px] font-semibold uppercase ${lang === l ? 'mc-btn-on' : ''}`}
         >
           {l}
         </button>
@@ -88,7 +78,7 @@ function WindowButtons(): JSX.Element {
       </button>
       <button
         onClick={() => window.dbr.close()}
-        className="mc-btn grid h-7 w-7 place-items-center hover:!border-red-500 hover:!bg-red-600 hover:text-white"
+        className="mc-btn grid h-7 w-7 place-items-center hover:!border-black hover:!bg-error hover:!text-white"
         aria-label={tr('comun.cerrar')}
       >
         <svg width="12" height="12" viewBox="0 0 12 12" shapeRendering="crispEdges">

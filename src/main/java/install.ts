@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, rmSync } from 'fs'
 import { basename, join } from 'path'
 import type { JavaProgress } from '../../shared/java'
 import { httpRequest } from '../http'
@@ -9,20 +9,23 @@ import { tr } from '../idioma'
 
 type OnProgress = (p: JavaProgress) => void
 
-/** Descarga el archivo del JRE con progreso por bytes. */
-export async function downloadArchive(
+/**
+ * Descarga el archivo del JRE con progreso por bytes, directo a disco (~40 MB que no pasan por
+ * memoria). Si un corte lo deja a medias, el siguiente intento sigue desde ahí con `Range`.
+ */
+async function downloadArchive(
   pl: JrePlatform,
   destFile: string,
   onProgress: OnProgress
 ): Promise<void> {
   const url = adoptiumUrl(pl)
   const res = await httpRequest(url, {
+    toFile: destFile,
     onProgress: (received, total) => {
       if (total > 0) onProgress({ phase: 'download', percent: Math.round((received / total) * 100) })
     }
   })
   if (!res.ok) throw new Error(tr('err.java_descarga', { status: res.status }))
-  writeFileSync(destFile, res.body)
 }
 
 /**
@@ -42,8 +45,7 @@ export function extractArchive(
   if (lower.endsWith('.tar.gz') || lower.endsWith('.tgz')) {
     return extractTarGz(archiveFile, destDir, exclude)
   }
-  extractZip(archiveFile, destDir, exclude)
-  return Promise.resolve()
+  return extractZip(archiveFile, destDir, exclude)
 }
 
 /** Extrae .tar.gz con el `tar` del sistema. Solo mac/linux (unix siempre trae tar). */
@@ -83,14 +85,23 @@ export function locateJava(root: string): string | null {
 }
 
 /** Ejecuta `java -version` y confirma que es Java 8. Devuelve la versión detectada. */
-export function verifyJava(javaPath: string): Promise<string> {
+function verifyJava(javaPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const p = spawn(javaPath, ['-version'])
+    // Un java.exe que se cuelga (antivirus escaneándolo, JRE roto) no puede bloquear el launch.
+    const timer = setTimeout(() => {
+      p.kill()
+      reject(new Error('java -version no respondió en 15 s'))
+    }, 15_000)
     let out = ''
     p.stdout.on('data', (d) => (out += d))
     p.stderr.on('data', (d) => (out += d)) // java -version escribe en stderr
-    p.on('error', (e) => reject(new Error(`No se pudo ejecutar java: ${e.message}`)))
+    p.on('error', (e) => {
+      clearTimeout(timer)
+      reject(new Error(`No se pudo ejecutar java: ${e.message}`))
+    })
     p.on('close', () => {
+      clearTimeout(timer)
       if (!/(^|[^\d])1\.8\./.test(out)) {
         reject(new Error(tr('err.java_no_8', { detalle: out.split('\n')[0] })))
         return
@@ -116,7 +127,14 @@ export async function installJava(
   onProgress({ phase: 'extract' })
   const extractDir = join(destDir, 'extracted')
   rmSync(extractDir, { recursive: true, force: true })
-  await extractArchive(archive, extractDir)
+  try {
+    await extractArchive(archive, extractDir)
+  } catch (e) {
+    // Un archivo reanudado que no casa (Adoptium publicó otra build entre medias) o corrupto:
+    // se borra para que el próximo intento lo baje entero.
+    rmSync(archive, { force: true })
+    throw e
+  }
 
   const javaPath = locateJava(extractDir)
   if (!javaPath) throw new Error('No se encontró el ejecutable java tras extraer el JRE.')

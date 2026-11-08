@@ -25,7 +25,7 @@ export interface LaunchContext {
 }
 
 /** Sustituye los placeholders ${...} de los minecraftArguments de 1.7.10. */
-export function substituteGameArgs(template: string, ctx: LaunchContext): string[] {
+function substituteGameArgs(template: string, ctx: LaunchContext): string[] {
   const map: Record<string, string> = {
     auth_player_name: ctx.username,
     version_name: ctx.versionName,

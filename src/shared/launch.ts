@@ -4,7 +4,6 @@ export type LaunchPhase =
   | 'java'
   | 'version'
   | 'libraries'
-  | 'natives'
   | 'assets'
   | 'client'
   | 'launching'
@@ -16,7 +15,7 @@ export interface LaunchProgress {
   detail?: string // archivo/acción en curso
 }
 
-export type LaunchState = 'idle' | 'preparing' | 'running' | 'exited' | 'error'
+export type LaunchState = 'running' | 'exited' | 'error'
 
 export interface LaunchStatus {
   state: LaunchState

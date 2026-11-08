@@ -26,6 +26,9 @@ export interface LauncherSettings {
   // Idioma de Minecraft elegido en el launcher (es_ES, en_US, pt_BR), o null para seguir al
   // sistema. Manda el lang: de options.txt cuando existe; esto cubre la primera instalación.
   idioma: string | null
+  // Música de fondo del launcher (opcional, apagada por defecto) y su volumen 0..1.
+  musicaActiva: boolean
+  musicaVolumen: number
 }
 
 /**
@@ -56,7 +59,9 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   modpackSeedPending: false,
   modpackSyncPending: false,
   liteProposal: 'none',
-  idioma: null
+  idioma: null,
+  musicaActiva: false,
+  musicaVolumen: 0.05
 }
 
 /** RAM mínima asignable al juego (GB). */

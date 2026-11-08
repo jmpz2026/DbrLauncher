@@ -2,27 +2,27 @@ appId: net.dbr.launcher
 productName: Dbr Launcher
 directories:
   buildResources: build
+# Lista blanca: solo el build y package.json (electron-builder añade las dependencias de
+# producción por su cuenta). Con una lista de exclusiones se colaba todo lo demás de la carpeta
+# (.npmcache, .claude, scripts, docs): el app.asar local llegó a pesar 736 MB.
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  - '!{.gitignore,README.md,tailwind.config.js,postcss.config.js}'
+  - out/**
+  - package.json
 asar: true
 compression: maximum
+# Sin el .pak del idioma, app.getLocale() cae a en-US y el primer arranque sale en inglés.
 electronLanguages:
   - en-US
   - es
+  - es-419
+  - pt-BR
+  - pt-PT
 win:
   target:
     - target: nsis
       arch:
         - x64
   artifactName: ${productName}-${version}-setup.${ext}
-mac:
-  target: dmg
-  category: public.app-category.games
-  artifactName: ${productName}-${version}.${ext}
 linux:
   target:
     - target: AppImage

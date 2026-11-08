@@ -3,6 +3,7 @@ import { join } from 'path'
 import type { LaunchProgress } from '../../shared/launch'
 import type { AssetIndexRef } from './version'
 import { ensureFile } from '../net'
+import { pool } from '../util'
 
 const RESOURCES = 'https://resources.download.minecraft.net'
 const CONCURRENCY = 12
@@ -22,23 +23,18 @@ export async function installAssets(
 
   const index = JSON.parse(readFileSync(indexPath, 'utf-8')) as AssetIndex
   const objects = Object.values(index.objects)
-  let next = 0
   let done = 0
 
   // Pool acotado: los assets se bajan en paralelo (miles de archivos en serie = lentísimo).
-  const worker = async (): Promise<void> => {
-    while (next < objects.length) {
-      const { hash } = objects[next++]
-      const sub = hash.slice(0, 2)
-      const dest = join(assetsDir, 'objects', sub, hash)
-      // Content-addressed: si ya existe, es correcto — no re-hashear ~150MB en cada arranque.
-      if (!existsSync(dest)) await ensureFile(dest, `${RESOURCES}/${sub}/${hash}`, hash)
-      done++
-      if (done % 25 === 0 || done === objects.length) {
-        onProgress({ phase: 'assets', percent: Math.round((done / objects.length) * 100) })
-      }
+  await pool(objects, CONCURRENCY, async ({ hash }) => {
+    const sub = hash.slice(0, 2)
+    const dest = join(assetsDir, 'objects', sub, hash)
+    // Content-addressed: si ya existe, es correcto — no re-hashear ~150MB en cada arranque.
+    // Tampoco se apuntan en el hash-cache: el nombre ya es el sha1 (miles de entradas inútiles).
+    if (!existsSync(dest)) await ensureFile(dest, `${RESOURCES}/${sub}/${hash}`, hash, undefined, undefined, { noCache: true })
+    done++
+    if (done % 25 === 0 || done === objects.length) {
+      onProgress({ phase: 'assets', percent: Math.round((done / objects.length) * 100) })
     }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, objects.length) }, worker))
+  })
 }

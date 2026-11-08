@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store'
 import { useT } from '../i18n'
 import logo from '../assets/logo.png'
+import { Btn, Progress } from './ui'
 
 // Pantalla bloqueante de actualización forzada (Opción B): si hay versión nueva, el launcher
 // la descarga y se reinicia solo. El jugador no puede saltársela. En el .deb (status.manual)
@@ -35,41 +36,26 @@ export default function UpdateOverlay(): JSX.Element | null {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center bg-bg">
+    <div role="alertdialog" aria-modal="true" aria-label={tr('update.titulo')} className="fixed inset-0 z-[100] grid place-items-center bg-bg">
       <div className="flex w-full max-w-md flex-col items-center gap-6 px-8">
         <img src={logo} alt="" className="h-16 w-16 object-contain [image-rendering:auto]" />
         <div className="text-center">
-          <h1 className="mc-text text-2xl font-bold uppercase tracking-wide text-gold">
-            {tr('update.titulo')}
-          </h1>
-          {status.version && (
-            <p className="mt-1 text-xs uppercase tracking-[0.3em] text-gold-deep mc-text-sm">
-              v{status.version}
-            </p>
-          )}
+          <h1 className="mc-text font-pixel text-2xl font-bold text-gold">{tr('update.titulo')}</h1>
+          {status.version && <p className="mt-1 text-sm text-muted">v{status.version}</p>}
         </div>
 
         <div className="w-full">
-          <div className="mc-inset h-5 w-full overflow-hidden p-[2px]">
-            <div
-              className="h-full bg-gold transition-[width] duration-150"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <p className="mt-2 text-center text-xs uppercase tracking-wider text-muted mc-text-sm">
-            {label} <span className="ml-1 text-gold">{pct}%</span>
+          <Progress value={pct} label={label} />
+          <p className="mt-2 text-center text-xs text-muted">
+            {label} <span className="ml-1 font-semibold text-gold">{pct}%</span>
           </p>
         </div>
 
         {manual && (
           <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={install}
-              disabled={installing}
-              className="mc-btn mc-btn-gold px-5 py-2 text-xs font-semibold uppercase tracking-[0.12em] disabled:opacity-60"
-            >
+            <Btn variant="primary" size="md" onClick={install} disabled={installing}>
               {installing ? tr('comun.instalando') : failed ? tr('update.reintentar') : tr('update.ahora')}
-            </button>
+            </Btn>
             <p className="text-center text-xs text-muted">
               {failed
                 ? tr('update.fallo')
