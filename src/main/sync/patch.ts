@@ -33,7 +33,7 @@ export function modKey(path: string): string {
  * Escribe en `outPath` el resultado de aplicar `patch` a `oldPath`. Lanza si el parche está mal
  * formado o el resultado no casa con el sha1/tamaño que declara (y entonces borra `outPath`).
  */
-export function applyPatch(oldPath: string, patch: Buffer, outPath: string): void {
+function applyPatch(oldPath: string, patch: Buffer, outPath: string): void {
   if (patch.length < 33 || patch.toString('ascii', 0, 4) !== 'DBRP' || patch.readUInt8(4) !== 1) {
     throw new Error('Parche no válido')
   }
@@ -41,7 +41,13 @@ export function applyPatch(oldPath: string, patch: Buffer, outPath: string): voi
   const size = Number(patch.readBigInt64BE(25))
   const hash = createHash('sha1')
   const oldFd = openSync(oldPath, 'r')
-  const outFd = openSync(outPath, 'w')
+  let outFd: number
+  try {
+    outFd = openSync(outPath, 'w')
+  } catch (e) {
+    closeSync(oldFd) // sin esto el jar viejo quedaba abierto y en Windows no se podía borrar
+    throw e
+  }
   let written = 0
   const emit = (buf: Buffer): void => {
     written += buf.length

@@ -48,7 +48,7 @@ export function maxRamGb(): number {
   return Math.min(16, Math.max(MIN_RAM_GB, totalRamGb() - RAM_HEADROOM_GB))
 }
 
-export function ramLimits(): RamLimits {
+function ramLimits(): RamLimits {
   return { totalGb: totalRamGb(), maxGb: maxRamGb() }
 }
 
@@ -61,18 +61,18 @@ export function loadSettings(): LauncherSettings {
   }
   // Migración única: a usuarios viejos (sin flag) que no tocaron los JVM args les ponemos
   // los flags GC por defecto una sola vez. Tras marcarse, un campo vacío ya se respeta.
+  let migrated = false
   if (!cache.jvmArgsMigrated) {
     if (!cache.jvmArgs.trim()) cache.jvmArgs = DEFAULT_JVM_ARGS
     cache.jvmArgsMigrated = true
-    try {
-      persist(cache)
-    } catch {
-      /* si no se puede persistir, se reintentará al siguiente arranque */
-    }
+    migrated = true
   }
   // Regiones de G1 de 32 MB a 8 MB, solo a quien sigue con el default viejo tal cual.
   if (cache.jvmArgs.trim() === OLD_DEFAULT_JVM_ARGS_32M) {
     cache.jvmArgs = DEFAULT_JVM_ARGS
+    migrated = true
+  }
+  if (migrated) {
     try {
       persist(cache)
     } catch {

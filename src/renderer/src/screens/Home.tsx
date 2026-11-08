@@ -157,7 +157,6 @@ function LaunchBar(): JSX.Element {
     java: tr('launch.java'),
     version: tr('launch.version'),
     libraries: tr('launch.libraries'),
-    natives: tr('launch.natives'),
     assets: tr('launch.assets'),
     client: tr('launch.client'),
     launching: tr('launch.launching'),
@@ -193,16 +192,22 @@ function formatBytes(n: number): string {
 /** Velocidad de descarga en bytes/s, media de los últimos ~3 s. */
 function useSpeed(bytesDone: number | undefined): number {
   const samples = useRef<Array<[number, number]>>([])
-  if (bytesDone === undefined) {
-    samples.current = []
-    return 0
-  }
-  const now = Date.now()
-  const s = samples.current
-  if (s.length === 0 || s[s.length - 1][0] !== bytesDone) s.push([bytesDone, now])
-  while (s.length > 2 && now - s[0][1] > 3000) s.shift()
-  const [b0, t0] = s[0]
-  return now > t0 ? Math.max(0, ((bytesDone - b0) * 1000) / (now - t0)) : 0
+  const [speed, setSpeed] = useState(0)
+  // El ref se toca en un efecto, no durante el render (StrictMode renderiza dos veces).
+  useEffect(() => {
+    if (bytesDone === undefined) {
+      samples.current = []
+      setSpeed(0)
+      return
+    }
+    const now = Date.now()
+    const s = samples.current
+    if (s.length === 0 || s[s.length - 1][0] !== bytesDone) s.push([bytesDone, now])
+    while (s.length > 2 && now - s[0][1] > 3000) s.shift()
+    const [b0, t0] = s[0]
+    setSpeed(now > t0 ? Math.max(0, ((bytesDone - b0) * 1000) / (now - t0)) : 0)
+  }, [bytesDone])
+  return speed
 }
 
 function SyncBar(): JSX.Element {

@@ -2,7 +2,7 @@ import { app, ipcMain } from 'electron'
 import { spawn } from 'child_process'
 import { closeSync, existsSync, fstatSync, mkdirSync, openSync, readSync } from 'fs'
 import { join } from 'path'
-import { CONFIG, isForgeConfigured } from '../../shared/config'
+import { CONFIG } from '../../shared/config'
 import type { LaunchProgress, LaunchResult, LaunchStatus } from '../../shared/launch'
 import { loadAccount } from '../auth/store'
 import { ensureMcToken } from '../auth'
@@ -68,7 +68,7 @@ interface Prepared {
 async function prepare(onProgress: OnProgress): Promise<Prepared> {
   onProgress({ phase: 'version' })
   const vanilla = await fetchVanilla(CONFIG.minecraft)
-  const version = isForgeConfigured() ? mergeVersions(vanilla, await fetchForge()) : vanilla
+  const version = mergeVersions(vanilla, await fetchForge())
 
   const vDir = join(versionsDir(), version.id)
   const nativesDir = nativesDirFor(vDir, version.id)

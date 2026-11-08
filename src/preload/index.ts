@@ -10,6 +10,13 @@ import type { FuseStatus, FuseInstallResult } from '../shared/fuse'
 import type { LiteProposal } from '../shared/perf'
 import type { IdiomaInfo, Lang } from '../shared/i18n'
 
+/** Suscripción a un canal main→renderer. Devuelve la función para desuscribir. */
+function on<T>(channel: string, cb: (v: T) => void): () => void {
+  const listener = (_e: unknown, v: T): void => cb(v)
+  ipcRenderer.on(channel, listener)
+  return () => ipcRenderer.removeListener(channel, listener)
+}
+
 const api = {
   platform: process.platform,
   minimize: (): void => ipcRenderer.send('window:minimize'),
@@ -27,52 +34,28 @@ const api = {
     cancelPremium: (): Promise<void> => ipcRenderer.invoke('auth:cancel-premium'),
     logout: (): Promise<void> => ipcRenderer.invoke('auth:logout'),
     // Suscripción al device code durante el login premium. Devuelve una función para desuscribir.
-    onDeviceCode: (cb: (info: DeviceCodeInfo) => void): (() => void) => {
-      const listener = (_e: unknown, info: DeviceCodeInfo): void => cb(info)
-      ipcRenderer.on('auth:device-code', listener)
-      return () => ipcRenderer.removeListener('auth:device-code', listener)
-    },
+    onDeviceCode: (cb: (v: DeviceCodeInfo) => void): (() => void) => on('auth:device-code', cb),
     // La sesión cambió en segundo plano (renovación: nombre nuevo o sesión premium caducada).
-    onSessionChanged: (cb: (account: Account | null) => void): (() => void) => {
-      const listener = (_e: unknown, account: Account | null): void => cb(account)
-      ipcRenderer.on('auth:session-changed', listener)
-      return () => ipcRenderer.removeListener('auth:session-changed', listener)
-    }
+    onSessionChanged: (cb: (v: Account | null) => void): (() => void) => on('auth:session-changed', cb)
   },
 
   sync: {
     start: (): Promise<SyncResult> => ipcRenderer.invoke('sync:start'),
     cancel: (): Promise<void> => ipcRenderer.invoke('sync:cancel'),
     // Progreso de la sincronización. Devuelve una función para desuscribir.
-    onProgress: (cb: (p: SyncProgress) => void): (() => void) => {
-      const listener = (_e: unknown, p: SyncProgress): void => cb(p)
-      ipcRenderer.on('sync:progress', listener)
-      return () => ipcRenderer.removeListener('sync:progress', listener)
-    }
+    onProgress: (cb: (v: SyncProgress) => void): (() => void) => on('sync:progress', cb)
   },
 
   java: {
     get: (): Promise<JavaInfo | null> => ipcRenderer.invoke('java:get'),
-    ensure: (): Promise<JavaResult> => ipcRenderer.invoke('java:ensure'),
-    onProgress: (cb: (p: JavaProgress) => void): (() => void) => {
-      const listener = (_e: unknown, p: JavaProgress): void => cb(p)
-      ipcRenderer.on('java:progress', listener)
-      return () => ipcRenderer.removeListener('java:progress', listener)
-    }
+    ensure: (force = false): Promise<JavaResult> => ipcRenderer.invoke('java:ensure', force),
+    onProgress: (cb: (v: JavaProgress) => void): (() => void) => on('java:progress', cb)
   },
 
   launch: {
     start: (): Promise<LaunchResult> => ipcRenderer.invoke('launch:start'),
-    onProgress: (cb: (p: LaunchProgress) => void): (() => void) => {
-      const listener = (_e: unknown, p: LaunchProgress): void => cb(p)
-      ipcRenderer.on('launch:progress', listener)
-      return () => ipcRenderer.removeListener('launch:progress', listener)
-    },
-    onStatus: (cb: (s: LaunchStatus) => void): (() => void) => {
-      const listener = (_e: unknown, s: LaunchStatus): void => cb(s)
-      ipcRenderer.on('launch:status', listener)
-      return () => ipcRenderer.removeListener('launch:status', listener)
-    }
+    onProgress: (cb: (v: LaunchProgress) => void): (() => void) => on('launch:progress', cb),
+    onStatus: (cb: (v: LaunchStatus) => void): (() => void) => on('launch:status', cb)
   },
 
   settings: {
@@ -89,11 +72,7 @@ const api = {
   update: {
     check: (): Promise<void> => ipcRenderer.invoke('update:check'),
     install: (): Promise<boolean> => ipcRenderer.invoke('update:install'),
-    onStatus: (cb: (s: UpdateStatus) => void): (() => void) => {
-      const listener = (_e: unknown, s: UpdateStatus): void => cb(s)
-      ipcRenderer.on('update:status', listener)
-      return () => ipcRenderer.removeListener('update:status', listener)
-    }
+    onStatus: (cb: (v: UpdateStatus) => void): (() => void) => on('update:status', cb)
   },
 
   fuse: {

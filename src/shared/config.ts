@@ -74,10 +74,3 @@ export const authProvider = (id: AuthProviderId = CONFIG.auth.provider): AuthPro
 // True cuando el login premium está activado.
 export const isPremiumEnabled = (): boolean => CONFIG.auth.premiumEnabled
 
-// True cuando ya se rellenó el OWNER/REPO del manifest.
-export const isManifestConfigured = (): boolean => !CONFIG.manifestUrl.includes('OWNER/REPO')
-
-// True cuando ya se rellenó el JSON de Forge.
-export const isForgeConfigured = (): boolean => !CONFIG.forgeJsonUrl.includes('OWNER/REPO')
-
-export type LauncherConfig = typeof CONFIG

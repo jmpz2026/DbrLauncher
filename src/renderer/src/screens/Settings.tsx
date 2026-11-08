@@ -395,6 +395,45 @@ function MusicaPanel(): JSX.Element {
   )
 }
 
+/**
+ * Campo que guarda al salir (blur) o con Enter, no en cada tecla: así un número a medio
+ * escribir ('' o '6') no llega al main, y el saneado de los flags JVM no pisa lo tecleado.
+ */
+function CommitInput({
+  value,
+  onCommit,
+  numeric,
+  ...rest
+}: {
+  value: string | number
+  onCommit: (v: string) => void
+  numeric?: boolean
+} & Omit<JSX.IntrinsicElements['input'], 'value' | 'onChange' | 'onBlur' | 'onKeyDown'>): JSX.Element {
+  const [draft, setDraft] = useState(String(value))
+  useEffect(() => setDraft(String(value)), [value])
+  const commit = (): void => {
+    const v = draft.trim()
+    if (numeric && (v === '' || !Number.isFinite(Number(v)))) {
+      setDraft(String(value)) // vacío o basura: vuelve al valor guardado
+      return
+    }
+    if (v !== String(value)) onCommit(v)
+  }
+  return (
+    <input
+      {...rest}
+      type={numeric ? 'number' : 'text'}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') commit()
+        else if (e.key === 'Escape') setDraft(String(value))
+      }}
+    />
+  )
+}
+
 function GamePanel(): JSX.Element {
   const width = useStore((s) => s.width)
   const height = useStore((s) => s.height)
@@ -408,12 +447,12 @@ function GamePanel(): JSX.Element {
       <div className="flex items-end gap-4">
         <label className="flex flex-col gap-1 text-[13px] text-muted">
           {tr('ajustes.ancho')}
-          <input
-            type="number"
+          <CommitInput
+            numeric
             min={640}
             value={width}
             disabled={fullscreen}
-            onChange={(e) => void setSetting({ width: Number(e.target.value) })}
+            onCommit={(v) => void setSetting({ width: Number(v) })}
             className="mc-inset w-24 px-2 py-1.5 text-text outline-none disabled:opacity-50"
           />
         </label>
@@ -422,12 +461,12 @@ function GamePanel(): JSX.Element {
         </span>
         <label className="flex flex-col gap-1 text-[13px] text-muted">
           {tr('ajustes.alto')}
-          <input
-            type="number"
+          <CommitInput
+            numeric
             min={480}
             value={height}
             disabled={fullscreen}
-            onChange={(e) => void setSetting({ height: Number(e.target.value) })}
+            onCommit={(v) => void setSetting({ height: Number(v) })}
             className="mc-inset w-24 px-2 py-1.5 text-text outline-none disabled:opacity-50"
           />
         </label>
@@ -444,11 +483,10 @@ function GamePanel(): JSX.Element {
 
       <label className="flex flex-col gap-1 text-[13px] text-muted">
         {tr('ajustes.jvm')}
-        <input
-          type="text"
+        <CommitInput
           value={jvmArgs}
           placeholder="-XX:+UseG1GC …"
-          onChange={(e) => void setSetting({ jvmArgs: e.target.value })}
+          onCommit={(v) => void setSetting({ jvmArgs: v })}
           className="mc-inset w-full px-3 py-2 font-mono text-xs text-text outline-none placeholder:text-muted/50"
         />
       </label>
@@ -494,7 +532,7 @@ function JavaPanel(): JSX.Element {
           <p className="text-[13px] leading-relaxed text-muted">
             {info ? tr('ajustes.java_listo') : tr('ajustes.java_auto')}
           </p>
-          <Btn size="md" onClick={() => void ensureJava()} className="shrink-0">
+          <Btn size="md" onClick={() => void ensureJava(!!info)} className="shrink-0">
             {info ? tr('ajustes.java_reinstalar') : tr('ajustes.java_descargar')}
           </Btn>
         </div>

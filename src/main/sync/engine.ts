@@ -1,5 +1,6 @@
+import { pool, safeJoin } from '../util'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
-import { dirname, join, normalize, sep } from 'path'
+import { dirname, join } from 'path'
 import type { ManifestFile, SyncProgress, SyncSummary } from '../../shared/sync'
 import { flushHashCache, sha1FileCached } from './hash'
 import { fetchManifest } from './manifest'
@@ -28,18 +29,6 @@ type OnProgress = (p: SyncProgress) => void
 // en serie son decenas de archivos uno a uno = lentísimo en el primer install.
 const CONCURRENCY = 8
 
-/** Corre `task` sobre `items` con un pool acotado de workers. Preserva el orden de entrada. */
-async function pool<T>(items: T[], limit: number, task: (item: T, i: number) => Promise<void>): Promise<void> {
-  let next = 0
-  const worker = async (): Promise<void> => {
-    while (next < items.length) {
-      const i = next++
-      await task(items[i], i)
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
-}
-
 function loadManaged(managedFile: string): string[] {
   try {
     const j = JSON.parse(readFileSync(managedFile, 'utf-8')) as { files?: unknown }
@@ -53,13 +42,7 @@ function saveManaged(managedFile: string, files: string[]): void {
   writeFileSync(managedFile, JSON.stringify({ files }), 'utf-8')
 }
 
-/** Une base + ruta relativa impidiendo path traversal (`..`, rutas absolutas). */
-export function safeJoin(base: string, rel: string): string {
-  const target = normalize(join(base, rel))
-  const root = normalize(base.endsWith(sep) ? base : base + sep)
-  if (!target.startsWith(root)) throw new Error(`Ruta insegura en manifest: ${rel}`)
-  return target
-}
+export { safeJoin }
 
 /** Sincroniza los archivos locales con el manifest. Reporta progreso por callback. */
 export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promise<SyncSummary> {
@@ -97,8 +80,11 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   // Los `once` no entran nunca en el índice de gestionados: así jamás se borran del equipo
   // (son del jugador), ni siquiera si desaparecen del manifest.
   const managedPaths = manifest.files.filter((f) => !f.once).map((f) => f.path)
-  const wantedPaths = new Set(manifest.files.map((f) => f.path))
-  const toDelete = loadManaged(managedFile).filter((p) => !wantedPaths.has(p))
+  // En Windows el disco no distingue mayúsculas: un renombrado que solo cambia la caja
+  // ('Foo.jar' -> 'foo.jar') apunta al mismo archivo, y borrar el «viejo» borraba el mod.
+  const norm = (p: string): string => (process.platform === 'win32' ? p.toLowerCase() : p)
+  const wantedPaths = new Set(manifest.files.map((f) => norm(f.path)))
+  const toDelete = loadManaged(managedFile).filter((p) => !wantedPaths.has(norm(p)))
 
   const total = toDownload.length + toDelete.length
   let done = 0

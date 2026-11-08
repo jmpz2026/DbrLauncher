@@ -13,7 +13,8 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "manifest": "node scripts/gen-manifest.mjs",
     "build:win": "electron-vite build && electron-builder --win",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "itest": "node scripts/itest.mjs"
   },
   "dependencies": {
     "@fontsource/pixelify-sans": "^5.3.0",

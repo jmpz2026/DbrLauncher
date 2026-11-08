@@ -1,6 +1,12 @@
-import { inflateRawSync } from 'zlib'
+import { inflateRaw } from 'zlib'
+import { promisify } from 'util'
+
+// Asíncrono: el inflate síncrono de los ~40 MB del JRE congelaba la ventana (el main
+// process pinta la UI de Electron) durante varios segundos.
+const inflateRawAsync = promisify(inflateRaw)
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, join, normalize, sep } from 'path'
+import { dirname } from 'path'
+import { safeJoin } from '../util'
 
 // Extractor de ZIP con Node puro (zlib). Se usa en lugar del `tar`/`bsdtar` del SO porque
 // Windows solo trae `tar.exe` desde 10 build 1803 (2018); en PCs más viejos no existe y
@@ -25,21 +31,11 @@ function isExcluded(name: string, exclude: string[]): boolean {
   )
 }
 
-/** Ruta segura dentro de destDir (evita path traversal con nombres tipo `../`). */
-function safeDest(destDir: string, name: string): string {
-  const dest = normalize(join(destDir, name))
-  const root = normalize(destDir).endsWith(sep) ? normalize(destDir) : normalize(destDir) + sep
-  if (dest !== normalize(destDir) && !dest.startsWith(root)) {
-    throw new Error(`Ruta insegura en el archivo: ${name}`)
-  }
-  return dest
-}
-
 /**
  * Extrae un .zip/.jar a destDir sin depender de binarios del SO. `exclude` omite entradas
  * (patrones tipo manifest, p.ej. 'META-INF/'). Soporta stored (0) y deflate (8).
  */
-export function extractZip(archiveFile: string, destDir: string, exclude: string[] = []): void {
+export async function extractZip(archiveFile: string, destDir: string, exclude: string[] = []): Promise<void> {
   const buf = readFileSync(archiveFile)
   const eocd = findEocd(buf)
   if (eocd < 0) throw new Error('ZIP inválido: no se encontró el End of Central Directory.')
@@ -64,7 +60,7 @@ export function extractZip(archiveFile: string, destDir: string, exclude: string
 
     if (!name || isExcluded(name, exclude)) continue
 
-    const dest = safeDest(destDir, name)
+    const dest = safeJoin(destDir, name)
     if (name.endsWith('/')) {
       mkdirSync(dest, { recursive: true })
       continue
@@ -78,7 +74,7 @@ export function extractZip(archiveFile: string, destDir: string, exclude: string
 
     let data: Buffer
     if (method === 0) data = Buffer.from(raw)
-    else if (method === 8) data = inflateRawSync(raw)
+    else if (method === 8) data = await inflateRawAsync(raw)
     else throw new Error(`ZIP: método de compresión no soportado (${method}) en ${name}`)
 
     mkdirSync(dirname(dest), { recursive: true })
@@ -86,7 +82,8 @@ export function extractZip(archiveFile: string, destDir: string, exclude: string
 
     // Preservar permisos unix (bits altos de external attributes); en Windows es irrelevante.
     if (process.platform !== 'win32') {
-      const mode = (externalAttr >>> 16) & 0o7777
+      // 0o777: sin setuid/setgid/sticky, que un zip ajeno no tiene por qué poder pedir.
+      const mode = (externalAttr >>> 16) & 0o777
       if (mode) chmodSync(dest, mode)
     }
   }

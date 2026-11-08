@@ -130,16 +130,16 @@ launcher no puede cifrar la sesión de Microsoft. En ese caso la guarda en claro
 
 ## Tests
 
-Scripts de verificación (Node + esbuild, sin abrir la app):
+Scripts de verificación (esbuild + Electron sin ventana; la capa HTTP usa `net` de Electron):
 
 ```bash
 # núcleo de sync, java (descarga real), launch (comando), ping (real), manifest (e2e)
-node -e "require('esbuild').build({entryPoints:['scripts/<test>.ts'],bundle:true,\
-  platform:'node',format:'esm',external:['electron'],outfile:'.tmp/t.mjs'})" && node .tmp/t.mjs
+npm run itest -- sync-itest
 ```
 
 `scripts/`: `sync-itest.ts`, `java-itest.ts`, `launch-itest.ts`, `status-itest.ts`,
-`manifest-itest.ts`, `gen-manifest.mjs` (generador), `shot.cjs` (screenshot offscreen).
+`manifest-itest.ts`, `seed-itest.ts`, `idioma-itest.ts`, `i18n-test.ts`, `itest.mjs` (runner),
+`gen-manifest.mjs` (generador), `shot.cjs` (screenshot offscreen).
 
 ## Roadmap
 

@@ -12,7 +12,8 @@ const RAW = /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/
 async function headSha(owner: string, repo: string, branch: string): Promise<string | null> {
   try {
     const res = await httpRequest(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}`, {
-      headers: { Accept: 'application/vnd.github.sha' }
+      headers: { Accept: 'application/vnd.github.sha' },
+      retries: 0 // opcional: sin la API se pide por la rama, no vale esperar backoffs
     })
     const sha = res.ok ? res.body.toString('utf-8').trim() : ''
     return /^[0-9a-f]{40}$/.test(sha) ? sha : null

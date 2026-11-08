@@ -134,7 +134,6 @@ const T = {
   // Progreso del lanzamiento
   'launch.version': { es: 'Resolviendo versión', en: 'Resolving version', pt: 'Resolvendo versão' },
   'launch.libraries': { es: 'Descargando librerías', en: 'Downloading libraries', pt: 'Baixando bibliotecas' },
-  'launch.natives': { es: 'Extrayendo natives', en: 'Extracting natives', pt: 'Extraindo natives' },
   'launch.assets': { es: 'Descargando assets', en: 'Downloading assets', pt: 'Baixando assets' },
   'launch.client': { es: 'Descargando cliente', en: 'Downloading client', pt: 'Baixando cliente' },
   'launch.java': { es: 'Preparando Java', en: 'Preparing Java', pt: 'Preparando Java' },

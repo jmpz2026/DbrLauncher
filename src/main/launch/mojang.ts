@@ -52,7 +52,8 @@ export async function fetchVanilla(id: string): Promise<VersionJson> {
 export async function fetchForge(): Promise<VersionJson> {
   const file = join(versionsDir(), 'forge-overlay.json')
   try {
-    const v = await fetchJson<VersionJson>(CONFIG.forgeJsonUrl)
+    // Hay copia en disco de reserva: pocos reintentos, que la red caída no retrase el launch.
+    const v = await fetchJson<VersionJson>(CONFIG.forgeJsonUrl, { retries: 1 })
     writeCached(file, v)
     return v
   } catch (e) {

@@ -13,7 +13,11 @@ interface RawStatus {
 /** Resuelve un registro SRV `_minecraft._tcp.<host>` si existe; si no, usa host:port directo. */
 async function resolveTarget(host: string, port: number): Promise<{ host: string; port: number }> {
   try {
-    const recs = await dns.resolveSrv(`_minecraft._tcp.${host}`)
+    // Tope de 2 s: un DNS que no contesta dejaba el ping (y el estado del servidor) colgado.
+    const recs = await Promise.race([
+      dns.resolveSrv(`_minecraft._tcp.${host}`),
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 2000))
+    ])
     if (recs.length > 0) return { host: recs[0].name, port: recs[0].port }
   } catch {
     /* sin SRV: directo */

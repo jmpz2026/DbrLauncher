@@ -21,14 +21,24 @@ export function idiomaInfo(): IdiomaInfo {
   return { lang: langDe(juego ?? langInicial()), juego }
 }
 
+// tr() se llama en errores de red y de descarga, a veces en ráfaga: leer options.txt y
+// settings.json cada vez es disco de más. El idioma se cachea unos segundos (lo puede cambiar
+// el jugador dentro del juego) y fijarIdioma lo invalida al momento.
+const LANG_TTL_MS = 5000
+let langCache: { lang: Lang; at: number } | null = null
+
 /** Texto en el idioma actual, para errores y mensajes que salen de main. */
 export function tr(clave: Clave, vars?: Record<string, string | number>): string {
-  return t(idiomaInfo().lang, clave, vars)
+  if (!langCache || Date.now() - langCache.at > LANG_TTL_MS) {
+    langCache = { lang: idiomaInfo().lang, at: Date.now() }
+  }
+  return t(langCache.lang, clave, vars)
 }
 
 /** Cambia el idioma del launcher y el del juego (si options.txt ya existe). */
 export function fijarIdioma(lang: Lang): IdiomaInfo {
   const mc = MC_LANG[lang]
+  langCache = null
   saveSettings({ idioma: mc })
   escribirLang(opciones(), mc)
   return idiomaInfo()

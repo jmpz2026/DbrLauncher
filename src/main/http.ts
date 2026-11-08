@@ -30,6 +30,8 @@ export interface HttpInit {
   toFile?: string
   /** Cancela la petición y los reintentos pendientes (rechaza con un error `AbortError`). */
   signal?: AbortSignal
+  /** Reintentos por destino (por defecto RETRIES). Menos para peticiones opcionales con plan B. */
+  retries?: number
 }
 
 /** Error con el que se rechaza una petición cancelada con `HttpInit.signal`. */
@@ -139,11 +141,19 @@ function requestOnce(url: string, init: HttpInit = {}): Promise<HttpResponse> {
       // Range y manda todo). Un error (página HTML) se queda en memoria como siempre. Un 416
       // es un archivo a medias que ya no casa: se borra y el reintento empieza de 0.
       let base = 0
-      if (init.toFile && (res.statusCode === 200 || res.statusCode === 206)) {
-        base = res.statusCode === 206 ? offset : 0
-        fd = openSync(init.toFile, res.statusCode === 206 ? 'a' : 'w')
-      } else if (init.toFile && res.statusCode === 416) {
-        rmSync(init.toFile, { force: true })
+      try {
+        if (init.toFile && (res.statusCode === 200 || res.statusCode === 206)) {
+          base = res.statusCode === 206 ? offset : 0
+          fd = openSync(init.toFile, res.statusCode === 206 ? 'a' : 'w')
+        } else if (init.toFile && res.statusCode === 416) {
+          rmSync(init.toFile, { force: true })
+        }
+      } catch (e) {
+        // Disco lleno, sin permisos, archivo bloqueado por el antivirus: sin esto la promesa
+        // no se resolvía nunca y la descarga se quedaba colgada.
+        finish(() => reject(e as Error))
+        req.abort()
+        return
       }
       const total = length > 0 ? base + length : 0
       arm()
@@ -242,7 +252,7 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
   const method = (init.method ?? 'GET').toUpperCase()
   const idempotent = method === 'GET' || method === 'HEAD'
   const targets = idempotent ? [url, ...(init.mirrors ?? []), ...mirrorsFor(url)] : [url]
-  const attempts = idempotent ? RETRIES + 1 : 1
+  const attempts = idempotent ? Math.max(0, init.retries ?? RETRIES) + 1 : 1
 
   let lastRes: HttpResponse | undefined
   let lastErr: unknown
@@ -281,11 +291,10 @@ export async function httpRequest(url: string, init: HttpInit = {}): Promise<Htt
 
 /** Cuerpo como JSON. Lanza si no es JSON válido (p. ej. el portal cautivo de un wifi). */
 export function readJson<T>(res: HttpResponse, url: string): T {
-  try {
-    return JSON.parse(res.body.toString('utf-8')) as T
-  } catch {
-    throw new Error(`Respuesta no válida (no es JSON) de ${url} [HTTP ${res.status}]`)
-  }
+  const NO = Symbol()
+  const v = readJsonOr<T | typeof NO>(res, NO)
+  if (v === NO) throw new Error(`Respuesta no válida (no es JSON) de ${url} [HTTP ${res.status}]`)
+  return v
 }
 
 /** Cuerpo como JSON, tolerante: devuelve `fallback` si no parsea. Para cuerpos de error. */

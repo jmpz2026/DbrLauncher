@@ -8,7 +8,7 @@ const NAME_RE = /^[A-Za-z0-9_]{3,16}$/
  * UUID offline idéntico al que genera Minecraft para cuentas no premium:
  * UUID v3 de los bytes de `OfflinePlayer:<nombre>` (Java UUID.nameUUIDFromBytes).
  */
-export function offlineUuid(username: string): string {
+function offlineUuid(username: string): string {
   const hash = createHash('md5').update(`OfflinePlayer:${username}`).digest()
   hash[6] = (hash[6] & 0x0f) | 0x30 // versión 3
   hash[8] = (hash[8] & 0x3f) | 0x80 // variante IETF
