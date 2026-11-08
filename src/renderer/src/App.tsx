@@ -9,6 +9,7 @@ import UpdateOverlay from './components/UpdateOverlay'
 import FuseBanner from './components/FuseBanner'
 import GameLogModal from './components/GameLogModal'
 import LiteProposalModal from './components/LiteProposalModal'
+import MusicaFondo from './components/MusicaFondo'
 import { useStore } from './store'
 import { useHtmlLang, useT } from './i18n'
 
@@ -62,6 +63,7 @@ export default function App(): JSX.Element {
       <GameLogModal />
       <FuseBanner />
       {ready && account && <LiteProposalModal />}
+      {ready && <MusicaFondo />}
     </div>
   )
 }

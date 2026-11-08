@@ -129,7 +129,10 @@ function sanitizePatch(raw: unknown): Partial<LauncherSettings> {
   if (w !== undefined) out.width = w
   const h = int(p.height, 240, 4320)
   if (h !== undefined) out.height = h
-  for (const k of ['fullscreen', 'autoSyncMods', 'modpackSeedPending', 'modpackSyncPending'] as const) {
+  if (typeof p.musicaVolumen === 'number' && Number.isFinite(p.musicaVolumen)) {
+    out.musicaVolumen = Math.min(Math.max(p.musicaVolumen, 0), 1)
+  }
+  for (const k of ['fullscreen', 'autoSyncMods', 'modpackSeedPending', 'modpackSyncPending', 'musicaActiva'] as const) {
     if (typeof p[k] === 'boolean') out[k] = p[k] as boolean
   }
   if (typeof p.jvmArgs === 'string') out.jvmArgs = sanitizeJvmArgs(p.jvmArgs)

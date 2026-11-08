@@ -176,6 +176,18 @@ const T = {
     en: ' You are at the recommended maximum for your computer.',
     pt: ' Você está no máximo recomendado para o seu computador.'
   },
+  'ajustes.musica': { es: 'Música del launcher', en: 'Launcher music', pt: 'Música do launcher' },
+  'ajustes.musica_desc': {
+    es: 'Música de fondo mientras el launcher está abierto. Se calla al iniciar el juego.',
+    en: 'Background music while the launcher is open. It stops when the game starts.',
+    pt: 'Música de fundo com o launcher aberto. Para quando o jogo inicia.'
+  },
+  'ajustes.volumen': { es: 'Volumen', en: 'Volume', pt: 'Volume' },
+  'ajustes.credito_musica': {
+    es: 'La música del launcher es nuestra, generada en local con Stable Audio Open 1.0 de Stability AI (Stability AI Community License).',
+    en: 'The launcher music is ours, generated locally with Stable Audio Open 1.0 by Stability AI (Stability AI Community License).',
+    pt: 'A música do launcher é nossa, gerada localmente com o Stable Audio Open 1.0 da Stability AI (Stability AI Community License).'
+  },
   'ajustes.creditos': { es: 'Créditos y permisos', en: 'Credits and permissions', pt: 'Créditos e permissões' },
   'ajustes.credito_npcdbc': {
     es: 'Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y somehussar (Hussar), por permitirnos distribuir a los jugadores, a través de este launcher, nuestra versión modificada (un fork no oficial) con los créditos a sus autores. Concedido el 05/10/2026.',

@@ -26,7 +26,8 @@ const EXTERNAL_HOSTS = new Set([
   'main.jingames.net',
   'www.microsoft.com',
   'microsoft.com',
-  'login.live.com'
+  'login.live.com',
+  'stability.ai'
 ])
 
 function openExternalSafe(raw: string): void {

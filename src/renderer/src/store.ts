@@ -104,6 +104,8 @@ interface State {
   autoSyncMods: boolean // sincronizar mods al dar Jugar
   modpackSeedPending: boolean // aplicar la config recomendada en la próxima sync
   modpackSyncPending: boolean // cambio de variante sin sincronizar todavía
+  musicaActiva: boolean // música de fondo del launcher
+  musicaVolumen: number // 0..1
   maxRamGb: number // tope asignable según la RAM del equipo (deja headroom al SO)
   totalRamGb: number // RAM física total del equipo (para el aviso)
   loadSettings: () => Promise<void>
@@ -119,6 +121,23 @@ interface State {
   updateStatus: UpdateStatus | null
   setUpdateStatus: (s: UpdateStatus) => void
   installUpdate: () => Promise<boolean>
+}
+
+/** Campos de los ajustes persistidos que el store refleja (una sola copia del mapeo). */
+function fromSettings(s: LauncherSettings): Partial<State> {
+  return {
+    ramGb: s.ramGb,
+    width: s.width,
+    height: s.height,
+    fullscreen: s.fullscreen,
+    jvmArgs: s.jvmArgs,
+    modpackVariant: s.modpackVariant,
+    autoSyncMods: s.autoSyncMods,
+    modpackSeedPending: s.modpackSeedPending,
+    modpackSyncPending: s.modpackSyncPending,
+    musicaActiva: s.musicaActiva,
+    musicaVolumen: s.musicaVolumen
+  }
 }
 
 export const useStore = create<State>((set, get) => ({
@@ -314,6 +333,8 @@ export const useStore = create<State>((set, get) => ({
   autoSyncMods: true,
   modpackSeedPending: false,
   modpackSyncPending: false,
+  musicaActiva: false,
+  musicaVolumen: 0.3,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {
@@ -322,19 +343,7 @@ export const useStore = create<State>((set, get) => ({
       window.dbr.settings.get(),
       window.dbr.settings.limits()
     ])
-    set({
-      ramGb: s.ramGb,
-      width: s.width,
-      height: s.height,
-      fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs,
-      modpackVariant: s.modpackVariant,
-      autoSyncMods: s.autoSyncMods,
-      modpackSeedPending: s.modpackSeedPending,
-      modpackSyncPending: s.modpackSyncPending,
-      maxRamGb: limits.maxGb,
-      totalRamGb: limits.totalGb
-    })
+    set({ ...fromSettings(s), maxRamGb: limits.maxGb, totalRamGb: limits.totalGb })
   },
   setSetting: async (patch) => {
     set(patch)
@@ -349,17 +358,7 @@ export const useStore = create<State>((set, get) => ({
     }
     if (!window.dbr?.settings) return
     const s = await window.dbr.settings.set(patch)
-    set({
-      ramGb: s.ramGb,
-      width: s.width,
-      height: s.height,
-      fullscreen: s.fullscreen,
-      jvmArgs: s.jvmArgs,
-      modpackVariant: s.modpackVariant,
-      autoSyncMods: s.autoSyncMods,
-      modpackSeedPending: s.modpackSeedPending,
-      modpackSyncPending: s.modpackSyncPending
-    })
+    set(fromSettings(s))
   },
   setRamGb: (ramGb) => void get().setSetting({ ramGb }),
 

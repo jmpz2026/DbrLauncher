@@ -36,6 +36,9 @@ export default function Settings(): JSX.Element {
       {/* Actualización automática de mods */}
       <AutoSyncPanel />
 
+      {/* Música del launcher */}
+      <MusicaPanel />
+
       {/* Memoria RAM */}
       <div className="mc-panel p-5">
         <div className="mb-3 flex items-center justify-between">
@@ -88,6 +91,11 @@ const CREDITS: { title: string; text: Clave; links: { label: Clave | string; hre
       { label: 'ajustes.proyecto_original', href: 'https://github.com/KAMKEEL/CustomNPC-DBC-Addon' },
       { label: 'ajustes.nuestro_fork', href: 'https://github.com/jmpz2026/CustomNPC-DBC-Addon' }
     ]
+  },
+  {
+    title: 'Stable Audio Open',
+    text: 'ajustes.credito_musica',
+    links: [{ label: 'Powered by Stability AI', href: 'https://stability.ai/license' }]
   },
   {
     title: 'JinGames · Dragon Block C',
@@ -324,6 +332,57 @@ function AutoSyncPanel(): JSX.Element {
           {autoSync ? tr('ajustes.activada') : tr('ajustes.desactivada')}
         </button>
       </div>
+    </div>
+  )
+}
+
+function MusicaPanel(): JSX.Element {
+  const activa = useStore((s) => s.musicaActiva)
+  const volumen = useStore((s) => s.musicaVolumen)
+  const setSetting = useStore((s) => s.setSetting)
+  const tr = useT()
+  // Mientras se arrastra solo cambia el store (el audio responde al momento); se guarda al soltar.
+  const guardar = (): void => void setSetting({ musicaVolumen: useStore.getState().musicaVolumen })
+
+  return (
+    <div className="mc-panel p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <span className="text-sm font-semibold uppercase tracking-wider">{tr('ajustes.musica')}</span>
+          <p className="mt-1 text-xs leading-relaxed text-muted">{tr('ajustes.musica_desc')}</p>
+        </div>
+        <button
+          onClick={() => void setSetting({ musicaActiva: !activa })}
+          aria-pressed={activa}
+          className={`mc-btn shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
+            activa ? 'mc-btn-on' : ''
+          }`}
+        >
+          {activa ? tr('ajustes.activada') : tr('ajustes.desactivada')}
+        </button>
+      </div>
+      {activa && (
+        <div className="mt-4 flex items-center gap-3">
+          <label htmlFor="musica-vol" className="text-xs uppercase tracking-wider text-muted">
+            {tr('ajustes.volumen')}
+          </label>
+          <input
+            id="musica-vol"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={volumen}
+            onChange={(e) => useStore.setState({ musicaVolumen: Number(e.target.value) })}
+            onPointerUp={guardar}
+            onKeyUp={guardar}
+            className="mc-range flex-1"
+          />
+          <span className="mc-text-sm w-10 text-right text-sm font-bold text-gold">
+            {Math.round(volumen * 100)}%
+          </span>
+        </div>
+      )}
     </div>
   )
 }
