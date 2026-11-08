@@ -61,7 +61,7 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   liteProposal: 'none',
   idioma: null,
   musicaActiva: false,
-  musicaVolumen: 0.3
+  musicaVolumen: 0.05
 }
 
 /** RAM mínima asignable al juego (GB). */

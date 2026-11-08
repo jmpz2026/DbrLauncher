@@ -5,17 +5,16 @@ import { useT } from '../i18n'
 import { LANGS, LANG_NAME, MC_LANG, existe, type Clave } from '../../../shared/i18n'
 import { Btn, Modal, PanelTitle, Progress, Toggle, btnClass } from '../components/ui'
 
-type TabId = 'juego' | 'modpack' | 'sistema'
+type TabId = 'juego' | 'sistema'
 const TABS: { id: TabId; label: Clave }[] = [
   { id: 'juego', label: 'ajustes.tab_juego' },
-  { id: 'modpack', label: 'ajustes.tab_modpack' },
   { id: 'sistema', label: 'ajustes.tab_sistema' }
 ]
 
 export default function Settings(): JSX.Element {
   const loadJava = useStore((s) => s.loadJava)
   const [tab, setTab] = useState<TabId>('juego')
-  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({ juego: null, modpack: null, sistema: null })
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({ juego: null, sistema: null })
   const tr = useT()
 
   useEffect(() => {
@@ -64,15 +63,11 @@ export default function Settings(): JSX.Element {
       >
         {tab === 'juego' && (
           <>
+            <ModpackPanel />
+            <AutoSyncPanel />
             <RamPanel />
             <GamePanel />
             <JavaPanel />
-          </>
-        )}
-        {tab === 'modpack' && (
-          <>
-            <ModpackPanel />
-            <AutoSyncPanel />
           </>
         )}
         {tab === 'sistema' && (
@@ -163,6 +158,11 @@ const CREDITS: { title: string; text: Clave; links: { label: Clave | string; hre
     title: 'Stable Audio Open',
     text: 'ajustes.credito_musica',
     links: [{ label: 'Powered by Stability AI', href: 'https://stability.ai/license' }]
+  },
+  {
+    title: 'SrAjolote',
+    text: 'ajustes.credito_srajolote',
+    links: [{ label: 'GitHub', href: 'https://github.com/SrAjolote' }]
   },
   {
     title: 'JinGames · Dragon Block C',

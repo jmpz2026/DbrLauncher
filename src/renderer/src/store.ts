@@ -354,7 +354,7 @@ export const useStore = create<State>((set, get) => ({
   modpackSeedPending: false,
   modpackSyncPending: false,
   musicaActiva: false,
-  musicaVolumen: 0.3,
+  musicaVolumen: 0.05,
   maxRamGb: 16,
   totalRamGb: 0,
   loadSettings: async () => {

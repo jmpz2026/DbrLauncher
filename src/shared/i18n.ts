@@ -158,8 +158,7 @@ const T = {
 
   // Ajustes
   'ajustes.titulo': { es: 'Ajustes', en: 'Settings', pt: 'Ajustes' },
-  'ajustes.tab_juego': { es: 'Juego', en: 'Game', pt: 'Jogo' },
-  'ajustes.tab_modpack': { es: 'Modpack', en: 'Modpack', pt: 'Modpack' },
+  'ajustes.tab_juego': { es: 'Modpack y juego', en: 'Modpack and game', pt: 'Modpack e jogo' },
   'ajustes.tab_sistema': { es: 'Sistema', en: 'System', pt: 'Sistema' },
   'ajustes.idioma': { es: 'Idioma', en: 'Language', pt: 'Idioma' },
   'ajustes.idioma_desc': {
@@ -205,6 +204,11 @@ const T = {
     es: 'Gracias a KAMKEEL (Kam), autor del addon junto con bigguy345 (Goatee) y somehussar (Hussar), por permitirnos distribuir a los jugadores, a través de este launcher, nuestra versión modificada (un fork no oficial) con los créditos a sus autores. Concedido el 05/10/2026.',
     en: 'Thanks to KAMKEEL (Kam), author of the addon together with bigguy345 (Goatee) and somehussar (Hussar), for allowing us to distribute to players, through this launcher, our modified version (an unofficial fork) with credit to its authors. Granted on 2026-10-05.',
     pt: 'Obrigado a KAMKEEL (Kam), autor do addon junto com bigguy345 (Goatee) e somehussar (Hussar), por nos permitir distribuir aos jogadores, por meio deste launcher, a nossa versão modificada (um fork não oficial) com os créditos aos autores. Concedido em 05/10/2026.'
+  },
+  'ajustes.credito_srajolote': {
+    es: 'Gracias a SrAjolote por aportar varias ideas que se implementaron en el launcher.',
+    en: 'Thanks to SrAjolote for contributing several ideas that were implemented in the launcher.',
+    pt: 'Obrigado a SrAjolote por contribuir com várias ideias que foram implementadas no launcher.'
   },
   'ajustes.credito_jingames': {
     es: 'Gracias a Benjámin Nagy (Ben), de JinGames, autores de Dragon Block C, JRMCore, JBRA Client, Family C y Years C, por permitirnos crear y usar addons que extienden sus mods. Concedido el 06/10/2026. Sus mods se usan sin modificar.',
