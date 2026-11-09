@@ -70,7 +70,7 @@ Costo:
 - r2.dev queda desactivado (verificado). El bucket no tiene otra salida pública que el Worker.
 
 Seguridad:
-- Manifests firmados con Ed25519. La Action firma `m/<manifest>.json` y sube `m/<manifest>.json.sig`. Clave privada en el secret `MANIFEST_SIGN_KEY`. Clave pública embebida en el launcher, PC y Android. El launcher solo acepta un manifest de R2 si la firma es válida; si no, usa raw. Así una clave R2 filtrada no puede servir jars maliciosos: el sha1 de cada jar viene del manifest firmado.
+- Manifests firmados con ECDSA P-256 (antes Ed25519; ver bitácora). La Action firma `m/<manifest>.json` y sube `m/<manifest>.json.sig`. Clave privada en el secret `MANIFEST_SIGN_KEY`. Clave pública embebida en el launcher, PC y Android. El launcher solo acepta un manifest de R2 si la firma es válida; si no, usa raw. Así una clave R2 filtrada no puede servir jars maliciosos: el sha1 de cada jar viene del manifest firmado.
 - Token R2 limitado a Object Read & Write sobre `dbr-assets`. Solo vive en GitHub secrets. La Action corre en push a `assets` y en `workflow_dispatch`, nunca en `pull_request`.
 - Al terminar: `wrangler logout` (token OAuth local con scopes amplios). Para desplegar el Worker de nuevo, `wrangler login` de nuevo.
 - Privacidad: el subdominio `firulais-pinzon-2019` deja ver parte del correo. Se puede cambiar en Workers > Settings > Subdomain; si cambia, actualizar `R2_PUBLIC_BASE` y los valores por defecto del launcher.
@@ -127,6 +127,8 @@ Archivo: `DbrLauncher-android/.../game/dbr/DbrSync.kt` y `DbrPatch.kt`.
 
 ## Bitácora
 
+- 2026-11-09: firma cambiada de Ed25519 a ECDSA P-256 / SHA-256: Android solo verifica Ed25519 desde la API 33 y el launcher móvil soporta la 26. Clave nueva en el secret `MANIFEST_SIGN_KEY` y en `C:/Users/Junior/.dbr-secrets/manifest-sign.pem` (la Ed25519 se borró). Pública: `MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5vX89swMxkQvjBpfg4r4jgll/+L1KeEGCVs2qXVH/QBcGCYXdlpmiJ1sqqrQ3T+/uVgXvXq0EjHGi/W0F3mr2A==`. Assets 132082e, PC en `feat/mirror-r2`.
+- 2026-11-09: Fase D hecha en `android-zalith` (2d5ea4c, f53abf2): `DbrMirror.kt` (bases, firma, manifest desde R2), tope por host en `DbrHttp`, fuentes R2 > release > raw y espera única ante 403/429 en `DbrSync`, strings `dbr_error_blocked` y `dbr_sync_blocked` (en/es/pt). `DbrMirrorTest` 4/4 con firma real de la Action; `DbrPatchTest` OK; `assembleDebug` OK.
 - 2026-11-09: Fase C hecha en `feat/mirror-r2`. `http.ts`: tope por host de GitHub (raw 3, github.com 4, api 2), 404 y 403 pasan a la siguiente fuente, espera única de 20 s si todo da 403/429 (solo con `onBlocked`, o sea la sync), jsDelivr/statically solo sin `toFile`. `meta.ts`: manifests y forge json desde R2 con firma Ed25519 verificada; si no, raw. `engine.ts`/`patch.ts`: fuentes `manifest.mirrors ?? CONFIG.assetBases` y raw al final. Error `err.bloqueado` con detalle por fuente; Home muestra `sync.bloqueado` con la cuenta atrás. `gen-manifest.mjs` escribe `mirrors` (flag `--mirrors`). Worker: parches también bajo `f/` (a6bf044). Tests: `mirror-itest` nuevo (15 checks OK, jar de 37,5 MB desde R2 en 2 s); `sync`, `manifest`, `seed` y `launch` itest OK; typecheck OK.
 - 2026-11-09: subdominio cambiado a `dbrlauncher` (API: DELETE + PUT de `/workers/subdomain`). Worker en `https://dbr-assets.dbrlauncher.workers.dev`; `R2_PUBLIC_BASE` actualizado.
 - 2026-11-09: Fase S en Action (eba69b0): firma Ed25519 de `m/*.json` en `m/*.json.sig` (secret `MANIFEST_SIGN_KEY`; copia local en `C:/Users/Junior/.dbr-secrets/`, clave pública `MCowBQYDK2VwAyEAD38BJWLGtZFS8JwAAOaDsKNKrVOWatPPTk8Dg7V7FSY=`) y tope de 8 GB / 5000 escrituras. Action OK; bucket 115 MB; firma verificada con la clave pública.
@@ -138,4 +140,4 @@ Archivo: `DbrLauncher-android/.../game/dbr/DbrSync.kt` y `DbrPatch.kt`.
 
 ## Próximo paso
 
-Usuario: OK para mergear `feat/mirror-r2` a `main` y publicar v1.0.37 por tag. Después Fase D (Android). Usuario: alertas de facturación. Al final: `wrangler logout`.
+Fase E: merge de `feat/mirror-r2` a `main` y tag v1.0.37 (PC); versión y tag `android-vN` (Android). Pruebas manuales pendientes: `npm run dev` con sync limpia, bloqueo simulado con `hosts`, APK en un teléfono. Usuario: alertas de facturación. Al final: `wrangler logout`.
