@@ -71,6 +71,8 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_language_summary">Idioma do launcher e do jogo. O servidor fala com você no idioma do seu Minecraft.</string>
 
     <string name="dbr_error_download">O download falhou (%1$d): %2$s</string>
+    <string name="dbr_error_blocked">Sua conexão foi bloqueada temporariamente (%1$d). Espere alguns minutos, desative a VPN ou o proxy e tente de novo. Detalhe: %2$s</string>
+    <string name="dbr_sync_blocked">Sua conexão foi limitada. Tentando de novo em %1$d s…</string>
     <string name="dbr_error_hash">O arquivo baixado não confere (hash): %1$s</string>
     <string name="dbr_error_write">Não foi possível gravar %1$s</string>
     <string name="dbr_error_manifest">Não foi possível ler o manifest do modpack</string>

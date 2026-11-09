@@ -12,7 +12,8 @@ Launcher Android de DBR (fork de ZalithLauncher2) con sincronización obligatori
 | Entrada | Quién la dispara | Guarda | Archivo |
 |---|---|---|---|
 | `manifest.json` del modpack | GitHub raw / jsDelivr | HTTPS, URLs fijadas al commit | `game/dbr/DbrSync.kt` |
-| Archivos del modpack | GitHub raw / release `assets-files` | SHA-1 + `safeJoin` | `game/dbr/DbrSync.kt` |
+| Manifest del modpack | Mirror R2 (Worker `dbr-assets.dbrlauncher.workers.dev`) o GitHub raw | Firma ECDSA P-256 (clave pública en `DbrMirror`; si no verifica, se usa raw) | `game/dbr/DbrMirror.kt` |
+| Archivos del modpack | Mirror R2 / release `assets-files` / GitHub raw | SHA-1 del manifest + `safeJoin` | `game/dbr/DbrSync.kt` |
 | `version.json` + APK | GitHub raw / releases | SHA-256 + firma de Android | `game/dbr/DbrUpdater.kt` |
 | Importar controles (activity-alias exportada) | otra app | heredado del upstream | `AndroidManifest.xml` |
 

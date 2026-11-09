@@ -80,6 +80,8 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
 
     <!-- Errores del sync y de la instalación -->
     <string name="dbr_error_download">Download failed (%1$d): %2$s</string>
+    <string name="dbr_error_blocked">Your connection was temporarily blocked (%1$d). Wait a few minutes, turn off your VPN or proxy, and try again. Details: %2$s</string>
+    <string name="dbr_sync_blocked">Your connection was rate-limited. Retrying in %1$d s…</string>
     <string name="dbr_error_hash">The downloaded file does not match (hash): %1$s</string>
     <string name="dbr_error_write">Could not write %1$s</string>
     <string name="dbr_error_manifest">Could not read the modpack manifest</string>

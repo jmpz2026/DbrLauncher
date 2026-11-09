@@ -8,11 +8,14 @@ package com.movtery.zalithlauncher.game.dbr
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.context.GlobalContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.coroutineContext
 
 object DbrHttp {
@@ -20,6 +23,25 @@ object DbrHttp {
     class HttpStatusException(val code: Int, url: String) :
         IOException(GlobalContext.getString(R.string.dbr_error_download, code, url)) {
         val retryable: Boolean get() = code >= 500 || code == 429
+    }
+
+    /**
+     * Conexiones simultáneas por host de GitHub. La sync baja 8 archivos a la vez; contra raw eso
+     * dispara el límite de peticiones anónimas (403/429) y bloquea la IP unos minutos. El mirror
+     * R2 (Cloudflare) no tiene este límite y va sin tope extra.
+     */
+    private val HOST_LIMIT = mapOf(
+        "raw.githubusercontent.com" to 3,
+        "github.com" to 4,
+        "api.github.com" to 2,
+        "cdn.jsdelivr.net" to 3
+    )
+    private val gates = ConcurrentHashMap<String, Semaphore>()
+
+    private suspend fun <T> withHostSlot(url: String, block: suspend () -> T): T {
+        val host = runCatching { URL(url).host }.getOrNull()
+        val limit = host?.let { HOST_LIMIT[it] } ?: return block()
+        return gates.getOrPut(host) { Semaphore(limit) }.withPermit { block() }
     }
 
     /**
@@ -34,6 +56,12 @@ object DbrHttp {
         url: String,
         part: File,
         onProgress: suspend (received: Long, total: Long) -> Unit = { _, _ -> }
+    ): Unit = withHostSlot(url) { fetchOnce(url, part, onProgress) }
+
+    private suspend fun fetchOnce(
+        url: String,
+        part: File,
+        onProgress: suspend (received: Long, total: Long) -> Unit
     ) {
         var offset = if (part.isFile) part.length() else 0L
         val conn = URL(url).openConnection() as HttpURLConnection

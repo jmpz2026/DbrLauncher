@@ -72,7 +72,9 @@ object DbrSync {
          * Siempre de siembra. Sale de la carpeta `android/` de cada variante en el repo de
          * assets; los launchers de PC no lo conocen y lo ignoran.
          */
-        val androidFiles: List<ManifestFile>? = null
+        val androidFiles: List<ManifestFile>? = null,
+        /** Bases de descarga por sha1, en orden. Si falta, [DbrMirror.ASSET_BASES]. */
+        val mirrors: List<String>? = null
     )
 
     /** [Manifest.files] con el preset de Android aplicado encima. */
@@ -99,14 +101,6 @@ object DbrSync {
         conn.readTimeout = 10_000
         conn.getInputStream().use { it.readBytes().toString(Charsets.UTF_8).trim() }
     }.getOrNull()?.takeIf { Regex("^[0-9a-f]{40}$").matches(it) }
-
-    /**
-     * Copia de cada archivo del modpack como asset de un release, con su sha1 por nombre (la
-     * sube la Action de la rama assets). Se sirve desde objects.githubusercontent.com, otra red
-     * distinta de raw: cuando raw bloquea la IP del jugador (403) la sync baja de aquí.
-     */
-    private const val ASSET_MIRROR_BASE =
-        "https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/"
 
     /** La misma URL de raw servida por jsDelivr. Sirve los manifests, no los jars. */
     private fun jsDelivr(url: String): String? =
@@ -141,6 +135,12 @@ object DbrSync {
         }
         throw first ?: IllegalStateException("Sin URLs")
     }
+
+    /** Bloqueo por IP: 403 (raw, release) o 429 (límite de peticiones anónimas de GitHub). */
+    private val BLOCK_STATUS = setOf(403, 429)
+
+    /** Si todas las fuentes dan 403/429 se espera esto y se repite una sola vuelta. */
+    private const val BLOCKED_WAIT_MS = 20_000L
 
     /** Reintentos por URL ante cortes de red, reanudando desde el `.part`. */
     private const val MAX_ATTEMPTS = 5
@@ -187,26 +187,54 @@ object DbrSync {
      * Baja a [dest] desde la primera de [urls] que responda y case con [sha1]. Se escribe en un
      * `.part` que sobrevive a cortes y a cancelar: la próxima sync sigue donde quedó (las URLs
      * sirven el mismo contenido, así que el `.part` vale para todas).
-     * Si fallan todas se lanza el error del origen, que es el que explica el problema.
+     * Si todas dan 403/429 (GitHub limitó la IP) se avisa con [onBlocked], se espera y se repite
+     * una vuelta. Si fallan todas se lanza el error de la primera, con el status de cada fuente.
      */
-    private suspend fun downloadFirst(urls: List<String>, dest: File, sha1: String?, meter: ByteCounter.Meter) {
+    private suspend fun downloadFirst(
+        urls: List<String>,
+        dest: File,
+        sha1: String?,
+        meter: ByteCounter.Meter,
+        onBlocked: (Long) -> Unit
+    ) {
         val part = partFor(dest, sha1)
         var first: Exception? = null
-        for (u in urls) {
-            try {
-                fetchWithRetry(u, part) { received, _ -> meter.progress(received) }
-                if (!sha1.isNullOrEmpty() && !sha1(part).equals(sha1, ignoreCase = true)) {
-                    part.delete()
-                    meter.progress(0)
-                    throw IOException(GlobalContext.getString(R.string.dbr_error_hash, u))
+        val tried = mutableListOf<Pair<String, String>>()
+        for (round in 1..2) {
+            first = null
+            tried.clear()
+            for (u in urls) {
+                try {
+                    fetchWithRetry(u, part) { received, _ -> meter.progress(received) }
+                    if (!sha1.isNullOrEmpty() && !sha1(part).equals(sha1, ignoreCase = true)) {
+                        part.delete()
+                        meter.progress(0)
+                        throw IOException(GlobalContext.getString(R.string.dbr_error_hash, u))
+                    }
+                    replace(part, dest)
+                    return
+                } catch (e: IOException) {
+                    if (first == null) first = e
+                    val host = runCatching { URL(u).host }.getOrDefault(u)
+                    val status = (e as? DbrHttp.HttpStatusException)?.code?.toString() ?: e.javaClass.simpleName
+                    tried += host to status
                 }
-                replace(part, dest)
-                return
-            } catch (e: IOException) {
-                if (first == null) first = e
+            }
+            val codes = tried.mapNotNull { it.second.toIntOrNull() }
+            val blocked = codes.isNotEmpty() && codes.all { it in BLOCK_STATUS }
+            if (!blocked) break
+            if (round == 1) {
+                val ms = (BLOCKED_WAIT_MS * (0.5 + Math.random())).toLong()
+                onBlocked(ms)
+                delay(ms)
+            } else {
+                val detail = tried.joinToString(", ") { "${it.first}: ${it.second}" }
+                throw IOException(GlobalContext.getString(R.string.dbr_error_blocked, codes.first(), detail))
             }
         }
-        throw first ?: IllegalStateException("Sin URLs")
+        val detail = tried.joinToString(", ") { "${it.first}: ${it.second}" }
+        val e = first ?: IllegalStateException("Sin URLs")
+        throw IOException("${e.message} [$detail]", e)
     }
 
     /** Nombre de un jar sin la versión, para emparejar versiones: `mods/DbrServerPack-5.5.0.jar` -> `mods/dbrserverpack`. */
@@ -224,7 +252,13 @@ object DbrSync {
      * parche delta del release (ver [DbrPatch]). Devuelve false si no hay parche para ninguna
      * versión vieja o algo falla: entonces se baja el jar completo.
      */
-    private suspend fun tryPatch(f: ManifestFile, dest: File, candidates: List<File>, meter: ByteCounter.Meter): Boolean {
+    private suspend fun tryPatch(
+        f: ManifestFile,
+        dest: File,
+        candidates: List<File>,
+        bases: List<String>,
+        meter: ByteCounter.Meter
+    ): Boolean {
         val newSha = f.sha1?.lowercase()?.takeIf { it.isNotEmpty() } ?: return false
         for (old in candidates.distinct()) {
             if (!old.isFile) continue
@@ -233,10 +267,21 @@ object DbrSync {
             val patch = File(dest.path + "." + oldSha.take(8) + "-" + newSha.take(8) + ".dbrpatch.part")
             val out = File(dest.path + "." + newSha.take(8) + ".patched")
             try {
-                fetchWithRetry(ASSET_MIRROR_BASE + DbrPatch.assetName(oldSha, newSha), patch) { received, total ->
-                    if (total > 0) meter.expect(total)
-                    meter.progress(received)
+                //Mismo orden que los archivos: R2 y luego el release. 404 en una: la siguiente.
+                var fetched = false
+                for (base in bases) {
+                    try {
+                        fetchWithRetry(base + DbrPatch.assetName(oldSha, newSha), patch) { received, total ->
+                            if (total > 0) meter.expect(total)
+                            meter.progress(received)
+                        }
+                        fetched = true
+                        break
+                    } catch (e: DbrHttp.HttpStatusException) {
+                        patch.delete()
+                    }
                 }
+                if (!fetched) throw DbrHttp.HttpStatusException(404, DbrPatch.assetName(oldSha, newSha))
                 DbrPatch.apply(old, patch, out)
                 replace(out, dest)
                 return true
@@ -338,6 +383,8 @@ object DbrSync {
     private fun fetchManifest(): RemoteManifest {
         //Manifest y archivos de la misma rama, fijados al commit actual. Sin la API, por la rama.
         val url = manifestUrl()
+        //Primero el mirror R2 con firma verificada: no pasa por GitHub. Sus URLs no se fijan.
+        DbrMirror.fetchSigned(url)?.let { return RemoteManifest(it) { u -> u } }
         val raw = RAW.find(url)
         val sha = raw?.let { headSha(it.groupValues[1], it.groupValues[2], it.groupValues[3]) }
         val pin: (String) -> String = if (raw != null && sha != null) {
@@ -448,6 +495,18 @@ object DbrSync {
             onProgress(Progress("download", done.get(), total, file, bytes.done.get(), bytes.total.get()))
         }
         bytes = ByteCounter(toDownload.sumOf { it.size ?: 0L }) { emitDownload(false) }
+        val bases = DbrMirror.bases(manifest.mirrors)
+        //Todas las fuentes dieron 403/429: el texto del progreso cuenta los segundos de espera.
+        val onBlocked: (Long) -> Unit = { ms ->
+            val secs = ((ms + 999) / 1000).toInt()
+            onProgress(
+                Progress(
+                    "download", done.get(), total,
+                    GlobalContext.getString(R.string.dbr_sync_blocked, secs),
+                    bytes.done.get(), bytes.total.get()
+                )
+            )
+        }
         pool(toDownload, CONCURRENCY) { f ->
             val dest = safeJoin(gameDir, f.path)
             dest.parentFile?.mkdirs()
@@ -457,11 +516,13 @@ object DbrSync {
                 //Jar grande con versión vieja en el disco: basta un parche de 1-2 MB.
                 val key = modKey(f.path)
                 val patched = (f.size ?: 0L) >= PATCH_MIN_SIZE && f.path.endsWith(".jar", ignoreCase = true) &&
-                    tryPatch(f, dest, listOf(dest) + toDelete.filter { modKey(it) == key }.map { safeJoin(gameDir, it) }, meter)
+                    tryPatch(f, dest, listOf(dest) + toDelete.filter { modKey(it) == key }.map { safeJoin(gameDir, it) }, bases, meter)
                 if (!patched) {
-                    //Origen y, si falla (p. ej. 403 de raw a la IP del jugador), la copia del release.
-                    val mirror = f.sha1?.takeIf { it.isNotEmpty() }?.let { ASSET_MIRROR_BASE + it.lowercase() }
-                    downloadFirst(listOfNotNull(f.url, mirror), dest, f.sha1, meter)
+                    //Por contenido desde R2 y el release; raw al final. R2 no es de GitHub: un
+                    //límite de GitHub a la IP del jugador no lo alcanza.
+                    val sha = f.sha1?.takeIf { it.isNotEmpty() }?.lowercase()
+                    val urls = if (sha != null) bases.map { it + sha } + f.url else listOf(f.url)
+                    downloadFirst(urls, dest, f.sha1, meter, onBlocked)
                 }
             } finally {
                 active.remove(f.path)
