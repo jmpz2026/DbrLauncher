@@ -127,6 +127,7 @@ Archivo: `DbrLauncher-android/.../game/dbr/DbrSync.kt` y `DbrPatch.kt`.
 
 ## Bitácora
 
+- 2026-11-09: Fase E hecha. PC: merge a `main` (fee7448), v1.0.37 (521ec71), release CI OK con exe, AppImage y deb. Android: tag `android-v30`, release CI OK (`DbrLauncherMobile-arm64.apk`), version.json -> build 30. `wrangler logout` hecho (para desplegar el Worker otra vez: `wrangler login`).
 - 2026-11-09: firma cambiada de Ed25519 a ECDSA P-256 / SHA-256: Android solo verifica Ed25519 desde la API 33 y el launcher móvil soporta la 26. Clave nueva en el secret `MANIFEST_SIGN_KEY` y en `C:/Users/Junior/.dbr-secrets/manifest-sign.pem` (la Ed25519 se borró). Pública: `MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5vX89swMxkQvjBpfg4r4jgll/+L1KeEGCVs2qXVH/QBcGCYXdlpmiJ1sqqrQ3T+/uVgXvXq0EjHGi/W0F3mr2A==`. Assets 132082e, PC en `feat/mirror-r2`.
 - 2026-11-09: Fase D hecha en `android-zalith` (2d5ea4c, f53abf2): `DbrMirror.kt` (bases, firma, manifest desde R2), tope por host en `DbrHttp`, fuentes R2 > release > raw y espera única ante 403/429 en `DbrSync`, strings `dbr_error_blocked` y `dbr_sync_blocked` (en/es/pt). `DbrMirrorTest` 4/4 con firma real de la Action; `DbrPatchTest` OK; `assembleDebug` OK.
 - 2026-11-09: Fase C hecha en `feat/mirror-r2`. `http.ts`: tope por host de GitHub (raw 3, github.com 4, api 2), 404 y 403 pasan a la siguiente fuente, espera única de 20 s si todo da 403/429 (solo con `onBlocked`, o sea la sync), jsDelivr/statically solo sin `toFile`. `meta.ts`: manifests y forge json desde R2 con firma Ed25519 verificada; si no, raw. `engine.ts`/`patch.ts`: fuentes `manifest.mirrors ?? CONFIG.assetBases` y raw al final. Error `err.bloqueado` con detalle por fuente; Home muestra `sync.bloqueado` con la cuenta atrás. `gen-manifest.mjs` escribe `mirrors` (flag `--mirrors`). Worker: parches también bajo `f/` (a6bf044). Tests: `mirror-itest` nuevo (15 checks OK, jar de 37,5 MB desde R2 en 2 s); `sync`, `manifest`, `seed` y `launch` itest OK; typecheck OK.
@@ -140,4 +141,4 @@ Archivo: `DbrLauncher-android/.../game/dbr/DbrSync.kt` y `DbrPatch.kt`.
 
 ## Próximo paso
 
-Fase E: merge de `feat/mirror-r2` a `main` y tag v1.0.37 (PC); versión y tag `android-vN` (Android). Pruebas manuales pendientes: `npm run dev` con sync limpia, bloqueo simulado con `hosts`, APK en un teléfono. Usuario: alertas de facturación. Al final: `wrangler logout`.
+Plan cerrado. Pendiente del usuario: alertas de facturación en Cloudflare (Notifications > Usage Based Billing) y correr `actualizar.bat` para que los manifests lleven `mirrors`. Pruebas manuales recomendadas: sync limpia en PC y APK en un teléfono.
