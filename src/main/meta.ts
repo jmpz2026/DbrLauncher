@@ -1,5 +1,5 @@
 // Archivos "meta" del modpack (manifests y forge json): primero desde el mirror R2, con firma
-// Ed25519 verificada; si falta, no verifica o R2 no responde, desde raw.githubusercontent.
+// ECDSA P-256 verificada; si falta, no verifica o R2 no responde, desde raw.githubusercontent.
 //
 // La firma importa: el manifest dice qué sha1 tiene cada jar, así que quien pudiera escribir en
 // el bucket podría hacer instalar un jar cualquiera. La clave privada solo vive en un secret de
@@ -18,11 +18,11 @@ function key(): KeyObject {
   return publicKey
 }
 
-/** true si `sigB64` es la firma Ed25519 válida de `body`. Nunca lanza. */
+/** true si `sigB64` es la firma ECDSA P-256 / SHA-256 (DER) válida de `body`. Nunca lanza. */
 export function verifySignature(body: Buffer, sigB64: string): boolean {
   try {
     const sig = Buffer.from(sigB64.trim(), 'base64')
-    return sig.length === 64 && verify(null, body, key(), sig)
+    return sig.length > 0 && sig.length <= 80 && verify('sha256', body, key(), sig)
   } catch {
     return false
   }

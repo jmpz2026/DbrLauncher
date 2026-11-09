@@ -30,10 +30,12 @@ export const CONFIG = {
     'https://dbr-assets.dbrlauncher.workers.dev/f/',
     'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/'
   ],
-  // Manifests y forge json en el mirror R2, cada uno con su firma Ed25519 en `<nombre>.sig`.
+  // Manifests y forge json en el mirror R2, cada uno con su firma en `<nombre>.sig`.
   metaBase: 'https://dbr-assets.dbrlauncher.workers.dev/m/',
-  // Clave pública (SPKI DER en base64) de la firma. La privada es el secret MANIFEST_SIGN_KEY.
-  metaSignKey: 'MCowBQYDK2VwAyEAD38BJWLGtZFS8JwAAOaDsKNKrVOWatPPTk8Dg7V7FSY=',
+  // Clave pública ECDSA P-256 (SPKI DER en base64). La privada es el secret MANIFEST_SIGN_KEY.
+  // P-256 y no Ed25519: Android solo verifica Ed25519 desde la API 33. Misma clave en Android.
+  metaSignKey:
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5vX89swMxkQvjBpfg4r4jgll/+L1KeEGCVs2qXVH/QBcGCYXdlpmiJ1sqqrQ3T+/uVgXvXq0EjHGi/W0F3mr2A==',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 
