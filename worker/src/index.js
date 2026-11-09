@@ -7,7 +7,7 @@
 // Anything else is a 404. Only GET and HEAD. Range is supported because the
 // launcher resumes large downloads from a .part file.
 
-const KEY = /^(f\/[0-9a-f]{40}|p\/[0-9a-f]{40}-[0-9a-f]{40}\.dbrpatch|m\/[A-Za-z0-9._-]+\.json)$/
+const KEY = /^(f\/[0-9a-f]{40}|p\/[0-9a-f]{40}-[0-9a-f]{40}\.dbrpatch|m\/[A-Za-z0-9._-]+\.json(\.sig)?)$/
 
 export default {
   async fetch(request, env) {
@@ -33,7 +33,8 @@ export default {
       'Cache-Control',
       immutable ? 'public, max-age=31536000, immutable' : 'public, max-age=60'
     )
-    if (key.startsWith('m/')) headers.set('Content-Type', 'application/json; charset=utf-8')
+    if (key.endsWith('.sig')) headers.set('Content-Type', 'text/plain; charset=utf-8')
+    else if (key.startsWith('m/')) headers.set('Content-Type', 'application/json; charset=utf-8')
     else headers.set('Content-Type', 'application/octet-stream')
 
     if (request.method === 'HEAD') {
