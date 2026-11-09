@@ -21,10 +21,21 @@ export const CONFIG = {
   // jars en la subcarpeta experimental/.
   manifestUrlExperimental:
     'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-experimental.json',
-  // Copia de cada archivo del modpack como asset de un release, con su sha1 por nombre. La sube
-  // la Action de la rama assets. Se sirve desde objects.githubusercontent.com, otra red distinta
-  // de raw: cuando raw bloquea la IP del jugador (403) la sync baja de aquí.
-  assetMirrorBase: 'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/',
+  // Fuentes de cada archivo del modpack por contenido (`<base><sha1>`, y los parches
+  // `<base><sha1viejo>-<sha1nuevo>.dbrpatch`), en orden. raw (la `url` del manifest) va al final.
+  // 1) Worker de Cloudflare sobre R2: fuera de GitHub, así un límite o bloqueo de GitHub a la IP
+  //    del jugador no tumba la sync. 2) Assets del release `assets-files`. Las dos las sube la
+  //    Action de la rama assets. El manifest puede traer su propia lista en `mirrors`.
+  assetBases: [
+    'https://dbr-assets.dbrlauncher.workers.dev/f/',
+    'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/'
+  ],
+  // Manifests y forge json en el mirror R2, cada uno con su firma en `<nombre>.sig`.
+  metaBase: 'https://dbr-assets.dbrlauncher.workers.dev/m/',
+  // Clave pública ECDSA P-256 (SPKI DER en base64). La privada es el secret MANIFEST_SIGN_KEY.
+  // P-256 y no Ed25519: Android solo verifica Ed25519 desde la API 33. Misma clave en Android.
+  metaSignKey:
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5vX89swMxkQvjBpfg4r4jgll/+L1KeEGCVs2qXVH/QBcGCYXdlpmiJ1sqqrQ3T+/uVgXvXq0EjHGi/W0F3mr2A==',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 

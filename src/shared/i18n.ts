@@ -148,6 +148,11 @@ const T = {
     pt: 'Baixando {file}{others} — {done}/{total}'
   },
   'sync.descargando': { es: 'Descargando — {done}/{total}', en: 'Downloading — {done}/{total}', pt: 'Baixando — {done}/{total}' },
+  'sync.bloqueado': {
+    es: 'Tu conexión fue limitada. Reintentando en {s} s…',
+    en: 'Your connection was rate-limited. Retrying in {s} s…',
+    pt: 'Sua conexão foi limitada. Tentando de novo em {s} s…'
+  },
   'sync.limpiando': { es: 'Limpiando {done}/{total}', en: 'Cleaning up {done}/{total}', pt: 'Limpando {done}/{total}' },
   'sync.listo': { es: 'Listo', en: 'Done', pt: 'Pronto' },
   'sync.cancelar_hint': {
@@ -445,6 +450,11 @@ const T = {
     pt: 'Não foi possível baixar o manifest ({status}).'
   },
   'err.descarga': { es: 'Descarga falló ({status}): {url}', en: 'Download failed ({status}): {url}', pt: 'O download falhou ({status}): {url}' },
+  'err.bloqueado': {
+    es: 'Tu conexión fue bloqueada temporalmente ({status}). Espera unos minutos, desactiva la VPN o el proxy, o el escaneo HTTPS del antivirus, y vuelve a intentar. Detalle: {detalle}',
+    en: 'Your connection was temporarily blocked ({status}). Wait a few minutes, turn off your VPN or proxy, or your antivirus HTTPS scanning, and try again. Details: {detalle}',
+    pt: 'Sua conexão foi bloqueada temporariamente ({status}). Espere alguns minutos, desative a VPN ou o proxy, ou a verificação HTTPS do antivírus, e tente de novo. Detalhe: {detalle}'
+  },
   'err.conectar': { es: 'No se pudo conectar con {host}: {detalle}', en: 'Could not connect to {host}: {detalle}', pt: 'Não foi possível conectar a {host}: {detalle}' },
   'err.ping_timeout': { es: 'Tiempo de espera agotado', en: 'Timed out', pt: 'Tempo esgotado' },
   'err.ping_invalido': { es: 'Respuesta inválida del servidor', en: 'Invalid response from the server', pt: 'Resposta inválida do servidor' },

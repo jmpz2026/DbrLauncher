@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, join } from 'path'
 import { CONFIG } from '../../shared/config'
 import { fetchJson } from '../net'
+import { readJson } from '../http'
+import { fetchMeta } from '../meta'
 import { versionsDir } from './paths'
 import type { VersionJson } from './version'
 
@@ -53,7 +55,10 @@ export async function fetchForge(): Promise<VersionJson> {
   const file = join(versionsDir(), 'forge-overlay.json')
   try {
     // Hay copia en disco de reserva: pocos reintentos, que la red caída no retrase el launch.
-    const v = await fetchJson<VersionJson>(CONFIG.forgeJsonUrl, { retries: 1 })
+    // Primero el mirror R2 firmado; si no, raw.
+    const { res } = await fetchMeta('forge-1.7.10.json', CONFIG.forgeJsonUrl)
+    if (!res.ok) throw new Error(`GET ${CONFIG.forgeJsonUrl} -> ${res.status}`)
+    const v = readJson<VersionJson>(res, CONFIG.forgeJsonUrl)
     writeCached(file, v)
     return v
   } catch (e) {

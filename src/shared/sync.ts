@@ -16,6 +16,9 @@ export interface Manifest {
   minecraft?: string
   forge?: string
   files: ManifestFile[]
+  // Bases de descarga por sha1, en orden (`<base><sha1>`). Si falta, CONFIG.assetBases.
+  // Las escribe gen-manifest; cambiar de CDN no necesita una versión nueva del launcher.
+  mirrors?: string[]
 }
 
 export type SyncPhase = 'check' | 'download' | 'delete' | 'done'
@@ -30,6 +33,8 @@ export interface SyncProgress {
   inFlight?: number
   bytesDone?: number
   bytesTotal?: number // 0 si algún archivo del manifest no trae `size`
+  // Todas las fuentes dieron 403/429: segundos que faltan para el último intento.
+  blockedSecs?: number
 }
 
 export interface SyncSummary {

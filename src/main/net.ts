@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
-import { httpRequest, readJson, type HttpInit } from './http'
+import { httpRequest, readJson, type HttpInit, type HttpResponse } from './http'
 import { rememberSha1, sha1File, sha1FileCached } from './sync/hash'
 import { tr } from './idioma'
 
@@ -20,6 +20,16 @@ export interface EnsureOptions {
   signal?: AbortSignal
   /** No apuntar el sha1 en el hash-cache (archivos cuyo nombre ya es su sha1). */
   noCache?: boolean
+  /** Todas las fuentes dieron 403/429: se espera `waitMs` antes de la última vuelta. */
+  onBlocked?: (waitMs: number) => void
+}
+
+/** Error de una descarga fallida: mensaje de bloqueo si toda fuente dio 403/429, más el detalle. */
+export function downloadError(res: HttpResponse, url: string): Error {
+  const detalle = (res.attempts ?? []).map((a) => `${a.host}: ${a.status}`).join(', ')
+  if (res.blocked) return new Error(tr('err.bloqueado', { status: res.status, detalle }))
+  const base = tr('err.descarga', { status: res.status, url })
+  return new Error(detalle ? `${base} [${detalle}]` : base)
 }
 
 /** Descarga `url` a `dest` si falta o el sha1 no coincide. Devuelve true si descargó. */
@@ -41,8 +51,8 @@ export async function ensureFile(
   // ahí la próxima vez, y no se tienen 47 MB en memoria por jar.
   if (sha1 && (opts.size ?? 0) >= RESUMABLE_MIN_SIZE) {
     const part = partFor(dest, sha1)
-    const res = await httpRequest(url, { onProgress, mirrors, toFile: part, signal: opts.signal })
-    if (!res.ok) throw new Error(tr('err.descarga', { status: res.status, url }))
+    const res = await httpRequest(url, { onProgress, mirrors, toFile: part, signal: opts.signal, onBlocked: opts.onBlocked })
+    if (!res.ok) throw downloadError(res, url)
     if ((await sha1File(part)) !== sha1.toLowerCase()) {
       rmSync(part, { force: true })
       throw new Error(`SHA1 no coincide: ${url}`)
@@ -53,8 +63,8 @@ export async function ensureFile(
     return true
   }
 
-  const res = await httpRequest(url, { onProgress, mirrors, signal: opts.signal })
-  if (!res.ok) throw new Error(tr('err.descarga', { status: res.status, url }))
+  const res = await httpRequest(url, { onProgress, mirrors, signal: opts.signal, onBlocked: opts.onBlocked })
+  if (!res.ok) throw downloadError(res, url)
   const buf = res.body
   if (sha1) {
     const got = createHash('sha1').update(buf).digest('hex')

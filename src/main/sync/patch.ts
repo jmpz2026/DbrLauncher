@@ -1,6 +1,5 @@
 import { createHash } from 'crypto'
 import { closeSync, existsSync, openSync, readSync, renameSync, rmSync, writeSync } from 'fs'
-import { CONFIG } from '../../shared/config'
 import { httpRequest, isAbortError } from '../http'
 import { rememberSha1, sha1FileCached } from './hash'
 
@@ -94,13 +93,14 @@ function applyPatch(oldPath: string, patch: Buffer, outPath: string): void {
 
 /**
  * Intenta reconstruir `dest` (sha1 `newSha`) desde alguna versión vieja del mismo jar en
- * `candidates` y un parche del release. Devuelve false si no hay parche para ninguna o algo
+ * `candidates` y un parche de los mirrors. Devuelve false si no hay parche para ninguna o algo
  * falla: entonces hay que bajar el jar completo. `onProgress` recibe los bytes del parche.
  */
 export async function tryPatch(
   dest: string,
   newSha: string,
   candidates: string[],
+  bases: readonly string[],
   onProgress: (received: number, total: number) => void,
   signal?: AbortSignal
 ): Promise<boolean> {
@@ -109,7 +109,11 @@ export async function tryPatch(
     try {
       const oldSha = await sha1FileCached(old)
       if (oldSha === newSha) continue
-      const res = await httpRequest(`${CONFIG.assetMirrorBase}${oldSha}-${newSha}.dbrpatch`, { onProgress, signal })
+      // Mismo orden que los archivos: R2 y luego el release. Sin espera por bloqueo: si no hay
+      // parche, se baja el jar completo.
+      const [first, ...rest] = bases.map((b) => `${b}${oldSha}-${newSha}.dbrpatch`)
+      if (!first) return false
+      const res = await httpRequest(first, { mirrors: rest, onProgress, signal, blockedWaitMs: 0 })
       if (!res.ok) continue // 404: no hay parche para esta pareja de versiones
       const out = `${dest}.${newSha.slice(0, 8)}.patched`
       applyPatch(old, res.body, out)

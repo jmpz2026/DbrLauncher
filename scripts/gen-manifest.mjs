@@ -4,6 +4,11 @@
 // Uso:
 //   node scripts/gen-manifest.mjs --dir ./modpack --base https://.../ --version 1.0.0 \
 //        [--forge 10.13.4.1614] [--include mods,config,scripts] [--out manifest.json]
+//        [--mirrors https://a/f/,https://b/]
+//
+// `mirrors`: bases donde cada archivo está por contenido (`<base><sha1>`). El launcher las prueba
+// en orden y deja `url` (raw) para el final. Por defecto, DEFAULT_MIRRORS: el Worker R2 y el
+// release `assets-files`, que sube la Action de la rama assets. `--mirrors none` no las escribe.
 //
 // El `--base` es la URL donde estarán alojados los archivos preservando la ruta
 // (recomendado: raw.githubusercontent.com/OWNER/REPO/BRANCH/, o un host estático/CDN).
@@ -150,6 +155,11 @@ function buildAndroidFiles(dir, baseUrl) {
   return out
 }
 
+const DEFAULT_MIRRORS = [
+  'https://dbr-assets.dbrlauncher.workers.dev/f/',
+  'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/'
+]
+
 // ---- CLI ----
 function parseArgs(argv) {
   const args = {}
@@ -175,6 +185,12 @@ function main() {
     forge: a.forge,
     include: a.include ? a.include.split(',') : undefined
   })
+  const mirrors = a.mirrors === 'none' ? [] : a.mirrors ? a.mirrors.split(',') : DEFAULT_MIRRORS
+  if (mirrors.some((m) => !/^https:\/\/\S+\/$/.test(m))) {
+    console.error('Cada --mirrors debe ser https y terminar en /')
+    process.exit(1)
+  }
+  if (mirrors.length) manifest.mirrors = mirrors
   const out = a.out ?? 'manifest.json'
   writeFileSync(out, JSON.stringify(manifest, null, 2), 'utf-8')
   const totalMb = (manifest.files.reduce((s, f) => s + f.size, 0) / 1e6).toFixed(1)

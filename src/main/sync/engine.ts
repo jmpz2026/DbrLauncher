@@ -123,6 +123,8 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
   for (const f of toDownload) expected.set(f.path, f.size ?? 0)
   const inFlight = new Set<string>() // orden de inserción = orden de arranque
   let lastEmit = 0
+  // Todas las fuentes dieron 403/429 para algún archivo: hasta cuándo dura la espera.
+  let blockedUntil = 0
   const emit = (force = false): void => {
     const now = Date.now()
     if (!force && now - lastEmit < 100) return // no inundar el IPC con cada chunk
@@ -137,8 +139,18 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
       total,
       inFlight: Math.max(0, inFlight.size - 1),
       bytesDone: Math.min(bytesDone, bytesTotal),
-      bytesTotal
+      bytesTotal,
+      blockedSecs: blockedUntil > now ? Math.ceil((blockedUntil - now) / 1000) : undefined
     })
+  }
+  const bases: readonly string[] = manifest.mirrors ?? CONFIG.assetBases
+  const onBlocked = (ms: number): void => {
+    blockedUntil = Math.max(blockedUntil, Date.now() + ms)
+    const tick = setInterval(() => {
+      emit(true)
+      if (Date.now() >= blockedUntil) clearInterval(tick)
+    }, 1000)
+    emit(true)
   }
   await pool(toDownload, CONCURRENCY, async (f) => {
     inFlight.add(f.path)
@@ -151,7 +163,7 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
       if (f.sha1 && (f.size ?? 0) >= PATCH_MIN_SIZE && /\.jar$/i.test(f.path)) {
         const key = modKey(f.path)
         const candidates = [dest, ...toDelete.filter((p) => modKey(p) === key).map((p) => safeJoin(gameDir, p))]
-        const patched = await tryPatch(dest, f.sha1.toLowerCase(), candidates, (n, t) => {
+        const patched = await tryPatch(dest, f.sha1.toLowerCase(), candidates, bases, (n, t) => {
           if (t > 0) expect(f.path, t)
           received.set(f.path, n)
           emit()
@@ -163,19 +175,20 @@ export async function runSync(opts: SyncOptions, onProgress: OnProgress): Promis
         expect(f.path, f.size ?? 0)
         received.set(f.path, 0)
       }
-      // El release de assets guarda cada archivo con su sha1 por nombre: si raw bloquea la IP
-      // del jugador, se baja de ahí. Un sha1 aún sin subir da 404 y se pasa al siguiente mirror.
-      const mirrors = f.sha1 ? [CONFIG.assetMirrorBase + f.sha1.toLowerCase()] : []
+      // Por contenido desde los mirrors (R2, luego el release) y raw al final. R2 no es de
+      // GitHub: un límite de GitHub a la IP del jugador no lo alcanza. Un sha1 aún sin subir da
+      // 404 y se pasa a la siguiente fuente.
+      const sources = f.sha1 ? [...bases.map((b) => b + f.sha1.toLowerCase()), f.url] : [f.url]
       await ensureFile(
         dest,
-        f.url,
+        sources[0],
         f.sha1,
         (n) => {
           received.set(f.path, n)
           emit()
         },
-        mirrors,
-        { size: f.size, signal }
+        sources.slice(1),
+        { size: f.size, signal, onBlocked }
       )
       received.set(f.path, f.size ?? 0)
     } finally {
