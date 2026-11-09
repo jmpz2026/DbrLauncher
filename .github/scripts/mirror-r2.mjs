@@ -7,7 +7,8 @@
 //   p/<sha1old>-<sha1new>.dbrpatch    delta patches, copied from the `assets-files` release
 //   m/<name>.json                     manifests, forge json and news; uploaded LAST, so an R2
 //                                     manifest never points to a sha1 that is not uploaded yet
-//   m/<name>.json.sig                 Ed25519 signature (base64) of the exact bytes above. The
+//   m/<name>.json.sig                 ECDSA P-256 / SHA-256 signature (DER, base64) of the exact
+//                                     bytes above. The
 //                                     launcher rejects an R2 meta file without a valid signature,
 //                                     so a leaked R2 key cannot serve a fake manifest
 //   state/orphans.json               first day each object stopped being referenced (not served)
@@ -17,7 +18,8 @@
 //
 // Needs the aws CLI (preinstalled on ubuntu-latest), gh with GH_TOKEN, and the env vars
 // R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_BASE and
-// MANIFEST_SIGN_KEY (Ed25519 private key, PKCS#8 PEM).
+// MANIFEST_SIGN_KEY (ECDSA P-256 private key, PKCS#8 PEM). P-256 and not Ed25519 because
+// Android only verifies Ed25519 from API 33 and the mobile launcher supports API 26.
 // If any of them is missing it prints a warning and exits 0: the release mirror keeps working.
 //
 // Free-tier guard: the run aborts before writing anything if the bucket would pass 8 GB
@@ -163,7 +165,7 @@ for (const name of META) {
   // Signature first. In the short gap a launcher may read new signature + old file: the check
   // fails and it falls back to raw for that one request.
   const sigFile = join(tmp, `${name}.sig`)
-  writeFileSync(sigFile, sign(null, readFileSync(name), signKey).toString('base64'))
+  writeFileSync(sigFile, sign('sha256', readFileSync(name), signKey).toString('base64'))
   put(`m/${name}.sig`, sigFile, SHORT, 'text/plain; charset=utf-8')
   put(`m/${name}`, name, SHORT, 'application/json; charset=utf-8')
 }

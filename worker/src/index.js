@@ -4,7 +4,7 @@
 //   f/<sha1>                     every manifest file, named by content (immutable)
 //   p/<sha1old>-<sha1new>.dbrpatch delta patches for big jars (immutable)
 //   m/<name>.json                 manifests, forge json and news (short cache)
-//   m/<name>.json.sig             Ed25519 signature of the file above (short cache)
+//   m/<name>.json.sig             ECDSA P-256 signature of the file above (short cache)
 // f/<old>-<new>.dbrpatch is an alias of p/<old>-<new>.dbrpatch. Anything else is a 404.
 // Only GET and HEAD. Range is supported because the launcher resumes large downloads from a
 // .part file.
