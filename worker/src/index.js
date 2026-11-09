@@ -4,10 +4,12 @@
 //   f/<sha1>                     every manifest file, named by content (immutable)
 //   p/<sha1old>-<sha1new>.dbrpatch delta patches for big jars (immutable)
 //   m/<name>.json                 manifests, forge json and news (short cache)
-// Anything else is a 404. Only GET and HEAD. Range is supported because the
-// launcher resumes large downloads from a .part file.
+//   m/<name>.json.sig             Ed25519 signature of the file above (short cache)
+// f/<old>-<new>.dbrpatch is an alias of p/<old>-<new>.dbrpatch. Anything else is a 404.
+// Only GET and HEAD. Range is supported because the launcher resumes large downloads from a
+// .part file.
 
-const KEY = /^(f\/[0-9a-f]{40}|p\/[0-9a-f]{40}-[0-9a-f]{40}\.dbrpatch|m\/[A-Za-z0-9._-]+\.json(\.sig)?)$/
+const KEY = /^(f\/[0-9a-f]{40}|[fp]\/[0-9a-f]{40}-[0-9a-f]{40}\.dbrpatch|m\/[A-Za-z0-9._-]+\.json(\.sig)?)$/
 
 export default {
   async fetch(request, env) {
@@ -15,8 +17,12 @@ export default {
       return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } })
     }
 
-    const key = decodeURIComponent(new URL(request.url).pathname.slice(1))
+    // Valid keys have no escapes, so the raw path is enough (and a bad %xx cannot throw).
+    let key = new URL(request.url).pathname.slice(1)
     if (!KEY.test(key)) return new Response('Not found', { status: 404 })
+    // The launcher asks for patches under the same base as files (<base><old>-<new>.dbrpatch),
+    // like the release mirror does; they live under p/.
+    if (key.startsWith('f/') && key.endsWith('.dbrpatch')) key = 'p/' + key.slice(2)
 
     const immutable = !key.startsWith('m/')
     const object =
