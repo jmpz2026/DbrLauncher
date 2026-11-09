@@ -1,6 +1,8 @@
 import type { Manifest } from '../../shared/sync'
 import { httpRequest, readJson } from '../http'
 import { tr } from '../idioma'
+import { CONFIG } from '../../shared/config'
+import { fetchSignedMeta } from '../meta'
 
 // raw.githubusercontent.com cachea cada URL unos 5 minutos y la query no cuenta para la
 // caché: quien daba Jugar justo después de un despliegue recibía el manifest viejo, o un
@@ -22,12 +24,38 @@ async function headSha(owner: string, repo: string, branch: string): Promise<str
   }
 }
 
+/** Bases de descarga por sha1 válidas que trae el manifest (solo https), o null. */
+function mirrorsOf(data: Manifest): string[] | undefined {
+  if (!Array.isArray(data.mirrors)) return undefined
+  const ok = data.mirrors.filter((b): b is string => typeof b === 'string' && /^https:\/\/[^\s]+\/$/.test(b))
+  return ok.length ? ok : undefined
+}
+
+function validate(data: Manifest | null): Manifest {
+  if (!data || !Array.isArray(data.files)) {
+    throw new Error('Manifest inválido: falta la lista "files".')
+  }
+  data.mirrors = mirrorsOf(data)
+  return data
+}
+
 /**
- * Descarga y valida el manifest del modpack desde una URL directa. Si es de
- * raw.githubusercontent.com, el manifest y los archivos que cuelgan de la misma rama se piden
- * fijados al commit actual. Sin la API, como antes: por la rama.
+ * Descarga y valida el manifest del modpack. Primero desde el mirror R2 con firma verificada
+ * (no pasa por GitHub, así que un límite de GitHub a la IP del jugador no lo bloquea). Si R2 no
+ * responde o la firma no casa, desde `url` (raw). Si es de raw.githubusercontent.com, el
+ * manifest y los archivos que cuelgan de la misma rama se piden fijados al commit actual. Sin la
+ * API, como antes: por la rama.
  */
 export async function fetchManifest(url: string): Promise<Manifest> {
+  // Solo los manifests de nuestra rama assets están en el mirror (por nombre).
+  const ownBase = CONFIG.manifestUrl.slice(0, CONFIG.manifestUrl.lastIndexOf('/') + 1)
+  const name = url.slice(url.lastIndexOf('/') + 1)
+  const signed = url.startsWith(ownBase) ? await fetchSignedMeta(name) : null
+  if (signed) {
+    const res = { status: 200, ok: true, headers: {}, body: signed }
+    return validate(readJson<Manifest>(res, CONFIG.metaBase + name))
+  }
+
   const m = RAW.exec(url)
   const sha = m ? await headSha(m[1], m[2], m[3]) : null
   const branchBase = m ? m[0] : ''
@@ -36,10 +64,7 @@ export async function fetchManifest(url: string): Promise<Manifest> {
 
   const res = await httpRequest(pin(url))
   if (!res.ok) throw new Error(tr('err.manifest', { status: res.status }))
-  const data = readJson<Manifest>(res, url)
-  if (!data || !Array.isArray(data.files)) {
-    throw new Error('Manifest inválido: falta la lista "files".')
-  }
+  const data = validate(readJson<Manifest>(res, url))
   if (pinnedBase) {
     for (const f of data.files) f.url = pin(f.url)
   }

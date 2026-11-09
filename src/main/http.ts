@@ -32,6 +32,13 @@ export interface HttpInit {
   signal?: AbortSignal
   /** Reintentos por destino (por defecto RETRIES). Menos para peticiones opcionales con plan B. */
   retries?: number
+  /**
+   * Si todas las fuentes responden 403/429 (bloqueo por IP), se espera y se repite una vuelta.
+   * `onBlocked` recibe los ms de espera para que la UI lo muestre. Solo se espera si hay
+   * `onBlocked` (20 s) o `blockedWaitMs` > 0.
+   */
+  onBlocked?: (waitMs: number) => void
+  blockedWaitMs?: number
 }
 
 /** Error con el que se rechaza una petición cancelada con `HttpInit.signal`. */
@@ -56,6 +63,10 @@ export interface HttpResponse {
   ok: boolean
   headers: Record<string, string> // nombres en minúscula
   body: Buffer
+  /** Solo en un fallo tras probar varias fuentes: status final de cada una (o el error de red). */
+  attempts?: { host: string; status: number | string }[]
+  /** Todas las fuentes respondieron 403/429: la IP del jugador está limitada o bloqueada. */
+  blocked?: boolean
 }
 
 // Códigos de error de Chromium que el jugador puede accionar (textos red.<código> de
@@ -210,9 +221,30 @@ const MAX_RETRY_AFTER_MS = 10_000
 // 3xx: net.request ya sigue las redirecciones válidas, así que un 3xx que llega aquí no se pudo
 // seguir (sin Location, destino bloqueado). Lo devuelve un intermediario del usuario (antivirus
 // con escaneo HTTPS, filtro del ISP, proxy), nunca raw: los mirrors van por otra red.
-const MIRROR_STATUS = new Set([301, 302, 303, 307, 308, 403])
+// 404: el primer destino puede ser el mirror R2 con el archivo aún sin subir; las demás fuentes
+// lo tienen. Si todas dan 404 se devuelve el 404 del primero.
+const MIRROR_STATUS = new Set([301, 302, 303, 307, 308, 403, 404])
 
-const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+// Bloqueo por IP: 403 (raw, release) o 429 (límite de peticiones anónimas de GitHub). Pasa en
+// minutos, así que tras agotar todas las fuentes se espera y se repite una sola vuelta.
+const BLOCK_STATUS = new Set([403, 429])
+const BLOCKED_WAIT_MS = 20_000
+
+/** Espera cancelable con `signal`. */
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(abortError())
+    const onAbort = (): void => {
+      clearTimeout(t)
+      reject(abortError())
+    }
+    const t = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
+}
 
 // Jitter ±50%: sin él, las descargas paralelas del sync reintentan todas a la vez y vuelven a
 // golpear el mismo POP saturado en fase, así que los reintentos fallan en bloque.
@@ -228,12 +260,60 @@ function retryAfterMs(res: HttpResponse): number | null {
   return Math.min(ms, MAX_RETRY_AFTER_MS)
 }
 
+// Conexiones simultáneas por host de GitHub. La sync baja 8 archivos a la vez; contra raw eso
+// dispara el límite de peticiones anónimas (403/429) y bloquea la IP unos minutos. El mirror R2
+// (Cloudflare) no tiene este límite y va sin tope extra.
+const HOST_LIMIT: Record<string, number> = {
+  'raw.githubusercontent.com': 3,
+  'github.com': 4,
+  'api.github.com': 2,
+  'cdn.jsdelivr.net': 3,
+  'cdn.statically.io': 3
+}
+const hostActive = new Map<string, number>()
+const hostQueue = new Map<string, (() => void)[]>()
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).host
+  } catch {
+    return url
+  }
+}
+
+/** Corre `fn` cuando haya hueco para el host de `url` (sin tope si el host no está en la tabla). */
+async function withHostSlot<T>(url: string, fn: () => Promise<T>): Promise<T> {
+  const host = hostOf(url)
+  const limit = HOST_LIMIT[host]
+  if (!limit) return fn()
+  if ((hostActive.get(host) ?? 0) >= limit) {
+    // Espera su turno: quien libere el hueco se lo pasa directo, sin bajar el contador.
+    await new Promise<void>((resolve) => {
+      const q = hostQueue.get(host) ?? []
+      q.push(resolve)
+      hostQueue.set(host, q)
+    })
+  } else {
+    hostActive.set(host, (hostActive.get(host) ?? 0) + 1)
+  }
+  try {
+    return await fn()
+  } finally {
+    const next = hostQueue.get(host)?.shift()
+    if (next) next()
+    else hostActive.set(host, (hostActive.get(host) ?? 1) - 1)
+  }
+}
+
 // Cuando el POP de Fastly delante de raw.githubusercontent se cae (503 Backend.max_conn reached)
 // el corte dura minutos, mucho más que cualquier backoff, y tumbaba el launch entero aunque el
 // archivo estuviera perfectamente publicado. Estos CDNs sirven el MISMO repo/rama desde otra red,
 // así que un fallo regional de Fastly deja de ser un punto único de fallo. Solo se usan cuando el
 // origen ya agotó sus reintentos: cachean por nombre de rama y pueden ir unas horas desfasados.
-function mirrorsFor(url: string): string[] {
+// Solo para descargas a memoria (JSON y archivos chicos): jsDelivr da 403 a los archivos de más
+// de 20 MB y Statically se cuelga con los jars, así que con `toFile` no se usan.
+function mirrorsFor(url: string, toFile: boolean): string[] {
+  if (toFile) return []
   const m = /^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/.exec(url)
   if (!m) return []
   const [, owner, repo, ref, path] = m
@@ -243,53 +323,95 @@ function mirrorsFor(url: string): string[] {
   ]
 }
 
-/**
- * Petición HTTP(S) con redirecciones seguidas y reintentos con backoff exponencial ante status
- * pasajeros o cortes de red; si el origen es raw.githubusercontent y sigue caído tras los
- * reintentos (o responde 403), repite el ciclo contra `init.mirrors` y los CDN. Solo reintenta métodos idempotentes (GET/HEAD):
- * los POST de auth tienen su propia lógica de polling. Rechaza solo por fallo de red, no por status.
- *
- * `onProgress` puede retroceder a 0 si hay reintento (empieza una descarga nueva).
- */
-export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
-  const method = (init.method ?? 'GET').toUpperCase()
-  const idempotent = method === 'GET' || method === 'HEAD'
-  const targets = idempotent ? [url, ...(init.mirrors ?? []), ...mirrorsFor(url)] : [url]
-  const attempts = idempotent ? Math.max(0, init.retries ?? RETRIES) + 1 : 1
+type Attempt = { host: string; status: number | string }
 
+interface Round {
+  /** 2xx o status definitivo del primero (`done`), o el status a reportar si nada salió bien. */
+  res?: HttpResponse
+  done: boolean
+  err?: unknown
+  attempts: Attempt[]
+}
+
+/** Una vuelta por todos los destinos, con reintentos por destino. */
+async function oneRound(targets: string[], init: HttpInit, attempts: number): Promise<Round> {
   let lastRes: HttpResponse | undefined
   let lastErr: unknown
+  const tried: Attempt[] = []
 
   for (const [i, target] of targets.entries()) {
     const isMirror = i > 0
+    let final: number | string | undefined
     for (let attempt = 1; attempt <= attempts; attempt++) {
       const backoff = jitter(BACKOFF_MS * 2 ** (attempt - 1))
       if (init.signal?.aborted) throw abortError()
       try {
-        const res = await requestOnce(target, init)
+        const res = await withHostSlot(target, () => requestOnce(target, init))
+        final = res.status
         // Del mirror solo vale un 2xx: su 404 (archivo no cacheado, repo privado, jar de más de
-        // 20 MB) no dice nada del origen y no debe sustituir al status real de raw.
+        // 20 MB) no dice nada del primero y no debe sustituir a su status real.
         const toMirror = !isMirror && targets.length > 1 && MIRROR_STATUS.has(res.status)
-        if (res.ok || (!isMirror && !toMirror && !RETRY_STATUS.has(res.status))) return res
+        // 403/429 nunca es definitivo: puede ser un bloqueo pasajero (ver httpRequest).
+        const definitive = !RETRY_STATUS.has(res.status) && !BLOCK_STATUS.has(res.status)
+        if (res.ok || (!isMirror && !toMirror && definitive)) {
+          return { res, done: true, attempts: tried }
+        }
         if (!isMirror || !lastRes) lastRes = res
         if (toMirror) break
         if (attempt < attempts && RETRY_STATUS.has(res.status)) {
-          await sleep(retryAfterMs(res) ?? backoff)
+          await wait(retryAfterMs(res) ?? backoff, init.signal)
         } else if (attempt < attempts) {
           break // status definitivo del mirror: pasar al siguiente sin gastar reintentos
         }
       } catch (e) {
         if (isAbortError(e)) throw e
         lastErr = e
-        if (attempt < attempts) await sleep(backoff)
+        final = /ERR_[A-Z_]+/.exec(String((e as Error)?.cause ?? e))?.[0] ?? 'error'
+        if (attempt < attempts) await wait(backoff, init.signal)
       }
     }
+    if (final !== undefined) tried.push({ host: hostOf(target), status: final })
+  }
+  return { res: lastRes, done: false, err: lastErr, attempts: tried }
+}
+
+/** Todas las fuentes que respondieron dieron 403/429 (los fallos de red no cuentan en contra). */
+function isBlocked(attempts: Attempt[]): boolean {
+  const statuses = attempts.map((a) => a.status).filter((s): s is number => typeof s === 'number')
+  return statuses.length > 0 && statuses.every((s) => BLOCK_STATUS.has(s))
+}
+
+/**
+ * Petición HTTP(S) con redirecciones seguidas y reintentos con backoff exponencial ante status
+ * pasajeros o cortes de red. Con varios destinos (`url`, luego `init.mirrors`, luego los CDN de
+ * raw) pasa al siguiente si el anterior agota sus reintentos o responde 403/404/3xx. Si todos
+ * terminan en 403/429 (IP bloqueada o limitada por GitHub) espera `blockedWaitMs` y repite una
+ * vuelta. Solo reintenta métodos idempotentes (GET/HEAD): los POST de auth tienen su propia
+ * lógica de polling. Rechaza solo por fallo de red, no por status.
+ *
+ * `onProgress` puede retroceder a 0 si hay reintento (empieza una descarga nueva).
+ */
+export async function httpRequest(url: string, init: HttpInit = {}): Promise<HttpResponse> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  const idempotent = method === 'GET' || method === 'HEAD'
+  const targets = idempotent ? [url, ...(init.mirrors ?? []), ...mirrorsFor(url, !!init.toFile)] : [url]
+  const attempts = idempotent ? Math.max(0, init.retries ?? RETRIES) + 1 : 1
+
+  let round = await oneRound(targets, init, attempts)
+  // Solo quien lo pide espera (la sync, vía ensureFile): un 403 de auth no es un bloqueo.
+  const waitMs = init.blockedWaitMs ?? (init.onBlocked ? BLOCKED_WAIT_MS : 0)
+  if (!round.done && idempotent && waitMs > 0 && isBlocked(round.attempts)) {
+    const ms = jitter(waitMs)
+    init.onBlocked?.(ms)
+    await wait(ms, init.signal)
+    round = await oneRound(targets, init, attempts)
   }
 
+  if (round.done && round.res) return round.res
   // Agotados origen y mirrors: se devuelve el último status pasajero (el llamador lo reporta) y
   // solo se lanza si nunca hubo respuesta, es decir si todo fueron fallos de red.
-  if (lastRes) return lastRes
-  throw lastErr
+  if (round.res) return { ...round.res, attempts: round.attempts, blocked: isBlocked(round.attempts) }
+  throw round.err
 }
 
 /** Cuerpo como JSON. Lanza si no es JSON válido (p. ej. el portal cautivo de un wifi). */

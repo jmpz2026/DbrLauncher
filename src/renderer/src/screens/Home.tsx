@@ -226,6 +226,7 @@ function SyncBar(): JSX.Element {
 
   let label = tr('comun.preparando')
   if (p?.phase === 'check') label = tr('sync.comprobando')
+  else if (p?.phase === 'download' && p.blockedSecs) label = tr('sync.bloqueado', { s: p.blockedSecs })
   else if (p?.phase === 'download')
     label = file
       ? tr('sync.descargando_archivo', { file, others, done: p.done, total: p.total })

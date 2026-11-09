@@ -21,10 +21,19 @@ export const CONFIG = {
   // jars en la subcarpeta experimental/.
   manifestUrlExperimental:
     'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/manifest-experimental.json',
-  // Copia de cada archivo del modpack como asset de un release, con su sha1 por nombre. La sube
-  // la Action de la rama assets. Se sirve desde objects.githubusercontent.com, otra red distinta
-  // de raw: cuando raw bloquea la IP del jugador (403) la sync baja de aquí.
-  assetMirrorBase: 'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/',
+  // Fuentes de cada archivo del modpack por contenido (`<base><sha1>`, y los parches
+  // `<base><sha1viejo>-<sha1nuevo>.dbrpatch`), en orden. raw (la `url` del manifest) va al final.
+  // 1) Worker de Cloudflare sobre R2: fuera de GitHub, así un límite o bloqueo de GitHub a la IP
+  //    del jugador no tumba la sync. 2) Assets del release `assets-files`. Las dos las sube la
+  //    Action de la rama assets. El manifest puede traer su propia lista en `mirrors`.
+  assetBases: [
+    'https://dbr-assets.dbrlauncher.workers.dev/f/',
+    'https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/'
+  ],
+  // Manifests y forge json en el mirror R2, cada uno con su firma Ed25519 en `<nombre>.sig`.
+  metaBase: 'https://dbr-assets.dbrlauncher.workers.dev/m/',
+  // Clave pública (SPKI DER en base64) de la firma. La privada es el secret MANIFEST_SIGN_KEY.
+  metaSignKey: 'MCowBQYDK2VwAyEAD38BJWLGtZFS8JwAAOaDsKNKrVOWatPPTk8Dg7V7FSY=',
   // JSON de versión de Forge (overlay con inheritsFrom: "1.7.10").
   forgeJsonUrl: 'https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/forge-1.7.10.json',
 
