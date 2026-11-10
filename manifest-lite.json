@@ -446,8 +446,8 @@
     },
     {
       "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "e9e92f83c40a799d5d67f9e2bb045c8f4f9f388f",
-      "size": 37578515,
+      "sha1": "3f7f7ab6412600de50592007ba225c84e47f3a0a",
+      "size": 38007061,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-5.8.0.jar"
     },
     {
@@ -494,7 +494,7 @@
     },
     {
       "path": "mods/NBArmors-1.0.0.jar",
-      "sha1": "ad7b0144ef6ab5b2ad6684c0acc20d47ac82c5fb",
+      "sha1": "70c38c5fad086ac75a3b43e9c82bfb8a7a8a675a",
       "size": 5136960,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/NBArmors-1.0.0.jar"
     },
@@ -506,8 +506,8 @@
     },
     {
       "path": "mods/npcdbc-5.4.0.jar",
-      "sha1": "80fcd59b15ea456bae0acdb5cb32bfb3b3830903",
-      "size": 4391172,
+      "sha1": "2ec3e8e032a7f7ca0ecb144c80291bd2c8e96e80",
+      "size": 4391374,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/npcdbc-5.4.0.jar"
     },
     {

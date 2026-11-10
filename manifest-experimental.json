@@ -488,7 +488,7 @@
     },
     {
       "path": "mods/NBArmors-1.0.0.jar",
-      "sha1": "ad7b0144ef6ab5b2ad6684c0acc20d47ac82c5fb",
+      "sha1": "70c38c5fad086ac75a3b43e9c82bfb8a7a8a675a",
       "size": 5136960,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/NBArmors-1.0.0.jar"
     },
@@ -500,8 +500,8 @@
     },
     {
       "path": "mods/npcdbc-5.4.0.jar",
-      "sha1": "80fcd59b15ea456bae0acdb5cb32bfb3b3830903",
-      "size": 4391172,
+      "sha1": "2ec3e8e032a7f7ca0ecb144c80291bd2c8e96e80",
+      "size": 4391374,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-5.4.0.jar"
     },
     {
