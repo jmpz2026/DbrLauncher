@@ -601,6 +601,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: ronda 2 hecha (6d36e442, experimental d475852, TESTEO, copia directa al cliente PC): teclas de movimiento desde el stick (turbo/vuelo DBC), LS corre, doble A vuela (Interprete @doble, perfil v3), GuiaBotones en menus y contexto (rueda, lock-on, sostenida) con opcion en Iconos. Capturas 3 idiomas OK. Falta prueba del usuario con Xbox (guia no visible sin mando en dbr-test).
 
+- 2026-11-11: prueba ronda 2: doble A no volaba (toque baja/sube en la misma lectura y "mantener" re-apretaba: DBC alterna el vuelo cada tick); guia se apagaba con el cursor del mando (setCursorPosition genera eventos de raton). Arreglado: toques se aprietan una vez y sueltan a los 3 ticks; raton ignorado 300 ms tras actividad del mando. Desplegado + copia al cliente PC.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
