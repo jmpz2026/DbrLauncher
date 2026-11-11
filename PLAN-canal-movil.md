@@ -607,6 +607,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: diagnóstico frente al mando de Bedrock: en partida, 7 de 13 acciones vanilla estaban en su sitio. El usuario eligió el esquema punto por punto (sección "Mando: esquema vanilla", al final). Hecho en DbrServerPack dd2bdbaf (perfil v4 con migración solo de los perfiles de fábrica v3; las pistas de la rueda y del lock-on salen del mapeo real; tests del mando sin fallos), experimental 51edde0, TESTEO y copia al cliente PC. Falta la prueba del usuario con Xbox.
 
+- 2026-11-11: prueba del esquema vanilla: todo OK salvo la rueda de formas desde ←, que crasheaba. Causa: al soltar la tecla, la rueda se cierra mientras se dibuja y la guía recibía partida sin situación (NPE). Arreglo: la guía no se dibuja si la pantalla ya cerró, y las teclas DBC (no `key.*`) que abren un menú desde un botón quedan sostenidas hasta A o B. DbrServerPack 86c7d438, experimental b90f9a2, TESTEO y copia al cliente PC.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
