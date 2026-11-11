@@ -1,18 +1,34 @@
 {
   "version": 1,
-  "_nota": "Patrones de vibracion del canal movil (launcher Android). Cada patron es una lista de [ms, fuerza 0..1]; fuerza 0 = pausa. Topes en el launcher: segmento 250 ms, total 600 ms, 6 pulsos. La categoria sale del prefijo del id: combate, ki, mundo, avisos.",
-  "generico": [[30, 0.5]],
+  "_nota": "Patrones de vibracion del canal movil (launcher Android). Cada patron es una lista de [ms, fuerza 0..1]; fuerza 0 = pausa. Topes en el launcher: segmento 250 ms, total 600 ms, 6 pulsos; pulso minimo 30 ms (45 ms en telefonos sin control de amplitud). La categoria sale del prefijo del id: combate, ki, mundo, avisos.",
+  "generico": [[40, 0.5]],
   "eventos": {
-    "combate.golpear": [[20, 0.45]],
-    "combate.dano": [[45, 0.8]],
-    "ki.soltar": [[35, 0.7], [30, 0], [60, 0.5]],
-    "ki.transformar": [[80, 0.6], [40, 0], [120, 0.9]],
-    "ki.choque": [[90, 1.0]],
-    "mundo.romper": [[15, 0.35]],
-    "mundo.caida": [[70, 0.8]],
-    "avisos.privado": [[30, 0.6], [60, 0], [30, 0.6]],
-    "avisos.mencion": [[25, 0.5], [50, 0], [25, 0.5]],
-    "avisos.nivel": [[40, 0.5], [50, 0], [40, 0.6], [50, 0], [60, 0.8]],
-    "avisos.premio": [[50, 0.6], [40, 0], [50, 0.8], [40, 0], [100, 1.0]]
+    "combate.golpear": [[35, 0.5]],
+    "combate.dano": [[60, 0.85]],
+    "ki.soltar": [
+      [40, 0.7], [40, 0], [70, 0.5]
+    ],
+    "ki.transformar": [
+      [80, 0.6], [40, 0], [140, 0.9]
+    ],
+    "ki.choque": [[150, 1.0]],
+    "ki.choque_perfecto": [[40, 1.0]],
+    "ki.choque_fin": [
+      [80, 0.8], [50, 0], [120, 1.0]
+    ],
+    "mundo.romper": [[30, 0.4]],
+    "mundo.caida": [[80, 0.8]],
+    "avisos.privado": [
+      [40, 0.6], [70, 0], [40, 0.6]
+    ],
+    "avisos.mencion": [
+      [35, 0.5], [60, 0], [35, 0.5]
+    ],
+    "avisos.nivel": [
+      [40, 0.5], [50, 0], [40, 0.6], [50, 0], [70, 0.8]
+    ],
+    "avisos.premio": [
+      [50, 0.6], [40, 0], [50, 0.8], [40, 0], [120, 1.0]
+    ]
   }
 }

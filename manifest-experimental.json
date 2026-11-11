@@ -440,8 +440,8 @@
     },
     {
       "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "6ea475416b2a1091c5a2d30a2bc4008384091a82",
-      "size": 38055041,
+      "sha1": "70078d43dbd421b29fb73a3e4e2af52be619a861",
+      "size": 38054818,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.8.0.jar"
     },
     {
@@ -546,8 +546,8 @@
     },
     {
       "path": "config/dbrcore/vibracion.json",
-      "sha1": "66e434d566195636fec113a407d97c15de65d73d",
-      "size": 861,
+      "sha1": "8124a924a7bb02f9e933ff4ba072223e1839a630",
+      "size": 1104,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrcore/vibracion.json"
     }
   ],
