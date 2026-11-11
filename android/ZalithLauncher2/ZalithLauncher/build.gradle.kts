@@ -149,6 +149,9 @@ androidComponents {
                     val task = tasks.named("merge${variantName}Assets").get() as MergeSourceSetFolders
                     // DBR: the LWJGL 2 bridge jar lives in assets; rebuild it so it never goes stale.
                     task.dependsOn(":LWJGL2Bridge:jar")
+                    // Lint tasks read src/main/assets too; without this Gradle 9 fails the release build.
+                    tasks.matching { it.name.contains("Lint", ignoreCase = true) && it.name.contains(variantName) }
+                        .configureEach { dependsOn(":LWJGL2Bridge:jar") }
                     task.doLast {
                         val assetsDir = task.outputDir.get().asFile
                         val jreList = listOf("jre-8", "jre-17", "jre-21", "jre-25")
