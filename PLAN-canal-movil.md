@@ -611,9 +611,11 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: el usuario confirma que todo el mando en PC funciona por ahora (esquema vanilla, rueda de formas, vuelo, guia y pistas). Queda: telefono con mando por Bluetooth, lock-on y PvP en TESTEO, luego 9 y 10.
 
+- 2026-11-11: el usuario confirma lock-on OK. Mando por Bluetooth en el telefono funcionaba pero con el mapeo viejo: el APK instalado era de las 12:13 y `MandoDbr` (puente al `core.mando`) es de las 14:22 (ff9d5b9), asi que mandaba el remapper de ZL2. APK nuevo compilado e instalado por adb (17:26); falta reprobar. Linux, PlayStation, giroscopio y flick quedan para despues. Nuevo: 8f, launchers navegables con mando (propuesta abajo, pendiente OK).
+
 ## Siguiente paso
 
-Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
+Reprobar el mando por Bluetooth con el APK nuevo; esperar OK del 8f. Antes: Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
 
 ## Mando en PC, ronda 2 (aprobado 2026-11-11): movimiento DBC, correr, volar con doble toque y guía de botones
 
@@ -733,3 +735,25 @@ Decisiones del usuario: lo vanilla en el sitio de Bedrock y lo de DBC encima.
 - **Rueda, página 1:** ocultar HUD, menú de acciones, lista de jugadores, destransformar, Info Panel, Scouter Functions, Story System y ajustes.
 - **Menús:** sin cambios.
 - **Migración v4:** solo pasa al esquema nuevo el perfil que seguía igual al de fábrica v3 con modificador LB. Al cambiar el modificador a RB, la barra sigue la posición de los botones.
+
+## Paso 8f (propuesto 2026-11-11, pendiente OK): launchers navegables con mando
+
+### Context
+El usuario pide poder usar el launcher de PC (Electron, repo DbrLauncher `main`) y el de Android (ZL2 Compose, esta rama) solo con el mando. Linux, PlayStation, giroscopio y flick quedan para despues.
+
+### PC (Electron 22, React)
+- `src/renderer/src/mando/useMando.ts`: lee `navigator.getGamepads()` en cada fotograma, detecta flancos y repite al mantener (400 ms, luego 120 ms).
+- Navegacion espacial: candidatos = elementos visibles enfocables (`button`, `a`, `input`, `select`, `[tabindex]`, `[data-mando]`), solo dentro del modal de arriba si hay uno. Se elige el mas cercano en la direccion pedida por geometria.
+- Botones: stick izquierdo y cruceta mueven el foco; A pulsa; B cierra el modal o vuelve; LB/RB cambian la pestaña de `NavBar`; Start = Jugar en Home; stick derecho hace scroll.
+- Anillo de foco visible solo en modo mando (`data-input="mando"` en `body`); el raton lo apaga.
+- Barra de pistas abajo (A Elegir, B Atras, LB/RB Pestañas) con glifos segun el mando.
+- Texto (nick en Login, campos de Settings): decision del usuario pendiente.
+
+### Android (ZL2 Compose)
+- Android ya convierte cruceta/stick en movimiento de foco, A en confirmar y B en Atras. Primero se prueba con el mando real que pantallas fallan.
+- Luego: indicador de foco visible en `ui/dbr/DbrComponents.kt` y botones propios, foco inicial en Jugar, LB/RB cambian la pestaña de `DbrBottomBar`, elementos propios enfocables. Los campos de texto abren el teclado del sistema.
+- No toca `MandoDbr` (solo vive en `VMActivity`, durante la partida).
+
+### Verificacion
+- PC: `npm run build` y prueba con Xbox: Home, Settings, Login, modales (log, Lite, update).
+- Android: `compileDebugKotlin`, APK por adb, prueba con el mando por Bluetooth en todas las pantallas.
