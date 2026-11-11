@@ -22,6 +22,8 @@ object Protocolo {
     const val SUGERENCIAS = 3
     /** Game state bits for the context controls (EstadoDbr.bit), sent only when they change. */
     const val ESTADO = 4
+    /** Haptic event: short id "categoria.nombre" + strength (Vibracion.kt plays it). */
+    const val VIBRAR = 5
     const val ABRIR_URL = 9
 
     // Launcher -> game
@@ -33,7 +35,12 @@ object Protocolo {
     const val CAP_ABRIR_URL = 1 shl 1
     const val CAP_CHIPS = 1 shl 2
     const val CAP_ESTADO = 1 shl 3
-    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO
+    const val CAP_VIBRAR = 1 shl 4
+    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR
+
+    /** VIBRAR id: lowercase ASCII "categoria.nombre", at most this many bytes. */
+    const val MAX_ID_VIBRAR = 32
+    private val ID_VIBRAR = Regex("[a-z]{1,12}[.][a-z0-9_]{1,19}")
 
     /** SUGERENCIAS limits: chips from the server tree and popup suggestions, each short. */
     const val MAX_CHIPS = 12
@@ -55,6 +62,8 @@ object Protocolo {
         data class AbrirUrl(val url: String) : Mensaje
         /** Bit mask of active game states (see EstadoDbr). */
         data class Estado(val bits: Int) : Mensaje
+        /** fuerza in 0..1 (u8 / 255). */
+        data class Vibrar(val id: String, val fuerza: Float) : Mensaje
         /** Chat state for the chip row. abierto false = chat closed, lists are empty. */
         data class Sugerencias(
             val abierto: Boolean,
@@ -75,6 +84,7 @@ object Protocolo {
             AREA_TEXTO -> leerArea(buf)
             SUGERENCIAS -> leerSugerencias(buf)
             ESTADO -> if (buf.remaining() == 4) Mensaje.Estado(buf.int) else null
+            VIBRAR -> leerVibrar(buf)
             ABRIR_URL -> leerTexto(buf)?.let { Mensaje.AbrirUrl(it) }
             else -> null
         }
@@ -96,6 +106,19 @@ object Protocolo {
         val cAlto = alto.coerceIn(0f, 1f - cy)
         if (cAncho <= 0f || cAlto <= 0f) return null
         return Mensaje.AreaTexto(AreaNormalizada(cx, cy, cAncho, cAlto))
+    }
+
+    /** u8 id length + ASCII id + u8 strength. */
+    private fun leerVibrar(buf: ByteBuffer): Mensaje? {
+        if (!buf.hasRemaining()) return null
+        val largo = buf.get().toInt() and 0xFF
+        if (largo == 0 || largo > MAX_ID_VIBRAR || buf.remaining() != largo + 1) return null
+        val bytes = ByteArray(largo)
+        buf.get(bytes)
+        val id = String(bytes, StandardCharsets.US_ASCII)
+        if (!ID_VIBRAR.matches(id)) return null
+        val fuerza = (buf.get().toInt() and 0xFF) / 255f
+        return Mensaje.Vibrar(id, fuerza)
     }
 
     private fun leerSugerencias(buf: ByteBuffer): Mensaje? {

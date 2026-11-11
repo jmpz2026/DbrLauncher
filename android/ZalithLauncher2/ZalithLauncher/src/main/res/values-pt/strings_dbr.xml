@@ -135,4 +135,11 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_estado_contenedor">Inventário ou baú</string>
     <string name="dbr_estado_pantalla_dbr">Tela Dbr</string>
     <string name="dbr_estado_otra_pantalla">Pausa ou outra tela</string>
+    <string name="dbr_vibracion_title">Vibração</string>
+    <string name="dbr_vibracion_summary">O celular vibra com o que acontece no jogo (golpes, ki, avisos).</string>
+    <string name="dbr_vibracion_intensidad">Intensidade</string>
+    <string name="dbr_vibracion_combate">Combate</string>
+    <string name="dbr_vibracion_ki">Ki e formas</string>
+    <string name="dbr_vibracion_mundo">Mundo (quebrar blocos, quedas)</string>
+    <string name="dbr_vibracion_avisos">Avisos (mensagens privadas, menções, nível, prêmio do gacha)</string>
 </resources>

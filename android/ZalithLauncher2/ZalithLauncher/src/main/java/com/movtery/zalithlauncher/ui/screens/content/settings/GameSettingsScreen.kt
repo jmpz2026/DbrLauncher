@@ -95,6 +95,15 @@ fun GameSettingsScreen(
                 )
             }
 
+            //DBR: vibración por eventos del juego (canal móvil).
+            animatedItem(scope) { yOffset ->
+                DbrVibracionSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                )
+            }
+
             animatedItem(scope) { yOffset ->
                 SettingsCardColumn(
                     modifier = Modifier

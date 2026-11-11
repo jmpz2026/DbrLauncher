@@ -89,6 +89,17 @@ object AllSettings : SettingsRegistry() {
      */
     val dbrSettingsRevision = intSetting("dbrSettingsRevision", 0, min = 0)
 
+    /**
+     * DBR: vibración por eventos del juego (canal móvil, VIBRAR). Interruptor general, intensidad
+     * 0..100 y un interruptor por categoría (game/support/canal_movil/VibradorDbr).
+     */
+    val dbrVibracion = boolSetting("dbrVibracion", true)
+    val dbrVibracionIntensidad = intSetting("dbrVibracionIntensidad", 60, 0..100)
+    val dbrVibracionCombate = boolSetting("dbrVibracionCombate", true)
+    val dbrVibracionKi = boolSetting("dbrVibracionKi", true)
+    val dbrVibracionMundo = boolSetting("dbrVibracionMundo", false)
+    val dbrVibracionAvisos = boolSetting("dbrVibracionAvisos", true)
+
     //Renderer
     /**
      * 全局渲染器

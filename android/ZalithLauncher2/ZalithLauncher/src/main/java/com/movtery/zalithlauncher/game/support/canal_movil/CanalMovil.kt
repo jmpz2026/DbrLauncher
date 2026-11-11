@@ -27,6 +27,7 @@ object CanalMovil {
             Protocolo.AREA_TEXTO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
             Protocolo.SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
             Protocolo.ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
+            Protocolo.VIBRAR to LimiteRitmo.Limite(capacidad = 8, porSegundo = 8.0),
             Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
         )
     )
@@ -87,11 +88,13 @@ object CanalMovil {
             is Mensaje.AbrirUrl -> if (_conectado.value) ZLNativeInvoker.openLink(mensaje.url)
             is Mensaje.Sugerencias -> if (_conectado.value) _sugerencias.value = mensaje
             is Mensaje.Estado -> if (_conectado.value) _estado.value = EstadoDbr.desdeBits(mensaje.bits)
+            is Mensaje.Vibrar -> if (_conectado.value) VibradorDbr.reproducir(mensaje.id, mensaje.fuerza)
         }
     }
 
-    /** Called when the game process ends or a new game starts. */
-    fun reiniciar() {
+    /** Called when a new game starts; [gameDir] holds the modpack's vibration catalog. */
+    fun reiniciar(gameDir: java.io.File? = null) {
+        VibradorDbr.cargar(gameDir)
         _conectado.value = false
         _areaTexto.value = null
         _sugerencias.value = Mensaje.Sugerencias(false, emptyList(), emptyList())

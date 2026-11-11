@@ -32,6 +32,7 @@ import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.dbr.DbrExperimental
 import com.movtery.zalithlauncher.game.dbr.DbrIdioma
 import com.movtery.zalithlauncher.game.dbr.DbrReport
+import com.movtery.zalithlauncher.game.support.canal_movil.VibradorDbr
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DbrModpackVariant
@@ -39,6 +40,7 @@ import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.CardPosition
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.EnumSettingsCard
+import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.IntSliderSettingsCard
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCard
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCardColumn
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SwitchSettingsCard
@@ -145,6 +147,53 @@ fun DbrLanguageSection(modifier: Modifier = Modifier) {
                 }
             }
         )
+    }
+}
+
+/**
+ * DBR: vibración por eventos del juego (canal móvil, plan E). Solo el teléfono. Al soltar la
+ * intensidad, una vibración de prueba.
+ */
+@Composable
+fun DbrVibracionSection(modifier: Modifier = Modifier) {
+    val activa = AllSettings.dbrVibracion.state
+    SettingsCardColumn(modifier = modifier) {
+        SwitchSettingsCard(
+            modifier = Modifier.fillMaxWidth(),
+            position = CardPosition.Top,
+            unit = AllSettings.dbrVibracion,
+            title = stringResource(R.string.dbr_vibracion_title),
+            summary = stringResource(R.string.dbr_vibracion_summary)
+        )
+        val unidad = AllSettings.dbrVibracionIntensidad
+        IntSliderSettingsCard(
+            modifier = Modifier.fillMaxWidth(),
+            position = CardPosition.Middle,
+            value = unidad.state,
+            title = stringResource(R.string.dbr_vibracion_intensidad),
+            valueRange = 0f..100f,
+            suffix = "%",
+            enabled = activa,
+            onValueChange = { unidad.updateState(it) },
+            onValueChangeFinished = {
+                unidad.save(unidad.state)
+                VibradorDbr.probar("combate.dano")
+            }
+        )
+        listOf(
+            AllSettings.dbrVibracionCombate to R.string.dbr_vibracion_combate,
+            AllSettings.dbrVibracionKi to R.string.dbr_vibracion_ki,
+            AllSettings.dbrVibracionMundo to R.string.dbr_vibracion_mundo,
+            AllSettings.dbrVibracionAvisos to R.string.dbr_vibracion_avisos,
+        ).forEachIndexed { i, (unit, texto) ->
+            SwitchSettingsCard(
+                modifier = Modifier.fillMaxWidth(),
+                position = if (i == 3) CardPosition.Bottom else CardPosition.Middle,
+                unit = unit,
+                title = stringResource(texto),
+                enabled = activa
+            )
+        }
     }
 }
 
