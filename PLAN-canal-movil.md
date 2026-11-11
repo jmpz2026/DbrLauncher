@@ -618,6 +618,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 - 2026-11-11: 8f.1 probado por el usuario con Xbox: todo OK. Commit DbrLauncher 0f5047f (main). Se empieza 8f.2.
 - 2026-11-11: 8f.2 escrito, sin commit: `ui/dbr/MandoLauncher.kt` (`dbrFoco` borde dorado, `rememberMandoConectado`, `FocoInicialConMando` pasa a modo teclado y enfoca Jugar, `dbrPestanasMando` LB/RB), aplicado en `GoldButton`/`StoneNavButton`, `MainScreen` (LB/RB alternan Inicio/Ajustes) y `LauncherScreen` (foco en Jugar); `MandoDbr.esMando` pasa a internal. compileDebugKotlin OK, APK instalado. Diagnostico por adb pendiente: el telefono estaba bloqueado con codigo.
 - 2026-11-11: el usuario prueba 8f.2 y el mando en partida por Bluetooth: todo OK. **Paso 8f cerrado.** Sigue 9 (docs) y 10 (release coordinado).
+- 2026-11-11: plan del paso 9 aprobado (sección "Paso 9", al final): spec `docs/canal-movil.md`, SECURITY_MODEL de launcher, DbrServerPack y DbrCorePlugin, docs/claude de DbrCore (movil, mando, autocompletado) y DbrCorePlugin (comandos, movil). Un subagente por repo.
+- 2026-11-11: paso 9 hecho. Launcher: `docs/canal-movil.md` + 12 tipos e INV-5 en SECURITY_MODEL (tipo 8 no existe, hueco libre). DbrCore: `docs/claude/{movil,mando,autocompletado}.md` + INV-5 en DbrServerPack/SECURITY_MODEL. DbrCorePlugin: `docs/claude/{comandos,movil}.md`, indice nuevo, INV-9, skill dbr-corelib. Diferencias codigo-plan (documentado el codigo): recarga `/dbrcore comandos recargar`; claves `permitidos`/`bloqueados` en `filtro-comandos.yml`; arbol se reenvia cada 30 s (permisos tardan hasta 30 s), ocupado por paquete BLOQUEADOS cada 20 ticks; comandos de MyCommand sin chequeo de permiso (excepcion en INV-9); `FiltroTab` no mira permiso ni ocupado; ningun tipo dinamico registrado (homes/warps/kits los registra el plugin dueno); sin emisor `peligro.*`; `BackendCanal.recibirEstado` no recorta -128 (-1,008). Posibles arreglos para antes del 10, con OK del usuario.
 
 ## Siguiente paso
 
@@ -802,3 +804,79 @@ Android ya convierte la cruceta y el stick en movimiento de foco, A en confirmar
 ### Al aprobar
 - Pasar este plan a `PLAN-canal-movil.md` (reemplaza la propuesta 8f) con una línea en la bitácora y commit.
 - Luego empezar 8f.1.
+
+## Paso 9 (aprobado 2026-11-11): documentación
+
+### Context
+Pasos 0–8f hechos y probados (2026-11-11). Antes del release coordinado (paso 10) falta dejar escrito lo
+construido. Estado actual de la documentación:
+- Launcher `DbrLauncher-android`: no existe `docs/canal-movil.md` (la spec prometida en el bloque A).
+  `SECURITY_MODEL.md` lista solo 3 de los 15 tipos del canal (`NOTIFICAR`, `TEXTO_ESTADO`, `TEXTO_EDITAR`).
+- DbrCore (`DbrServerPack/DbrCore`): `core.movil` (12 clases) y `core.mando` (19 clases) sin doc en
+  `docs/claude/`. `DbrServerPack/SECURITY_MODEL.md` no menciona canal, móvil ni mando.
+- DbrCorePlugin: `corelib.comandos` (autocompletado, filtros, Tab, migración de DbrAntiCommand) y
+  `corelib.movil` sin doc. `CLAUDE.md` (295 B) no tiene índice "Detalle por tema"; remite a la skill
+  `dbr-corelib`, que tampoco los menciona. `SECURITY_MODEL.md` tiene INV-8 (DBRVIBRAR/DBRNOTIF) pero no el
+  paquete de autocompletado ni el filtro de Tab.
+
+Solo docs. Sin cambios de código. Las fuentes de verdad son el código: cada número (largos, rate limit,
+caps) se copia leyendo `Protocolo.kt`, `CanalMovil.kt`, `glfw_shim.c` y las clases Java, no del plan.
+
+### 9a. Launcher (`DbrLauncher-android`, rama `android-zalith`)
+1. **`docs/canal-movil.md`** (nuevo, spec canónica):
+   - Transporte: `GLFW.dbrSend`/`dbrPoll` en el stub LWJGL2Bridge, native `glfw_shim.c`, ring buffer de
+     32, `CallbackBridge.onDbrMessage`; flag `-Ddbr.movil.canal=1` (`LaunchArgs.kt`).
+   - Formato: byte de versión `PROTO`, big-endian, handshake `HOLA`/`HOLA_ACK` con bits `CAP_*`.
+   - Tabla por tipo (id, sentido, payload campo a campo, largo, rate limit, cap, clase Kotlin y clase
+     DbrCore): 1–9 juego→launcher, 101–107 launcher→juego.
+   - Cómo agregar un tipo nuevo (append-only, cap nuevo, test en `CanalMovilTest`, fila en
+     SECURITY_MODEL).
+2. **`SECURITY_MODEL.md`**: filas de Entradas para los 12 tipos faltantes (incluye `ABRIR_URL` +
+   `UrlSegura`, `MANDO_ESTADO`/`MANDO_INFO`, `VIBRAR` con topes en código y JSON firmado), invariante del
+   canal (nada se interpreta como ruta/intent/comando; versión distinta = canal apagado), `file:` quitado de
+   `ZLNativeInvoker.openLink`. Enlace a `docs/canal-movil.md`.
+3. `CLAUDE.md` del worktree: una línea a `docs/canal-movil.md`.
+
+### 9b. DbrCore (`DbrServerPack`)
+1. **`DbrCore/docs/claude/movil.md`**: `core.movil` — activación (flag + clase presente, en PC no carga),
+   `DetectorCampo` (orden de detección), `ChipsMovil`, `TextoMovil`, `Vibrar`, `Notificar`, `Pantalla`,
+   `ModoReducido`, reglas (try/catch, nada del canal va al servidor). Enlaza la spec del launcher.
+2. **`DbrCore/docs/claude/mando.md`**: `core.mando` — backends (Jamepad PC, `BackendCanal` Android),
+   `Perfil` + versión y migraciones (v2–v4), esquema vanilla, `Interprete` (@doble, toques de 3 ticks,
+   ratón ignorado 300 ms), `TeclaVirtual` (keyDownBuffer + KeyInputEvent), radial, teclado, `GuiaBotones`,
+   `/dbrmando`, trampas encontradas en las pruebas (NPE de la rueda, DBC alterna vuelo por tick).
+3. **`DbrCore/docs/claude/autocompletado.md`** (lado cliente): popup del chat, fuentes, Tab vanilla con
+   300 ms / 3 por s.
+4. Índice "Detalle por tema" de `DbrCore/CLAUDE.md`: 3 líneas. Sin más texto en CLAUDE.md.
+5. **`DbrServerPack/SECURITY_MODEL.md`**: entradas del canal (launcher→juego), del paquete de
+   autocompletado (S→C) y del mando; invariante "el canal nunca reenvía al servidor".
+
+### 9c. DbrCorePlugin
+1. **`docs/claude/comandos.md`**: `corelib.comandos` — filtro (árbol ∩ permiso ∩ no bloqueado ∩ no
+   ocupado), YAML de uso (`PatronUso`, tipos), chips y lista fija de riesgosos, `FiltroTab` (ProtocolLib),
+   migración de DbrAntiCommand y su retiro.
+2. **`docs/claude/movil.md`**: `corelib.movil` — `Notificar`/`NotificarEventos`, `Vibrar`/`VibrarEventos`,
+   `PrivadosEssentials`, canales `DBRNOTIF`/`DBRVIBRAR`.
+3. `CLAUDE.md`: sección "Detalle por tema" nueva con esas 2 líneas.
+4. **`SECURITY_MODEL.md`**: entradas del paquete de autocompletado y del filtro de Tab; invariante "solo
+   comandos que el jugador puede usar salen al cliente".
+5. Skill `dbr-corelib` (`~/.claude/skills/dbr-corelib/SKILL.md`): 2 líneas que apuntan a los docs nuevos
+   (no se copia el detalle; la skill ya pesa 20 KB).
+
+### Método
+- Un subagente por repo (3, en paralelo) lee el código y escribe los docs de su repo; vuelve con la lista
+  de archivos y cualquier diferencia entre código y plan. Yo reviso los diffs.
+- Commits por repo con la skill `dbr-git` (Conventional Commits en español, `docs(...)`), sin push hasta
+  el OK del usuario.
+- Bitácora de `PLAN-canal-movil.md`: plan del paso 9 + línea al cerrar cada subpaso.
+
+### Verificación
+- Cada número de la spec cruzado contra `Protocolo.kt` y los Java (el subagente lista las constantes que
+  usó con su archivo:línea).
+- `grep` de los 15 tipos en `SECURITY_MODEL.md` del launcher: todos presentes.
+- Enlaces relativos de los índices apuntan a archivos que existen.
+- `CLAUDE.md` de DbrCore sigue bajo 20k caracteres (hoy 10,3k).
+- Sin cambios de código: `git diff --stat` solo muestra `.md`.
+
+### Siguiente
+Paso 10: prueba completa y release coordinado `android-v30`.
