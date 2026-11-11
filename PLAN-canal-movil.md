@@ -201,6 +201,7 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: 8.0 hecho: empujados launcher (6d934f8), DbrServerPack (f97273c6), DbrCorePlugin (4df8f8f) y DbrInvasionPlugin (0e035be). Sigue 8a.
 - 2026-11-11: 8a y 8b escritos en el launcher, sin compilar ni commit (pausa: otra sesion usa el worktree para el diagnostico de arranque). Cambio de formato: el largo del texto de `TEXTO_*` va en u16 (100 caracteres UTF-8 pueden pasar de 255 B). `seq` de `TEXTO_ESTADO` = ultimo seq de `TEXTO_EDITAR` aplicado por el juego (eco). Falta: compilar y tests del launcher, 8c DbrCore.
 - 2026-11-11: 8a, 8b y 8c hechos, sin commit. Launcher: tests `canal_movil` OK, `assembleDebug` OK e instalado por adb. DbrCore: `TextoMovil` + tipo 105 + `CAP_TEXTO` + subrayado en `ChatAutocompletado`, `gradlew build` OK (7 tests nuevos). `SECURITY_MODEL.md` con tipos 7 y 105. Falta: commits, jar de DbrCore a experimental DBR-ASSETS, prueba en telefono.
+- 2026-11-11: paso 8 empujado y desplegado. Launcher 5fc066f, DbrServerPack 9265d96a, TESTEO RESURRECTION (`.bak-20261111-texto`, servidor apagado), experimental DBR-ASSETS d63b518. APK debug ya instalado por adb. Falta prueba en telefono (seccion "Verificacion" del paso 8).
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
@@ -360,6 +361,6 @@ Paso 8 de `PLAN-canal-movil.md`. Hoy el teclado de Android escribe en un `EditTe
 
 ## Siguiente paso
 
-Paso 8 (F, texto sincronizado): 8a/8b/8c escritos y compilados, sin commit. Toca: commits, jar DbrCore a experimental DBR-ASSETS y la prueba en telefono de "Verificacion" del paso 8. Paso 7 cerrado. Paso 6 hecho y desplegado (pruebas pendientes).
+Paso 8 (F, texto sincronizado): hecho, empujado y desplegado (TESTEO + experimental + APK). Toca la prueba en telefono de "Verificacion" del paso 8. Paso 7 cerrado. Paso 6 hecho y desplegado (pruebas pendientes).
 - 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
 - 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
