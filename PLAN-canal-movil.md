@@ -154,6 +154,11 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-10: plan armado y aprobado (preguntas por punto: canal, campo de texto, autocompletado, chips, controles por contexto, vibración, texto sincronizado, links, calor/batería, muesca, escala, notificaciones, menú, mando, lock-on). Parche de respaldo en VMActivity hecho y compilado, sin commit.
 
+- 2026-11-10: paso 1 verificado (launchwrapper 1.12 excluye `org.lwjgl.`; links de GuiChat se interceptan con GuiOpenEvent sobre GuiConfirmOpenLink).
+- 2026-11-10: paso 2 + parte launcher del paso 3 hechos (commit bcb6674): dbr_canal.c (cola 32, tope 1024 B), natives nDbrSend/nDbrPoll en glfw_shim, GLFW.dbrSend/dbrPoll, CallbackBridge.onDbrMessage/nativeDbrPush, CanalMovil/Protocolo/LimiteRitmo/UrlSegura, openLink sin file: y con dialogo, flag -Ddbr.movil.canal=1, VMActivity usa el area del canal. 13 tests JVM ok, assembleDebug ok. Falta: dominios web/tienda Dbr en UrlSegura.DOMINIOS_CONFIANZA.
+
+- 2026-11-10: paso 3 lado juego hecho (DbrServerPack b0e686ae): `core.movil` (Canal, Movil, DetectorCampo, CampoActivo), hook en TextInput, dueno = ClientProxy de DbrMod. Compila. Sin probar en telefono.
+
 ## Siguiente paso
 
-Paso 1: verificar la exclusión `org.lwjgl.` en el LaunchClassLoader de Forge 1.7.10 y cómo GuiChat abre links.
+Paso 4 (bloque C): `corelib.comandos` en DbrCorePlugin + popup de autocompletado en DbrCore + chips. Auditoria de plugin.yml en paralelo (subagente). Antes: prueba en telefono de los pasos 2-3 si hay APK.
