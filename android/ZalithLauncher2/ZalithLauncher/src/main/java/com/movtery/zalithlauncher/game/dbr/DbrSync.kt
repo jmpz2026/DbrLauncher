@@ -39,6 +39,25 @@ object DbrSync {
     /** Huella del manifest del último sync completo (ver [checkStatus]). */
     private const val SYNCED_FILE = ".dbr_synced"
 
+    /** SHA-1 ya comprobados: ruta → tamaño, mtime y sha1 tras el último sync correcto. */
+    private const val HASHES_FILE = ".dbr_hashes.json"
+
+    /** Cada cuántos syncs se ignora [HASHES_FILE] y se rehashea todo. */
+    private const val FULL_CHECK_EVERY = 10
+
+    /** Cuánto vale el manifest que bajó [checkStatus] para el siguiente [sync]. */
+    private const val MANIFEST_REUSE_MS = 2 * 60_000L
+
+    private class CachedManifest(val url: String, val at: Long, val manifest: RemoteManifest)
+
+    /** Manifest de la última [checkStatus]; [sync] lo usa una vez si es reciente. */
+    @Volatile
+    private var lastChecked: CachedManifest? = null
+
+    private data class HashEntry(val size: Long = -1, val mtime: Long = -1, val sha1: String = "")
+
+    private data class HashCache(val runs: Int = 0, val files: Map<String, HashEntry> = emptyMap())
+
     /**
      * Descargas/verificaciones simultáneas. En serie, un modpack de ~100 archivos tarda
      * muchísimo en la primera instalación (mismo criterio que el launcher de escritorio).
@@ -411,7 +430,9 @@ object DbrSync {
      * manifest; no mira los archivos del disco (eso lo hace el sync al pulsar Jugar).
      */
     suspend fun checkStatus(gameDir: File): Status = withContext(Dispatchers.IO) {
+        val url = manifestUrl()
         val remote = runCatching { fetchManifest() }.getOrNull() ?: return@withContext Status.UNKNOWN
+        lastChecked = CachedManifest(url, System.currentTimeMillis(), remote)
         if (neverSynced(gameDir)) return@withContext Status.UPDATE_AVAILABLE
         val synced = runCatching { File(gameDir, SYNCED_FILE).readText().trim() }.getOrNull()
         if (synced == remote.fingerprint) Status.UP_TO_DATE else Status.UPDATE_AVAILABLE
@@ -430,7 +451,13 @@ object DbrSync {
     ) = withContext(Dispatchers.IO) {
         gameDir.mkdirs()
 
-        val remote = fetchManifest()
+        //El manifest que acaba de bajar la home sirve: se ahorra otra petición (una sola vez).
+        val cached = lastChecked
+        lastChecked = null
+        val remote = cached
+            ?.takeIf { it.url == manifestUrl() && System.currentTimeMillis() - it.at < MANIFEST_REUSE_MS }
+            ?.manifest
+            ?: fetchManifest()
         val pin = remote.pin
         val manifest = GSON.fromJson(remote.json, Manifest::class.java)
             ?: error(GlobalContext.getString(R.string.dbr_error_manifest))
@@ -439,6 +466,12 @@ object DbrSync {
 
         // 1) Qué hay que descargar (falta, tamaño distinto, o SHA-1 distinto).
         // El SHA-1 del disco se calcula en paralelo: es I/O + CPU y en serie se nota mucho.
+        // Un archivo con el mismo tamaño y mtime que tras el último sync no se rehashea;
+        // cada FULL_CHECK_EVERY syncs se rehashea todo por si alguien lo tocó a mano.
+        val hashesFile = File(gameDir, HASHES_FILE)
+        val hashCache = runCatching { GSON.fromJson(hashesFile.readText(), HashCache::class.java) }
+            .getOrNull() ?: HashCache()
+        val known = if ((hashCache.runs + 1) % FULL_CHECK_EVERY == 0) emptyMap() else hashCache.files
         val checked = AtomicInteger(0)
         val needed = BooleanArray(files.size)
         pool(files.indices.toList(), CONCURRENCY) { i ->
@@ -450,6 +483,10 @@ object DbrSync {
                 f.once -> reseed
                 f.size != null && dest.length() != f.size -> true
                 f.sha1.isNullOrEmpty() -> false
+                known[f.path]?.let {
+                    it.size == dest.length() && it.mtime == dest.lastModified() &&
+                        it.sha1.equals(f.sha1, ignoreCase = true)
+                } == true -> false
                 else -> !sha1(dest).equals(f.sha1, ignoreCase = true)
             }
             onProgress(Progress("check", checked.incrementAndGet(), files.size, f.path))
@@ -541,6 +578,12 @@ object DbrSync {
         }
 
         managedFile.writeText(GSON.toJson(managedPaths))
+        //Todo lo gestionado tiene ahora el SHA-1 del manifest (comprobado o recién bajado).
+        val hashes = files.filter { !it.once && !it.sha1.isNullOrEmpty() }.mapNotNull { f ->
+            val dest = safeJoin(gameDir, f.path)
+            if (dest.isFile) f.path to HashEntry(dest.length(), dest.lastModified(), f.sha1!!.lowercase()) else null
+        }.toMap()
+        runCatching { hashesFile.writeText(GSON.toJson(HashCache(hashCache.runs + 1, hashes))) }
         File(gameDir, SYNCED_FILE).writeText(remote.fingerprint)
         onProgress(Progress("done", total, total, ""))
     }

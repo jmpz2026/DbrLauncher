@@ -147,6 +147,8 @@ object LaunchGame {
      * 检查是否安装了 TouchController，安装后开启控制代理
      */
     private suspend fun checkEnableTouchProxy(version: Version) {
+        //DBR: TouchController no existe para 1.7.10; leer todos los jars del pack costaba tiempo en cada arranque.
+        if (version.getVersionInfo()?.minecraftVersion == "1.7.10") return
         val modsDir = VersionFolders.MOD.getDir(version.getGameDir())
         val reader = AllModReader(modsDir)
         for (mod in reader.readAllLocals()) {

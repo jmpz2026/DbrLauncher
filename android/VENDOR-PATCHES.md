@@ -186,3 +186,11 @@ traen sus layouts de Pojav (y el staff armó el suyo en MojoLauncher).
   Los joysticks de Pojav no se convierten (ZL2 tiene el suyo).
 - `ControlManager.importControl` recibe el nombre del archivo (que pasa a ser el nombre del layout) y
   convierte antes de `loadLayoutFromString`. Con el layout del staff da el mismo resultado que el script.
+
+## 13) Sin búsqueda de TouchController en 1.7.10 (2026-11-11)
+**Motivo:** `LaunchGame.checkEnableTouchProxy` abría cada jar de `mods` con `AllModReader` en cada
+arranque buscando TouchController, que no existe para 1.7.10. Es tiempo perdido antes de lanzar la JVM
+(`DIAGNOSTICO-ARRANQUE-ANDROID.md`, mejora A6).
+
+- `game/launch/LaunchGame.kt`: `checkEnableTouchProxy` sale enseguida si `minecraftVersion` es `1.7.10`.
+  Para otras versiones sigue igual que en ZL2.
