@@ -197,6 +197,7 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: 7a-7d hechos. Launcher def02cf: `NOTIFICAR` (6) + `CAP_NOTIFICAR` (1 shl 7), ritmo 4 / 1 por s; `Notificaciones.kt` (catalogo cerrado de 9 ids, `PoliticaNotif`: 1 alerta con sonido cada 30 s por categoria, el resto en silencio con contador); `NotificadorDbr.kt` (solo con `VMActivity` en `onStop`, una notificacion por categoria, `VISIBILITY_PRIVATE` + `publicVersion` sin nombre, se cancelan en `onStart`); 4 canales `dbr.*` con importancia DEFAULT; ajustes `dbrNotif*` + interruptores en la pestana Dbr; permiso: se marca en el primer `onStop` y `PermisoNotifDbr` lo pide al volver (una vez, `dbrNotifPermisoPedido`); 9 tests (53 en canal_movil). Cambio: tocar la notificacion usa el intent del icono del launcher, no `VMActivity` directo (su `onCreate` revienta sin extras si el juego murio). DbrServerPack c3d51c12: `core.movil.Notificar` (atacado: subida de `hurtTime` que no es caida/fuego/lava/ahogo, 1 cada 30 s; vida baja < 25 % con rearme > 50 %, cuerpo de DBC por `JRMCoreH.curBody/maxBody` o `getHealth`; desconectado por `GuiDisconnected` salvo tras `GuiConnecting`; canal `DBRNOTIF`); 4 tests. DbrCorePlugin 64496c2: `corelib.movil.Notificar` (`enviar`, `enviarATodos`; nombre invalido se manda vacio) + `NotificarEventos` (privado con remitente, mencion con autor, AFK); `movil.notificar.activo`; 5 tests con testkit (145 en total, 0 fallos). El plugin de AFK es **AntiAFKPlus 2.18** (no AutoAfkPlus): `AfkStatusChangedEvent(player, afk)`, sin evento previo al kick, asi que `conexion.afk_kick` no se manda (el kick lo cubre `conexion.desconectado`). DbrInvasionPlugin 0e035be: `eventos.invasion` a todos al lanzar. Modelos de seguridad: launcher 64e1627 (INV-4), DbrCorePlugin INV-8. Desplegado: TESTEO (`.bak-20261111-notificar`, servidor apagado), experimental DBR-ASSETS e462005 (empujado), APK por adb. Sin empujar launcher, DbrServerPack, DbrCorePlugin ni DbrInvasionPlugin. Falta prueba en telefono.
 - 2026-11-11: prueba 7 en telefono (1): `conexion.desconectado` llega bien al cerrar TESTEO. Los privados no podian llegar: TESTEO tiene **Essentials Pre2.14** (no EssentialsX, sin `PrivateMessageSentEvent`); por eso tampoco vibraban nunca. Arreglo DbrCorePlugin 4df8f8f: `PrivadosEssentials` compara cada 10 ticks el `replyTo` de Essentials (objeto nuevo por mensaje, cubre `/msg`, `/r` y consola) en jugadores con el canal; se ignora si el jugador hizo un comando hace menos de 3 s (su propio mensaje). Lo usan `NotificarEventos` y `VibrarEventos` si falta EssentialsX. Copiado a TESTEO (servidor apagado). Ojo: lanzar TESTEO a la vez que el usuario choca de puerto; preguntar antes.
 - 2026-11-11: prueba 7 (2): privados llegan ("Mensaje privado de CONSOLE"). DbrServerPack f97273c6: `Plataforma` pulida (senal nueva `os.version` con "android", constante `PROPIEDAD_LAUNCHER`, `esLauncherDbr()`); `Canal.conectar` ya no lee la propiedad a mano. Es el unico chequeo de plataforma de los pasos 1-7: el resto de `core.movil` cuelga de `Canal`. DbrOptimizer repite su propia deteccion en 6 clases (`build.prop` u `os.version`), sin tocar: build standalone sin DbrCore.
+- 2026-11-11: prueba 7 completa en telefono, el usuario confirma que funciona. **Paso 7 cerrado.** Paso 8 (F) planificado y aprobado (seccion "Paso 8 (F) detallado"). Decisiones: el teclado se abre y cierra solo con el chat; el juego subraya la composicion. Se empieza por 8.0 (empujar los 4 repos del paso 7).
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
@@ -297,6 +298,58 @@ tick se para y el servidor corta por timeout.
   - `/invasion` de prueba.
   - Ademas: con la app en primer plano no sale nada; tocar la notificacion vuelve al juego; 2 privados en menos de 30 s = 1 sonido; los interruptores de la pestana Dbr funcionan; el permiso se pide al volver tras el primer minimizado.
 
+## Paso 8 (F) detallado (aprobado 2026-11-11)
+
+### Context
+Paso 8 de `PLAN-canal-movil.md`. Hoy el teclado de Android escribe en un `EditText` oculto con 30 espacios de relleno (`TouchCharInput.java`): cada letra va como `sendChar`, cada borrado como Backspace. Por eso no andan el autocorrector, las predicciones, el dictado por voz, mover el cursor ni copiar y pegar. El objetivo es que el teclado vea el texto real de la barra del chat, y que el juego vea lo que edita el teclado, en los dos sentidos. Solo chat y comandos (decisión del plan general).
+
+### Decisiones del usuario (2026-11-11)
+- El teclado **se abre y se cierra solo** con el chat (T, `/`, botón Chat; cierra al cerrar el chat o enviar). El botón de teclado sigue funcionando.
+- El juego **subraya la composición** del teclado en la barra del chat.
+
+### 8.0 Cierre del paso 7
+- Empujar launcher, DbrServerPack, DbrCorePlugin y DbrInvasionPlugin (pendiente de la bitácora). Pruebas de 6a/6b/6c siguen en "Pruebas pendientes".
+
+### 8a Protocolo `TEXTO`
+- `TEXTO_ESTADO` juego -> launcher, tipo **7**: u8 version, u16 seq, u8 banderas (bit 0 = chat abierto con campo), u16 selInicio, u16 selFin, u16 compInicio, u16 compFin (0xFFFF = sin composición), u8 largo + UTF-8 (tope 100 caracteres UTF-16, 400 B).
+- `TEXTO_EDITAR` launcher -> juego, tipo **105**: mismo formato, seq propio del launcher.
+- `CAP_TEXTO = 1 shl 8` (las capacidades son `Int`, hay lugar).
+- Índices en unidades UTF-16 (iguales en Java y Kotlin). Validación en los dos lados: índices dentro del texto, inicio <= fin, sin controles, sin surrogates (emoji), sin `§`, largo exacto.
+- Ritmo: launcher manda como máximo cada 33 ms y solo el último estado (se junta); juego manda solo al cambiar, tope 20/s.
+
+### 8b Launcher
+- `TextoSincronizado.kt` (puro, testeable): estado (texto, selección, composición), aplicar edición del IME, aplicar estado del juego, filtro (100 caracteres, sin emoji/controles/`§`), seq para ignorar el eco.
+- `TextoDbrInputConnection` modelado sobre `TouchControllerInputConnection` (`touch_controller/TouchController.kt:101-590`): commitText, setComposingText/Region, finishComposingText, setSelection, deleteSurroundingText, batch edit, getTextBefore/AfterCursor, getExtractedText, `performContextMenuAction` (selectAll, cut, copy, paste con `ClipboardManager`). Enter = `LWJGLCharSender.sendEnter()` como hoy; nunca envía solo. Tab sigue como tecla.
+- Cuando llega un estado del juego que no es eco y el texto difiere: `restartInput` (como TouchController `:204-217`).
+- Vista oculta nueva que usa esa conexión, en lugar de `TouchCharInput`, **solo** con `CAP_TEXTO` + bandera de chat abierto. Sin canal o con juego viejo: `TouchCharInput` como hoy.
+- Apertura automática: bandera de chat 0 -> 1 abre el teclado (`textInputMode = ENABLE`), 1 -> 0 lo cierra. Si el jugador lo cierra a mano con el chat abierto, no se reabre hasta el próximo chat.
+- Ajuste `dbrTextoSync` (encendido) en la pestaña Dbr del menú en partida.
+- Tests JVM: parser y escritor de los dos tipos (largos malos, índices fuera de rango, surrogates, `§`), eco por seq, filtro de 100 caracteres, juntado por ritmo.
+
+### 8c DbrCore
+- `core.movil.TextoMovil`: dueño `ChatAutocompletado` (ya reemplaza `GuiChat`). Cada tick END compara texto, cursor y selección de `inputField` con lo último enviado y manda `TEXTO_ESTADO` si cambió (incluye cambios del juego: Tab, historial, chips `INSERTAR`, vaciado al enviar). Al cerrar el chat manda bandera 0.
+- Al recibir `TEXTO_EDITAR` (solo con `CAP_TEXTO` y el chat abierto): valida con `ChatAllowedCharacters`, aplica `setText` + `setCursorPosition` + `setSelectionPos` y refresca el autocompletado igual que al teclear. Si el juego corta o cambia algo, su próximo `TEXTO_ESTADO` corrige al launcher (así el juego "informa" lo que la fuente no soporta).
+- Subrayado: `ChatAutocompletado.drawScreen` dibuja una línea de 1 px bajo el rango de composición (posición con `fontRenderer.getStringWidth`, respetando el desplazamiento del campo).
+- `Canal.java`: registrar tipo 105 y `CAP_TEXTO`. Todo con try/catch; nada del canal va al servidor.
+- Tests: validación del payload, recorte de índices.
+
+### Archivos clave
+- Launcher: `game/support/canal_movil/Protocolo.kt`, `CanalMovil.kt`, nuevo `TextoSincronizado.kt`; `ui/control/input/TextInput.kt` (vista oculta), `VMActivity.kt:479-495` (elección de vista y apertura automática), `MenuDbr.kt`; referencia `touch_controller/TouchController.kt`, `ui/control/input/LegacyTextInput.kt` (manejo de SwiftKey, reusar si sirve).
+- DbrCore: `core/movil/Canal.java`, nuevo `core/movil/TextoMovil.java`, `core/comandos/ChatAutocompletado.java`.
+- `SECURITY_MODEL.md` del launcher (nuevo tipo entrante 105 lado juego, 7 lado launcher).
+
+### Verificación
+- Launcher: `compileDebugKotlin`, tests `canal_movil`, `assembleDebug` desde `X:` (subst) e instalar por adb.
+- DbrCore: `gradlew build`, tests; jar a experimental DBR-ASSETS.
+- Teléfono (Gboard y, si hay, SwiftKey), en TESTEO arrancado con UTF-8:
+  - abrir chat con T y con `/`: teclado sale solo; cerrar con Esc/atrás y al enviar: se va;
+  - autocorrector corrige una palabra y se ve subrayada mientras compone; predicciones;
+  - dictado por voz;
+  - mover cursor deslizando la barra espaciadora, seleccionar, copiar, pegar, cortar;
+  - Tab del autocompletado, flecha arriba (historial) y chip: el teclado ve el texto nuevo;
+  - 100 caracteres: no deja escribir más; emoji: no entra;
+  - con el ajuste apagado o canal apagado: escribe como hoy.
+
 ## Pruebas pendientes en telefono
 - 6a (variante experimental, TESTEO reiniciado): `adb shell cmd thermalservice override-status 3` -> cartel de calor; Reducir -> resolucion baja en caliente, particulas minimas, distancia <= 6, VFX en Baja; `override-status 0` -> cartel Restaurar y todo vuelve; `adb shell dumpsys battery unplug` + `set level 14` -> aviso 15%, `set level 4` -> aviso 5%; al final `cmd thermalservice reset` y `dumpsys battery reset`.
 - 6c: menu en partida > pestana estrella: cada interruptor hace efecto (vibracion, avisos, chips al abrir el chat, modo reducido on/off, toque ampliado al reabrir una pantalla Dbr); slider de resolucion cambia sin reiniciar en 1.7.10.
@@ -304,6 +357,6 @@ tick se para y el servidor corta por timeout.
 
 ## Siguiente paso
 
-Paso 7 (J, notificaciones) hecho y desplegado (7a-7d, ver bitacora). Toca: prueba en telefono con la lista de "Verificacion" del paso 7 (arrancar TESTEO con UTF-8; privados desde otra cuenta, no desde consola) y despues empujar los 4 repos. Paso 6 hecho y desplegado (pruebas pendientes). Detalle del paso 6: 6a calor y bateria (`AVISO_SISTEMA`), 6b muesca y escala (`PANTALLA`), 6c menu en partida (resolucion en caliente + seccion Dbr; giroscopio pospuesto). Paso 5 cerrado.
+Paso 8 (F, texto sincronizado) aprobado: 8.0 empujar launcher, DbrServerPack, DbrCorePlugin y DbrInvasionPlugin; luego 8a (protocolo `TEXTO_ESTADO` 7 / `TEXTO_EDITAR` 105, `CAP_TEXTO`), 8b launcher, 8c DbrCore. Paso 7 cerrado. Paso 6 hecho y desplegado (pruebas pendientes).
 - 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
 - 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
