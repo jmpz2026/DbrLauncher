@@ -613,10 +613,11 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: el usuario confirma lock-on OK. Mando por Bluetooth en el telefono funcionaba pero con el mapeo viejo: el APK instalado era de las 12:13 y `MandoDbr` (puente al `core.mando`) es de las 14:22 (ff9d5b9), asi que mandaba el remapper de ZL2. APK nuevo compilado e instalado por adb (17:26); falta reprobar. Linux, PlayStation, giroscopio y flick quedan para despues. Nuevo: 8f, launchers navegables con mando (propuesta abajo, pendiente OK).
 - 2026-11-11: 8f, texto en PC: el usuario elige teclado en pantalla.
+- 2026-11-11: plan 8f aprobado (seccion "Paso 8f"). Se empieza 8f.1 (PC).
 
 ## Siguiente paso
 
-Reprobar el mando por Bluetooth con el APK nuevo; esperar OK del 8f. Antes: Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
+Reprobar el mando por Bluetooth con el APK nuevo. En curso: 8f.1 (launcher de PC con mando). Antes: Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
 
 ## Mando en PC, ronda 2 (aprobado 2026-11-11): movimiento DBC, correr, volar con doble toque y guía de botones
 
@@ -737,24 +738,63 @@ Decisiones del usuario: lo vanilla en el sitio de Bedrock y lo de DBC encima.
 - **Menús:** sin cambios.
 - **Migración v4:** solo pasa al esquema nuevo el perfil que seguía igual al de fábrica v3 con modificador LB. Al cambiar el modificador a RB, la barra sigue la posición de los botones.
 
-## Paso 8f (propuesto 2026-11-11, pendiente OK): launchers navegables con mando
+## Paso 8f (aprobado 2026-11-11): launchers de PC y Android navegables con mando
 
 ### Context
-El usuario pide poder usar el launcher de PC (Electron, repo DbrLauncher `main`) y el de Android (ZL2 Compose, esta rama) solo con el mando. Linux, PlayStation, giroscopio y flick quedan para despues.
+El mando ya funciona en el juego (PC probado; Android con APK nuevo, falta reprobar). Fuera del juego los dos launchers solo se manejan con ratón o táctil. El usuario quiere elegir cuenta, ajustar y darle a Jugar solo con el mando. Decisiones (2026-11-11): en PC hay teclado en pantalla propio (opción 1). Linux, PlayStation, giroscopio y flick quedan para después.
 
-### PC (Electron 22, React)
-- `src/renderer/src/mando/useMando.ts`: lee `navigator.getGamepads()` en cada fotograma, detecta flancos y repite al mantener (400 ms, luego 120 ms).
-- Navegacion espacial: candidatos = elementos visibles enfocables (`button`, `a`, `input`, `select`, `[tabindex]`, `[data-mando]`), solo dentro del modal de arriba si hay uno. Se elige el mas cercano en la direccion pedida por geometria.
-- Botones: stick izquierdo y cruceta mueven el foco; A pulsa; B cierra el modal o vuelve; LB/RB cambian la pestaña de `NavBar`; Start = Jugar en Home; stick derecho hace scroll.
-- Anillo de foco visible solo en modo mando (`data-input="mando"` en `body`); el raton lo apaga.
-- Barra de pistas abajo (A Elegir, B Atras, LB/RB Pestañas) con glifos segun el mando.
-- Texto (nick en Login, ancho/alto y JVM en Settings): teclado en pantalla propio del launcher (decision del usuario 2026-11-11). Copia en React el diseño del de `core.mando` (8b.5): QWERTY con ñ, X borra, Y espacio, Start acepta, gatillos mueven el cursor; teclado numerico para ancho/alto. No se puede reusar el codigo Java del juego.
+Orden: **8f.1 PC** (repo `DbrLauncher`, rama `main`) y luego **8f.2 Android** (esta rama `android-zalith`).
 
-### Android (ZL2 Compose)
-- Android ya convierte cruceta/stick en movimiento de foco, A en confirmar y B en Atras. Primero se prueba con el mando real que pantallas fallan.
-- Luego: indicador de foco visible en `ui/dbr/DbrComponents.kt` y botones propios, foco inicial en Jugar, LB/RB cambian la pestaña de `DbrBottomBar`, elementos propios enfocables. Los campos de texto abren el teclado del sistema.
-- No toca `MandoDbr` (solo vive en `VMActivity`, durante la partida).
+### 8f.1 Launcher de PC (Electron 22 + React)
+Raíz: `DbrLauncher/src/renderer/src/`. Pantallas: `App.tsx` (Login / Home / Settings según `store.tab`), `components/NavBar.tsx`, `components/ui.tsx` (`Btn`, `Toggle`, `Modal` con trampa de foco y constante `FOCUSABLE`), modales `GameLogModal`, `LiteProposalModal`, `UpdateOverlay`, `FuseBanner`.
 
-### Verificacion
-- PC: `npm run build` y prueba con Xbox: Home, Settings, Login, modales (log, Lite, update).
-- Android: `compileDebugKotlin`, APK por adb, prueba con el mando por Bluetooth en todas las pantallas.
+Archivos nuevos en `mando/`:
+1. **`useMando.ts`**: bucle `requestAnimationFrame` sobre `navigator.getGamepads()` (mapeo `standard`).
+   - Flancos de botón y repetición al mantener (400 ms y después 120 ms). Stick con zona muerta 0,5 para moverse.
+   - Ignora la entrada si `!document.hasFocus()` (con el juego abierto, el mando no toca el launcher).
+   - Expone `modo` (`'mando' | 'raton'`). Pone `data-input="mando"` en `<body>` con la primera entrada del mando y lo quita al mover el ratón o al usar el teclado.
+2. **`navegar.ts`** (puro, testeable): elige el siguiente elemento en una dirección.
+   - Candidatos: el `FOCUSABLE` de `ui.tsx` (se exporta), visibles y con rectángulo distinto de cero.
+   - Se limita al `[role=dialog]` / `[role=alertdialog]` de mayor z-index si hay uno abierto.
+   - Puntaje: distancia en el eje principal más 2× el desvío lateral, solo con candidatos que estén en ese semiplano. Si no hay foco, toma el primero (o `[data-mando-inicio]`).
+3. **`MandoRaiz.tsx`**: se monta una vez en `App.tsx` y usa el hook.
+   - Cruceta y stick izquierdo mueven el foco. A hace `click()`. Sobre un input de texto, A abre el teclado. Sobre un `range`, izquierda/derecha cambian el valor (setter nativo + evento `input`, para que React lo vea).
+   - B dispara `Escape` (lo cierra `Modal`). Sin modal, B en Settings vuelve a Home.
+   - LB/RB cambian la pestaña principal (`setTab`). LT/RT cambian el `role="tablist"` visible (pestañas de Settings).
+   - Start = Jugar (`[data-mando-inicio]` en el botón de `Home.tsx`). Stick derecho hace scroll del contenedor desplazable más cercano al foco.
+   - Llama `scrollIntoView({block:'nearest'})` al mover el foco.
+4. **`TecladoPantalla.tsx`**: copia del diseño de `DbrServerPack/DbrCore/.../core/mando/TecladoDisposicion.java` y `TecladoMando.java`. No se reusa el código Java.
+   - Disposición QWERTY con ñ, página de símbolos y teclas especiales (mayús, borrar, símbolos, espacio, aceptar). Se pasa a una tabla TS.
+   - Controles: A pulsa la tecla, X borra, Y pone espacio, Start acepta, LB mayúsculas, RB símbolos, LT/RT mueven el cursor del texto y B cierra sin cambios.
+   - Con `type=number` solo muestra el teclado numérico (ancho y alto).
+   - Escribe con el setter nativo del input + evento `input`. Al aceptar manda `Enter` y `blur`, para que `CommitInput` de Settings guarde y Login dispare `loginPirata`. Respeta `maxLength`.
+   - Se dibuja como panel abajo, sin tapar el campo, con estilo `mc-panel`.
+5. **`BarraPistas.tsx`**: solo en modo mando, una franja sobre la `NavBar` con glifos dibujados en CSS (sin logos): A Elegir, B Atrás, LB/RB Pestañas, Start Jugar. Las pistas cambian según el contexto (teclado abierto, modal).
+6. **Estilo**: en `index.css` (o donde estén las clases `mc-*`), un anillo de foco visible solo con `body[data-input=mando] :focus`.
+7. **Textos**: claves nuevas `mando.*` en `src/shared/i18n.ts` (es, en, pt).
+
+Lo que se toca de lo existente: `App.tsx` (montar), `ui.tsx` (exportar `FOCUSABLE`), `Home.tsx` (`data-mando-inicio`), `i18n.ts` y el CSS. Nada en `main/`.
+
+### 8f.2 Launcher de Android (ZL2 Compose)
+Android ya convierte la cruceta y el stick en movimiento de foco, A en confirmar y B en Atrás. Lo que falta es ver dónde está el foco y los atajos.
+1. **Diagnóstico por adb, sin código**: `adb shell input gamepad keyevent KEYCODE_DPAD_DOWN|BUTTON_A|BUTTON_B` en Inicio, Ajustes, Cuentas, Versiones y diálogos. Las capturas las revisa un subagente que devuelve una lista: pantalla, elemento no alcanzable o foco invisible.
+2. **`ui/dbr/DbrComponents.kt`**: nuevo `Modifier.dbrFoco()` (`onFocusChanged` + borde dorado de 2 dp). Se aplica en `GoldButton`, `StoneNavButton` y `DbrBottomBar`, y en los elementos que el diagnóstico marque.
+3. **Foco inicial en Jugar** (`ui/screens/content/LauncherScreen.kt:251`, `FocusRequester`) cuando hay un mando conectado (`InputManager`, con el mismo filtro `esMando` que `MandoDbr`).
+4. **`ui/activities/MainActivity.kt` `dispatchKeyEvent`**: LB/RB alternan Inicio ↔ Ajustes (las mismas lambdas `toMainScreen` / `toSettingsScreen` que usa `DbrBottomBar` en `MainScreen.kt:229`, por `EventViewModel`). No toca `isCaptureKey` ni `VMActivity` / `MandoDbr`.
+5. Los campos de texto abren el teclado del sistema (no hace falta código).
+
+### Verificación
+- PC: `npm run typecheck` / `npm run build`. Prueba `navegar.ts` si el repo tiene runner (si no, se agrega vitest solo si el usuario lo aprueba).
+- PC, prueba real con Xbox (`npm run dev`):
+  - Login con nick por teclado en pantalla.
+  - Home: Start juega.
+  - Settings: pestañas con LT/RT, sliders de RAM, ancho y alto numéricos, JVM con texto.
+  - Modales: log, Lite, cambio de variante. B cierra.
+  - El ratón apaga el anillo de foco.
+  - Con el juego abierto, el mando no mueve el launcher.
+- Android: `compileDebugKotlin`, APK con `subst X:` (memoria `android-apk-local-build-subst`) e instalación por adb. Repetir el diagnóstico de adb y probar con el mando por Bluetooth.
+- Release: PC por tag `vX.Y.Z` (CI). Android entra en el `android-v30` del paso 10.
+
+### Al aprobar
+- Pasar este plan a `PLAN-canal-movil.md` (reemplaza la propuesta 8f) con una línea en la bitácora y commit.
+- Luego empezar 8f.1.
