@@ -156,3 +156,56 @@ Cambios propuestos:
 
 ## Siguiente paso
 - Proponer A4 (launcher) y esperar el OK.
+
+## Propuesta A4 v2: caché de SHA1 por tamaño y fecha (2026-11-11, pendiente del OK)
+La v1 (verificación completa cada 7 días) se descarta: solo calculaba menos a menudo y dejaba un hueco entre medias. El usuario pidió la solución de raíz.
+
+Causa: en cada toque se calcula el SHA1 de todos los archivos de Minecraft y de las librerías, aunque no hayan cambiado (`DownloadTask.verifySha1` → `compareSHA1` en `utils/file/FileUtils.kt:56`, y `Minecraft.DownloadUtils.kt:72` para los JSON).
+
+Cambios:
+1. `game/dbr/DbrHashCache.kt` (propio), mismo patrón que `DbrSync` en A3 (`DbrSync.kt:484-487`):
+   - Mapa `ruta → (tamaño, fecha de modificación, sha1)` en memoria (`ConcurrentHashMap`, porque las descargas van en paralelo), guardado en `.dbr_verify_cache.json` junto a `.dbr_hashes.json`.
+   - `coincide(file, sha1)`: si el tamaño y la fecha son los guardados y el sha1 esperado es el guardado, devuelve true sin leer el archivo. Si no, llama a `compareSHA1` como hoy, y si coincide guarda la entrada.
+   - La caché se borra si tiene más de 30 días, para cubrir un archivo dañado en disco sin cambio de fecha.
+   - Si el JSON de la caché no se puede leer, se ignora y se rehashea todo (como hoy).
+2. Upstream, VENDOR-PATCHES 15: `DownloadTask.kt:110` y `Minecraft.DownloadUtils.kt:72` llaman a `DbrHashCache.coincide` en vez de `compareSHA1`. `MinecraftDownloader` carga la caché al empezar y la guarda al terminar, y escribe en el log cuántos archivos salieron de la caché, cuántos se hashearon y los ms.
+3. Tests de `coincide`: acierto sin leer, cambio de tamaño, cambio de fecha, sha1 esperado distinto (actualización de Minecraft o de una librería), caché caducada, JSON roto.
+
+Seguridad: igual que hoy en cada arranque. Cualquier cambio de tamaño o fecha vuelve a hashear y repara. Solo se escapa un archivo cambiado con el mismo tamaño y la misma fecha, que solo pasa a propósito. Eso lo cubre el rehash cada 30 días.
+No cambia: `verifyIntegrity`, el modo `VERIFY_AND_REPAIR`, la opción "saltar verificación" ni `DbrSync`.
+Verificación: tests; 3 arranques en el Honor, el primero llena la caché y los otros dos deben salir casi todo de la caché. Comparar los ms del log nuevo. Ganancia esperada 1-3 s.
+
+## Bitácora (A4)
+- 2026-11-11: el usuario aprueba A4 v2. Launcher `2312cd7`: `DbrHashCache` + 8 tests (OK) + VENDOR-PATCHES 15. Sin push.
+- 2026-11-11: 3 arranques en el Honor. Caché OK (713 de 713 archivos desde la caché), pero la verificación solo baja de 4051 a ~3830 ms. Calcular los SHA1 no era el coste. Los ~3,8 s restantes están sin localizar; el commit deja en el log el reparto (archivos sin SHA1, programar, total).
+- 2026-11-11: el usuario decide dejar A4 así, sin seguir midiendo. Del toque al menú: 95-101 s, igual que antes.
+
+## Siguiente paso
+- B4 (`bigcore_set_affinity`), pendiente de proponer.
+- Pendiente de antes: probar en el móvil el cambio de idioma ES/EN/PT (A0).
+- Push del launcher (`android-zalith`) cuando el usuario lo pida.
+
+## Propuesta B4: hilo del juego en los núcleos grandes (2026-11-11, pendiente del OK)
+Investigación:
+- La opción ya existe en Ajustes > Renderizador (`AllSettings.bigCoreAffinity`, apagada por defecto) y exporta `POJAV_BIG_CORE_AFFINITY=1` (`Launcher.kt:419`). Pero nadie llama a `bigcore_set_affinity()` (`jni/bigcoreaffinity.c:20`): hoy la opción no hace nada.
+- El Honor (TFY-LX3, Snapdragon 680 / SM6225) tiene 4 núcleos A53 a 1,9 GHz (cpu0-3) y 4 A73 a 2,4 GHz (cpu4-7).
+- La función de upstream fija el hilo a UN solo núcleo (el último con la frecuencia máxima, cpu7). Si ese núcleo se calienta o lo ocupa otro hilo, el juego no puede moverse.
+- En 1.7.10 el hilo del cliente hace la lógica y el render. Llama a `glfwMakeContextCurrent` en `jni/glfw_shim/glfw_shim.c:309`, que es código propio de DBR.
+
+Paso 0, sin código (decide si vale la pena): con el juego en partida, muestrear durante 1 min en qué núcleo corre el `Client thread` (`ps -T -o tid,psr,pcpu,comm` sobre el proceso `:game`). Si ya va casi siempre en cpu4-7, el planificador de Android lo hace bien y B4 no aporta: se descarta, como pasó con A12.
+
+Si el paso 0 muestra que el hilo cae en los A53:
+1. `glfw_shim.c` (propio, sin tocar upstream): en el primer `glfwMakeContextCurrent`, si `POJAV_BIG_CORE_AFFINITY=1`, fijar el hilo a TODOS los núcleos con la frecuencia máxima (cpu4-7 en el Honor), no a uno solo. Una línea en el log con la máscara aplicada o el error.
+2. La opción sigue apagada por defecto. Encenderla por defecto solo si la medición lo justifica.
+3. Verificación: misma escena 2 min con la opción apagada y encendida. Mirar los FPS que escribe el juego, el núcleo del hilo (`ps -T`) y el calor (`dumpsys thermalservice`).
+
+Riesgo: el móvil se calienta antes y puede bajar la frecuencia. Con la opción apagada no cambia nada.
+
+### Método de medición de B4 (2026-11-11)
+Lo hace Claude por adb, sin el usuario. Herramientas comprobadas:
+- FPS: `/dbro bench S1 60 10` (DbrCore `Benchmark`, ya en el pack): 10 s de calentamiento y 60 s de grabación con la cámara quieta. Escribe CSV + JSON (media, p50, p99, 1 % low, tirones, GC) en `.minecraft/versions/DBR/dbroptimizer/bench/`; se baja con `adb pull`.
+- Núcleo del hilo: `ps -T -o TID,PSR,PCPU,CMD -p <pid de :game>` cada 0,5 s durante la grabación; % de muestras del `Client thread` en cpu4-7.
+- Calor: `dumpsys thermalservice` (Thermal Status y cpufreq) y `dumpsys battery` (temperature) antes y después de cada corrida.
+- Escena: mundo de un jugador en el móvil, semilla fija, creativo, mismo punto y misma vista (`/tp`). No hay saves en el móvil y el servidor pide contraseña.
+- Orden A-B-A-B (opción apagada/encendida), con el móvil a la misma temperatura de batería (±1 °C) al empezar cada corrida.
+- Por confirmar en la práctica: escribir el comando en el chat con `adb shell input`.
