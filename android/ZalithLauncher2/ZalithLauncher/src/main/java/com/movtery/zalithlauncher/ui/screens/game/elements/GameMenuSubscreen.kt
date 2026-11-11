@@ -80,7 +80,9 @@ private val controlTabs = listOf(
     //手势控制设置
     IconTab(R.drawable.ic_touch_app_filled),
     //陀螺仪设置
-    IconTab(R.drawable.ic_mobile_rotate_filled)
+    IconTab(R.drawable.ic_mobile_rotate_filled),
+    //DBR: vibration, warnings, chips, touch zones (MenuDbr.kt)
+    IconTab(R.drawable.ic_star_filled)
 )
 
 @Composable
@@ -161,6 +163,10 @@ fun GameMenuSubscreen(
                         )
                         3 -> ControlGesture(modifier = Modifier.fillMaxSize())
                         4 -> ControlGyroscope(modifier = Modifier.fillMaxSize())
+                        5 -> ControlDbr(
+                            modifier = Modifier.fillMaxSize(),
+                            onRefreshWindowSize = onRefreshWindowSize
+                        )
                     }
                 }
             }

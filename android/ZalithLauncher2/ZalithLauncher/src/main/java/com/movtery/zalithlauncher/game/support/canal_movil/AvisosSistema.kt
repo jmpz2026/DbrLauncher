@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.logging.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -108,7 +109,9 @@ object AvisosSistema {
                 val estado = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
                 val cargando = estado == BatteryManager.BATTERY_STATUS_CHARGING ||
                     estado == BatteryManager.BATTERY_STATUS_FULL
-                umbrales.alBateria(nivel * 100 / escala, cargando)?.let { _aviso.value = it }
+                umbrales.alBateria(nivel * 100 / escala, cargando)?.let {
+                    if (AllSettings.dbrAvisoBateria.getValue()) _aviso.value = it
+                }
             }
         }
         app.registerReceiver(r, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -117,7 +120,10 @@ object AvisosSistema {
             try {
                 val pm = app.getSystemService(Context.POWER_SERVICE) as PowerManager
                 val oyente = PowerManager.OnThermalStatusChangedListener { estado ->
-                    umbrales.alCalor(estado, _reducido.value)?.let { _aviso.value = it }
+                    umbrales.alCalor(estado, _reducido.value)?.let {
+                        // "Restore" is always offered: reduced mode must never get stuck on.
+                        if (it == Aviso.Fresco || AllSettings.dbrAvisoCalor.getValue()) _aviso.value = it
+                    }
                 }
                 pm.addThermalStatusListener(app.mainExecutor, oyente)
                 oyenteCalor = oyente

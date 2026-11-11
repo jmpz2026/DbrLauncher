@@ -100,6 +100,16 @@ object AllSettings : SettingsRegistry() {
     val dbrVibracionMundo = boolSetting("dbrVibracionMundo", false)
     val dbrVibracionAvisos = boolSetting("dbrVibracionAvisos", true)
 
+    /** DBR: heat and battery warnings while playing (canal_movil/AvisosSistema). */
+    val dbrAvisoCalor = boolSetting("dbrAvisoCalor", true)
+    val dbrAvisoBateria = boolSetting("dbrAvisoBateria", true)
+
+    /** DBR: chip row over the keyboard while the chat is open. */
+    val dbrChips = boolSetting("dbrChips", true)
+
+    /** DBR: wider touch zones in Dbr screens (sent to DbrCore inside PANTALLA). */
+    val dbrToqueAmpliado = boolSetting("dbrToqueAmpliado", true)
+
     //Renderer
     /**
      * 全局渲染器

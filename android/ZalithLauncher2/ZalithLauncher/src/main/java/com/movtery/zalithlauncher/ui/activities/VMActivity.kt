@@ -610,7 +610,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             }
         }
         val mm = 25.4f / dpi
-        return Protocolo.pantalla(izq, arr, der, aba, screenSize.width * mm, screenSize.height * mm)
+        return Protocolo.pantalla(
+            izq, arr, der, aba, screenSize.width * mm, screenSize.height * mm,
+            toqueAmpliado = AllSettings.dbrToqueAmpliado.getValue()
+        )
     }
 
     override fun onDestroy() {
@@ -762,7 +765,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         }
         // Dbr: chip row only with the chat open (DbrCore says so) and the keyboard up.
         val imeVisible = imeInsets.getBottom(LocalDensity.current) > 0 || frameImeHeight > 0
-        val mostrarChips = chatDbr.abierto && imeVisible
+        val mostrarChips = chatDbr.abierto && imeVisible && AllSettings.dbrChips.state
         var frasesDbr by remember { mutableStateOf(cargarFrasesDbr()) }
         var editandoFrases by remember { mutableStateOf(false) }
         var tecladoAntesDeFrases by remember { mutableStateOf(false) }

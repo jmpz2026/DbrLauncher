@@ -158,4 +158,9 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_aviso_bateria">Battery at %1$d%%</string>
     <string name="dbr_aviso_reducir">Reduce</string>
     <string name="dbr_aviso_restaurar">Restore</string>
+    <string name="dbr_menu_aviso_calor">Heat warning</string>
+    <string name="dbr_menu_aviso_bateria">Low battery warning</string>
+    <string name="dbr_menu_reducido">Reduced mode (lower graphics)</string>
+    <string name="dbr_menu_chips">Command chips over the keyboard</string>
+    <string name="dbr_menu_toque">Wider touch zones in Dbr screens</string>
 </resources>

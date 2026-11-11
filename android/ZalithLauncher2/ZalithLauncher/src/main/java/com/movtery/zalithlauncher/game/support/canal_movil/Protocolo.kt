@@ -182,17 +182,24 @@ object Protocolo {
 
     fun reducir(activo: Boolean): ByteArray = byteArrayOf(VERSION.toByte(), if (activo) 1 else 0)
 
+    /** PANTALLA flag bits. */
+    const val PANTALLA_TOQUE_AMPLIADO = 1
+
     /**
      * Version + 6 floats: left, top, right, bottom margins (0..[MAX_MARGEN] of the window) and
-     * window width and height in mm. Null when the size in mm is not plausible.
+     * window width and height in mm, then u8 flags. Null when the size in mm is not plausible.
      */
-    fun pantalla(izq: Float, arr: Float, der: Float, aba: Float, anchoMm: Float, altoMm: Float): ByteArray? {
+    fun pantalla(
+        izq: Float, arr: Float, der: Float, aba: Float, anchoMm: Float, altoMm: Float,
+        toqueAmpliado: Boolean = true,
+    ): ByteArray? {
         if (!anchoMm.isFinite() || !altoMm.isFinite()) return null
         if (anchoMm !in MIN_MM..MAX_MM || altoMm !in MIN_MM..MAX_MM) return null
         fun m(v: Float) = if (v.isFinite()) v.coerceIn(0f, MAX_MARGEN) else 0f
-        return ByteBuffer.allocate(25).put(VERSION.toByte())
+        val flags = if (toqueAmpliado) PANTALLA_TOQUE_AMPLIADO else 0
+        return ByteBuffer.allocate(26).put(VERSION.toByte())
             .putFloat(m(izq)).putFloat(m(arr)).putFloat(m(der)).putFloat(m(aba))
-            .putFloat(anchoMm).putFloat(altoMm).array()
+            .putFloat(anchoMm).putFloat(altoMm).put(flags.toByte()).array()
     }
 
     fun holaAck(): ByteArray =

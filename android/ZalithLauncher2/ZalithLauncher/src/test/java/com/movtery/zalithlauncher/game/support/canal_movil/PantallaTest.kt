@@ -17,7 +17,8 @@ class PantallaTest {
     fun codificaVersionMargenesYMm() {
         val d = Protocolo.pantalla(0.04f, 0f, 0f, 0f, 154f, 70f)
         assertNotNull(d)
-        assertEquals(25, d!!.size)
+        assertEquals(26, d!!.size)
+        assertEquals(Protocolo.PANTALLA_TOQUE_AMPLIADO, d[25].toInt())
         assertEquals(1, d[0].toInt())
         val v = leer(d)
         assertEquals(0.04f, v[0], 0f)
@@ -39,6 +40,11 @@ class PantallaTest {
         assertNull(Protocolo.pantalla(0f, 0f, 0f, 0f, 5f, 70f))
         assertNull(Protocolo.pantalla(0f, 0f, 0f, 0f, 150f, Float.POSITIVE_INFINITY))
         assertNull(Protocolo.pantalla(0f, 0f, 0f, 0f, 1000f, 70f))
+    }
+
+    @Test
+    fun toqueAmpliadoApagado() {
+        assertEquals(0, Protocolo.pantalla(0f, 0f, 0f, 0f, 150f, 70f, toqueAmpliado = false)!![25].toInt())
     }
 
     @Test

@@ -147,4 +147,9 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_aviso_bateria">Bateria em %1$d%%</string>
     <string name="dbr_aviso_reducir">Reduzir</string>
     <string name="dbr_aviso_restaurar">Restaurar</string>
+    <string name="dbr_menu_aviso_calor">Aviso de calor</string>
+    <string name="dbr_menu_aviso_bateria">Aviso de bateria fraca</string>
+    <string name="dbr_menu_reducido">Modo reduzido (gráficos mais baixos)</string>
+    <string name="dbr_menu_chips">Chips de comandos sobre o teclado</string>
+    <string name="dbr_menu_toque">Área de toque ampliada nas telas Dbr</string>
 </resources>
