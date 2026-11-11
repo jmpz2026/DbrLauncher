@@ -36,6 +36,18 @@ type Textos = Record<Lang, string>
 
 const T = {
   // Comunes
+  'mando.elegir': { es: 'Elegir', en: 'Select', pt: 'Escolher' },
+  'mando.atras': { es: 'Atrás', en: 'Back', pt: 'Voltar' },
+  'mando.pestanas': { es: 'Pestañas', en: 'Tabs', pt: 'Abas' },
+  'mando.jugar': { es: 'Jugar', en: 'Play', pt: 'Jogar' },
+  'mando.teclado': { es: 'Teclado en pantalla', en: 'On-screen keyboard', pt: 'Teclado na tela' },
+  'mando.escribir': { es: 'Escribir', en: 'Type', pt: 'Digitar' },
+  'mando.borrar': { es: 'Borrar', en: 'Delete', pt: 'Apagar' },
+  'mando.espacio': { es: 'Espacio', en: 'Space', pt: 'Espaço' },
+  'mando.mayus': { es: 'Mayús', en: 'Shift', pt: 'Maiúsc' },
+  'mando.simbolos': { es: 'Símbolos', en: 'Symbols', pt: 'Símbolos' },
+  'mando.cursor': { es: 'Cursor', en: 'Cursor', pt: 'Cursor' },
+  'mando.aceptar': { es: 'Aceptar', en: 'OK', pt: 'OK' },
   'comun.cargando': { es: 'Cargando', en: 'Loading', pt: 'Carregando' },
   'comun.preparando': { es: 'Preparando…', en: 'Preparing…', pt: 'Preparando…' },
   'comun.cerrar': { es: 'Cerrar', en: 'Close', pt: 'Fechar' },

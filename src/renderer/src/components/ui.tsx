@@ -98,7 +98,7 @@ export function Progress({ value, label }: { value: number | null; label?: strin
   )
 }
 
-const FOCUSABLE =
+export const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 /**

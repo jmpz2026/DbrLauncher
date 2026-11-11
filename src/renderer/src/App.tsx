@@ -10,6 +10,7 @@ import FuseBanner from './components/FuseBanner'
 import GameLogModal from './components/GameLogModal'
 import LiteProposalModal from './components/LiteProposalModal'
 import MusicaFondo from './components/MusicaFondo'
+import MandoRaiz from './mando/MandoRaiz'
 import { useStore } from './store'
 import { useHtmlLang, useT } from './i18n'
 
@@ -64,6 +65,7 @@ export default function App(): JSX.Element {
       <FuseBanner />
       {ready && account && <LiteProposalModal />}
       {ready && <MusicaFondo />}
+      <MandoRaiz />
     </div>
   )
 }

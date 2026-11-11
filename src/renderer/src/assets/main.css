@@ -34,6 +34,14 @@
   input:focus-visible {
     outline-offset: 0;
   }
+  /* Con mando (8f.1) el foco se ve siempre, aunque lo haya puesto el script */
+  body[data-input='mando'] :focus {
+    outline: 2px solid #ffcf4a;
+    outline-offset: 2px;
+  }
+  body[data-input='mando'] input:focus {
+    outline-offset: 0;
+  }
 }
 
 /* Regiones de arrastre para la barra de título propia */

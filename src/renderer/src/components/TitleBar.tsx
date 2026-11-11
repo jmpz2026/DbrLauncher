@@ -68,7 +68,7 @@ function LangPicker(): JSX.Element {
 function WindowButtons(): JSX.Element {
   const tr = useT()
   return (
-    <div className="flex items-center gap-1.5">
+    <div data-mando-fuera className="flex items-center gap-1.5">
       <button
         onClick={() => window.dbr.minimize()}
         className="mc-btn grid h-7 w-7 place-items-center"

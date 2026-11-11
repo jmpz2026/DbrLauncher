@@ -45,6 +45,7 @@ export default function Home(): JSX.Element {
           <button
             onClick={() => void play()}
             disabled={busy}
+            data-mando-inicio
             className="mc-btn-primary mc-btn-play flex items-center gap-3 px-16 py-5 font-pixel text-2xl font-bold uppercase tracking-[0.18em]"
           >
             <svg
