@@ -179,6 +179,8 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-11: 5a hecho. Launcher 5c41855 (LayerController `dbrShowIf`/`dbrHideIf` en botones y capas, `EstadoDbr`, sin canal se ignoran; fundido 120 ms; boton apretado se queda aunque se oculte su capa; `ESTADO` tipo 4 + `CAP_ESTADO`; editor "Condiciones del juego" es/en/pt; 22 tests ok). DbrServerPack 52df0b64 (`core.dbc.Dbc` por reflexion, DbrCamaraMod lo usa; `core.movil.EstadoMovil`; 3 tests). Desvio: color del aura y vuelo de otros quedan en DbrCamaraMod (solo los usa la camara; DbrCore no compila contra DBC). Layout oficial v4: con cargando ki o transformando se ocultan Chat, Inventario y Rueda formas; con transformando, Destransformar. Experimental DBR-ASSETS aa00ed8 y APK instalado por adb. Falta prueba del usuario en telefono.
 
+- 2026-11-11: prueba 5a en telefono: cargar ki ok, editor ok; transformar no ocultaba Destransformar porque `DBCKiTech.ascending` solo es true si DBC transforma de verdad. Arreglo DbrServerPack cc776ee4 (tambien lee el privado `holdingForTransform`, true tras 200 ms con la tecla), experimental e6ade8a.
+
 ## Siguiente paso
 
 Paso 5 (D + E), aprobado en dos partes; 5a hecho y en prueba, luego 5b:
