@@ -597,6 +597,104 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: prueba en PC con mando, fallos y arreglo (3d17816e, experimental 526c865, TESTEO): tecnicas por JRMCoreH.EnAtSlct (no barra; DBC exige mano vacia); teclas virtuales como fisicas (Keyboard.keyDownBuffer) + KeyInputEvent propio (rueda de formas npcdbc); lo abierto desde la radial queda apretado hasta A/B; raton suelto = stick derecho mueve cursor (menu de acciones JRMCore); camara F5 directa; LB+abajo destransforma, ficha a LB+derecha (Perfil.VERSION 2, migracion); LB/RB cambian pestaña en UiScreen. Teclado en pantalla OK. Falta reprobar.
 
+- 2026-11-11: prueba en PC: tecnicas, menus DBC y pestañas OK. Faltan turbo/vuelo lentos (DBC mira las teclas de movimiento), correr y guia de botones. Plan "Mando en PC, ronda 2" aprobado (abajo).
+
+- 2026-11-11: ronda 2 hecha (6d36e442, experimental d475852, TESTEO, copia directa al cliente PC): teclas de movimiento desde el stick (turbo/vuelo DBC), LS corre, doble A vuela (Interprete @doble, perfil v3), GuiaBotones en menus y contexto (rueda, lock-on, sostenida) con opcion en Iconos. Capturas 3 idiomas OK. Falta prueba del usuario con Xbox (guia no visible sin mando en dbr-test).
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
+
+## Mando en PC, ronda 2 (aprobado 2026-11-11): movimiento DBC, correr, volar con doble toque y guía de botones
+
+### Context
+El usuario probó el mando en PC con el pack `ecf3c800`, copiado a mano. Las técnicas, los menús DBC y LB/RB ya funcionan. Quedan tres problemas:
+1. **Turbo y vuelo van súper lentos.**
+   - Causa: DBC mira las teclas de movimiento con `keyBindForward/Back/Left/Right.getIsKeyPressed()` (`DBCKiTech.java:246-250, 362, 403, 525`).
+   - El stick solo mueve `MovimientoMando.moveForward/moveStrafe` y no aprieta esas teclas. DBC cree que no te mueves y no aplica la velocidad de dash ni la de vuelo.
+2. **No hay botón para correr.** Vanilla 1.7.10 usa `key.sprint` (`keyBindSprint`, con `moveForward >= 0.8`).
+3. **Falta una guía de botones en pantalla**, sutil y útil, como en Minecraft. El plan original la tenía (8b punto 4: "Guía de botones según el contexto") y no se hizo.
+
+### Decisiones del usuario (2026-11-11)
+- **Correr** pasa al clic del stick izquierdo (LS).
+- **Volar** (`Energy Control/Flight`) pasa a **doble toque de A**. El salto suelto sigue saliendo al instante.
+- **Guía:** menús + contexto.
+  - En menús e inventario, una franja con 3-5 glifos.
+  - En partida solo sale en situaciones especiales (lock-on, rueda abierta, menú DBC sostenido) y se desvanece.
+
+### Cambios (todo en DbrCore `core.mando`, salvo los `.lang`)
+
+### 1. Movimiento que DBC ve
+- `Mando.mover()` aprieta con `TeclaVirtual.poner` los keybinds `keyBindForward/Back/Left/Right` según el stick izquierdo.
+  - Umbral 0,3 por eje, con histéresis a 0,2.
+  - Solo sin pantalla. Lleva su propio estado de qué está apretado y suelta al abrir pantalla, al desconectar y con el stick en reposo.
+- `MovimientoMando` no cambia: el valor analógico sigue mandando sobre el 1/0 de las teclas.
+
+### 2. Correr y volar
+- **Perfil por defecto:**
+  - `LS = key.sprint`
+  - `A@doble = Energy Control/Flight`
+  - `A = key.jump`, sin cambios
+- **`Interprete`:**
+  - Sufijo nuevo `Perfil.DOBLE = "@doble"` y `DOBLE_MS = 300`.
+  - La acción normal del botón sale al apretar, como hoy, sin esperar.
+  - Si llega un segundo toque antes de `DOBLE_MS` desde el anterior, sale además la acción `@doble` como toque (baja y sube).
+  - Convive con `@mantener`: con las dos, cuenta como doble el segundo toque corto.
+  - Tests nuevos en `InterpreteTest`:
+    - doble dentro de la ventana → salto + vuelo;
+    - fuera de la ventana → dos saltos;
+    - con modificador no hay doble.
+- **Migración `Perfil.VERSION = 3`**, en `migrar()`, solo si sigue como venía de fábrica:
+  - si `LS` era Flight → `LS = key.sprint`;
+  - si no hay `A@doble` → `A@doble = Flight`.
+- **Pestaña Botones de `MandoAjustesScreen`:**
+  - Una fila "doble toque" para A/B/X/Y, igual que la fila "mantener".
+  - Lang `mando.cfg.botones.doble` en es/en/pt.
+- **`NombreAccion`:** `key.sprint` ya tiene nombre vanilla; Flight ya está traducido.
+
+### 3. Guía de botones (`core.mando.GuiaBotones`, nueva)
+- **Parte pura, testeable:**
+  - `List<int[]/Par> entradas(Contexto c, Perfil p)` → pares (Boton, texto).
+  - En menús, el texto sale del mapa real `perfil.menus` vía `NombreAccion.de`, así respeta los remapeos.
+- **Contextos y entradas:**
+  - Contenedor (`GuiContainer`): A Elegir, X Clic derecho, Y Mover rápido, B Cerrar.
+  - `UiScreen` con más de una sección: A Elegir, B Atrás, LB/RB Pestaña.
+  - Otra pantalla: A Elegir, B Atrás.
+  - Partida, rueda abierta: stick derecho Apuntar, LT/RT Página, soltar RB Elegir.
+  - Partida, lock-on: stick derecho a un lado Cambiar objetivo, RS Soltar.
+  - Partida, tecla sostenida (rueda de formas, menú de acciones): stick derecho Cursor, A Elegir, B Cerrar.
+  - Con el teclado en pantalla no sale: `TecladoMando` ya muestra lo suyo.
+- **Dibujo:**
+  - Píldora oscura semitransparente con glifo de 10 px (atlas `GlifosMando`, con color si es A/B/X/Y) + etiqueta en fuente chica, separadas por 8 px.
+  - En menús: abajo a la izquierda, en `alDibujarPantalla`.
+  - En partida: abajo a la derecha, sobre la mano, en `alDibujarHud`. Entra en 150 ms y se va a los 4 s sin cambio de contexto.
+  - Solo si `Mando.usandoMando()`, sin `hideGUI` y con la opción activa.
+- **Opción:** `Perfil.guia = true` y campo `ConfigField.bool(ICONOS, "guia", true)` en la pestaña Íconos, que está casi vacía. Lang `mando.cfg.iconos.guia(.tip)`.
+- **Lang de etiquetas** `dbrcore.mando.guia.*` (apuntar, pagina, elegir, cambiar_objetivo, soltar, cursor, cerrar, pestana) en es_ES/en_US/pt_BR + `tools/sync-lang.py`.
+
+### Archivos
+- DbrCore `core/mando/`: `Mando.java`, `Interprete.java`, `Perfil.java`, `MandoAjustesScreen.java`, `GuiaBotones.java` (nuevo).
+- Tests: `InterpreteTest.java`, `PerfilMigracionTest.java`, `GuiaBotonesTest.java` (nuevo).
+- Lang: `DbrCore/src/main/resources/assets/dbrcore/lang/{es_ES,en_US,pt_BR}.lang`.
+- Reusar:
+  - `TeclaVirtual.poner/buscar`
+  - `GlifosMando.atlas/celda/color/estilo`
+  - `NombreAccion.de`
+  - `Dbc.fijando()`
+  - `RadialMando.abierto()`
+  - el estado `sostenida` de `Mando`
+
+### Verificación
+1. `./gradlew compileJava test --tests 'dbr.machitos.core.mando.*'` en DbrCore.
+2. `sync-lang.py --check` y `check-scroll.py`.
+3. dbr-test `--pasos mando-` en es_ES/en_US/pt_BR, con crítica de capturas por subagente: pestaña Botones con la fila "doble toque" y pestaña Íconos con la opción de guía.
+4. Pack `./gradlew build`.
+5. Commit + push de DbrServerPack (regla dbr-git, comprobar que no hay atribución).
+6. Despliegue en TESTEO y DBR-ASSETS experimental. Mientras R2 siga sin actualizarse por el incidente de GitHub, también copia directa a `%APPDATA%/dbr-launcher/game/mods`.
+7. Prueba del usuario con Xbox en PC:
+   - turbo y vuelo a velocidad normal;
+   - LS corre;
+   - doble A vuela y A suelto salta al instante;
+   - franja en inventario, pantallas Dbr y vanilla;
+   - guía con lock-on, rueda y menú DBC.
+8. Bitácora en `PLAN-canal-movil.md`.
