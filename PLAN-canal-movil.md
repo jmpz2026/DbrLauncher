@@ -192,6 +192,106 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: medicion 6b en el telefono del usuario (2388x1080, 392 dpi, muesca 99 px): con `resolutionRatio` 50% la ventana es 1194x540 y `guiScale` ya esta en su maximo (2), asi que la escala automatica vanilla no aporta. Un control de `UiScreen` mide 16 unidades x2 = ~4 mm; 9 mm exigiria factor >= 4, imposible en 540 de alto. Decision del usuario: muesca igual que en el plan y, en vez de agrandar el dibujo, **zona de toque ampliada** (el control se ve igual, la zona que responde llega a ~7 mm donde no choca con otro control). Se descarta la escala automatica de `guiScale` y los 9 mm.
 - 2026-11-11: 6b hecho. Launcher: `PANTALLA` (104, launcher -> juego, version + 6 floats: margen izq/arr/der/aba como fraccion de la vista, tope 0.25, y ancho/alto en mm, 20..400), `CAP_PANTALLA` (1 shl 6); `VMActivity.medirPantallaDbr` (safeInsets de `displayCutout` / tamano de la vista, mm con la media de xdpi/ydpi) en cada `refreshWindowSize`; `CanalMovil` lo guarda y lo reenvia al conectar; 4 tests. DbrCore: `core.movil.Pantalla` (fracciones, `pxPorMm`), `UiScreen.initGui` encaja la caja en la zona segura (fit con el ancho sin margenes y `ox/oy` corridos), `HudZone.originX/Y` y `moveTo` cuentan offsets desde la zona segura, `core.ui.ToqueAmpliado` (7 mm; rects de `hit()` del frame anterior + botones del marco; el toque dentro de un control no se mueve, fuera va al mas cercano cuya zona lo contiene; se mueve el punto en `mouseClicked` y el hover, asi los 75 `onClick` no cambian); 10 tests. APK instalado por adb, jar compilado.
 - 2026-11-11: 6c hecho. La resolucion en caliente ya existia en el menu de ZL2 (slider + `onRefreshWindowSize`), no hizo falta codigo. Pestana Dbr nueva en el menu en partida (`MenuDbr.kt`, sexta pestana, icono estrella): vibracion (general, intensidad con prueba, categorias), aviso de calor, aviso de bateria, modo reducido (encender/apagar en cualquier momento), chips sobre el teclado y zona de toque ampliada. Ajustes nuevos `dbrAvisoCalor`, `dbrAvisoBateria`, `dbrChips`, `dbrToqueAmpliado` (todos encendidos). Con el aviso de calor apagado igual sale "Restaurar" si el modo reducido quedo encendido. `PANTALLA` pasa a 26 bytes: u8 de banderas, bit 0 = toque ampliado (DbrCore `Pantalla.toqueAmpliado()`); el interruptor refresca la ventana para reenviarlo. Giroscopio sin tocar (pospuesto). Launcher 44 tests canal_movil, DbrCore c6ffd6d5 (a1677c1c de 6b). Desplegado: TESTEO RESURRECTION (`.bak-20261111-pantalla`, falta reiniciar), experimental DBR-ASSETS, APK por adb. Empujados launcher, DbrServerPack y DBR-ASSETS. **Paso 6 cerrado salvo pruebas.**
+- 2026-11-11: paso 7 (J) planificado y aprobado (seccion "Paso 7 (J) detallado"). Decisiones: privado solo con remitente, AFK por AutoAfkPlus, eventos = API + ejemplo en DbrInvasionPlugin, el launcher filtra por segundo plano. Se empieza por 7.0 (comprobar que el cliente sigue con tick minimizado).
+
+## Paso 7 (J) detallado (aprobado 2026-11-11)
+
+### Context
+Paso 7 de `PLAN-canal-movil.md`. Si el jugador minimiza el juego en Android, hoy no se entera de nada: privados, eventos,
+ataques, AFK o desconexion. J agrega notificaciones de Android que salen solo con la app en segundo plano. Reglas que se
+mantienen: el canal nunca lleva texto arbitrario del chat (regla 3), los paquetes del servidor nunca pasan crudos (regla 4)
+y con la pantalla bloqueada la notificacion no lleva texto.
+
+### Decisiones del usuario (2026-11-11)
+- Privado: solo el remitente ("Mensaje privado de Goku"). Nunca el texto del mensaje.
+- AFK: lo detecta el plugin **AutoAfkPlus** del servidor.
+- Eventos: API `Notificar.evento` + un plugin enganchado como ejemplo (DbrInvasionPlugin). El resto despues.
+- Desvio del plan original: el launcher filtra por segundo plano (sabe su ciclo de vida); DbrCore manda siempre. No hace falta un mensaje de estado nuevo.
+
+### 7.0 Verificacion previa (adb, sin codigo)
+Confirmar que el cliente 1.7.10 sigue haciendo tick con la app minimizada. `VMActivity.onPause` solo manda
+`GLFW_FOCUSED=0` y la superficie se destruye (`mIsSurfaceDestroyed`). Si el render se bloquea sin superficie, el
+tick se para y el servidor corta por timeout.
+- Prueba: entrar a TESTEO, minimizar 2 min, mandar `/msg` desde otra cuenta o la consola. Mirar con `adb logcat` si llega el log del canal.
+- Si el tick sigue: se hace el plan entero.
+- Si el tick se para: STOP. Le informo al usuario y replanteamos antes de seguir. Opciones: buscar en `ZLBridge`/`egl` que el swap no bloquee sin superficie, o reducir J a "te desconectaste" al volver.
+
+### 7a Protocolo `NOTIFICAR`
+- Tipo 6, juego -> launcher. `CAP_NOTIFICAR = 1 shl 7` en los dos lados.
+- Payload: u8 version, u8 largo + id ASCII `categoria.clave` (regex de `Vibrar`: `[a-z]{1,12}\.[a-z0-9_]{1,19}`), u8 largo + nombre opcional (0..16, `[A-Za-z0-9_]`).
+- Categorias = canales de Android: `privado` (privados y menciones), `eventos`, `peligro` (ataque, vida baja), `conexion` (AFK, desconexion).
+- Catalogo cerrado en el launcher. Ids iniciales: `privado.mensaje`, `privado.mencion`, `eventos.invasion`, `eventos.generico`, `peligro.atacado`, `peligro.vida_baja`, `conexion.afk`, `conexion.afk_kick`, `conexion.desconectado`. Un id fuera del catalogo se descarta.
+- Rate limit en `CanalMovil`: `NOTIFICAR` con capacidad 4 y 1 por segundo.
+- Archivos: `Protocolo.kt` (launcher), `Canal.java` (DbrCore).
+
+### 7b Launcher
+- `canal_movil/Notificaciones.kt`, puro y testeable:
+  - parser del payload;
+  - catalogo id -> string res + categoria;
+  - politica por categoria: alerta con sonido como maximo cada 30 s, el resto actualiza en silencio (`setOnlyAlertOnce`), agrupado por categoria con contador.
+- `canal_movil/NotificadorDbr.kt`, Android:
+  - publica con `NotificationManagerCompat` desde el proceso `:game` (donde ya corre `CanalMovil`);
+  - descarta si la app esta en primer plano (`ProcessLifecycleOwner` o un flag de `VMActivity.onStart`/`onStop`);
+  - `setVisibility(PRIVATE)` con `publicVersion` sin nombre ("Nuevo mensaje privado");
+  - al tocarla, `PendingIntent` a `VMActivity` con `FLAG_ACTIVITY_REORDER_TO_FRONT`;
+  - al volver al juego se cancelan sus notificaciones.
+- `NotificationChannelData.kt`: 4 canales nuevos. `peligro` y `privado` con importancia DEFAULT. `eventos` y `conexion` igual. Strings es/en/pt.
+- Permiso `POST_NOTIFICATIONS` (Android 13+):
+  - en el primer `onStop` de `VMActivity` con el permiso sin pedir, se guarda una bandera;
+  - al volver se muestra un dialogo con la explicacion y despues se pide el permiso;
+  - no se puede pedir con la app en segundo plano. Se reusa el patron de `ui/components/_Notification.kt`.
+- `CanalMovil.recibir`: rama `Mensaje.Notificar -> NotificadorDbr.publicar(...)`.
+- Pestana Dbr del menu en partida (`MenuDbr.kt`): interruptor general + uno por categoria. Ajustes nuevos `dbrNotif`, `dbrNotifPrivado`, `dbrNotifEventos`, `dbrNotifPeligro`, `dbrNotifConexion`, todos encendidos.
+- Tests JVM: parser, catalogo, ids invalidos, tope de 30 s, nombre invalido.
+
+### 7c DbrCore: `core.movil.Notificar`
+- API: `Notificar.evento(String id, String nombre)`, que exige `Canal.launcherSoporta(CAP_NOTIFICAR)`. Se aplica un anti-repeticion por id, igual que `Vibrar.ULTIMO`.
+- Deteccion en el cliente, con tick desde `Movil.onTick`:
+  - `peligro.atacado`: subida de `hurtTime` causada por una entidad. Se reusa la logica de `Vibrar.tick`. Como maximo 1 cada 30 s.
+  - `peligro.vida_baja`: la vida cruza hacia abajo el 25% del maximo. Con DBC se lee el body de `Dbc` si existe; si no, `getHealth`. Se rearma por encima del 50%.
+  - `conexion.desconectado`: se abre `GuiDisconnected` (`GuiOpenEvent` en `Movil`).
+- Canal S->C `DBRNOTIF`:
+  - mismo patron que `Vibrar.abrirCanalServidor` (`DbrChannel.open` + hilo principal);
+  - tipo 0x01: UTF id + UTF nombre;
+  - se valida con la misma regex y se reenvia por `evento`.
+- Se registra en `Movil.iniciar`.
+- Tests: codificacion y validacion de id y nombre.
+
+### 7d DbrCorePlugin: `corelib.movil.Notificar` + `NotificarEventos`
+- `Notificar.enviar(plugin, player, id, nombre)`: copia el patron de `corelib/movil/Vibrar.java` (canal `DBRNOTIF`, `sendIfMod`, regex).
+- `NotificarEventos`:
+  - privado: `PrivateMessageSentEvent` de EssentialsX por nombre (como `VibrarEventos`); el receptor recibe `privado.mensaje` + remitente;
+  - mencion: en `AsyncPlayerChatEvent`, reusa la deteccion de `VibrarEventos.onChat`; manda `privado.mencion` + autor;
+  - AFK: AutoAfkPlus. Al implementar, se baja el jar desde TESTEO y se inspeccionan sus eventos con `javap`. Se registra por nombre y por reflexion (softdepend), como Essentials. AFK -> `conexion.afk`; aviso previo al kick, si el plugin lo expone -> `conexion.afk_kick`. Si no tiene API: solo `conexion.afk` por el cambio de estado que exponga, y el kick lo cubre `conexion.desconectado` del cliente.
+- Config `movil.notificar.activo: true`.
+- Ejemplo: en DbrInvasionPlugin, al empezar una invasion se manda `Notificar.enviar(..., "eventos.invasion", "")` a los jugadores online.
+- Tests con dbr-testkit: id invalido descartado, jugador sin mod no recibe nada.
+- Actualizar el modelo de seguridad de DbrCorePlugin y `SECURITY_MODEL.md` del launcher (regla 5).
+
+### Archivos clave
+- Launcher (`android/ZalithLauncher2/ZalithLauncher/src/main/java/com/movtery/zalithlauncher/`):
+  - `game/support/canal_movil/{Protocolo,CanalMovil}.kt`, nuevos `Notificaciones.kt` y `NotificadorDbr.kt`;
+  - `notification/NotificationChannelData.kt`, `ui/activities/VMActivity.kt`, `MenuDbr.kt`, ajustes, `res/values*/strings.xml`.
+- DbrCore: `DbrServerPack/DbrCore/src/main/java/dbr/machitos/core/movil/{Canal,Movil}.java`, nuevo `Notificar.java`.
+- DbrCorePlugin: `src/main/java/dbr/machitos/corelib/movil/`, nuevos `Notificar.java` y `NotificarEventos.java`.
+- DbrInvasionPlugin: el punto donde arranca una invasion.
+
+### Verificacion
+- Tests: launcher (`canal_movil`, desde la ruta real), DbrCore (`gradle test`), DbrCorePlugin (`mvn test`).
+- Build: APK desde `X:`/`C:\dev\dbr-wt` y `assembleDebug`; jar de DbrServerPack; DbrCorePlugin y DbrInvasionPlugin.
+- Despliegue como en el paso 6:
+  - TESTEO con `.bak-20261111-notificar`;
+  - experimental DBR-ASSETS;
+  - APK por adb.
+- Prueba en el telefono, con el juego minimizado:
+  - `/msg` desde la consola: notificacion de privado con remitente; con la pantalla bloqueada, sin nombre;
+  - mencion en el chat;
+  - golpe de un mob o de un NPC;
+  - vida baja;
+  - kick desde la consola (desconectado);
+  - AFK de AutoAfkPlus;
+  - `/invasion` de prueba.
+  - Ademas: con la app en primer plano no sale nada; tocar la notificacion vuelve al juego; 2 privados en menos de 30 s = 1 sonido; los interruptores de la pestana Dbr funcionan; el permiso se pide al volver tras el primer minimizado.
 
 ## Pruebas pendientes en telefono
 - 6a (variante experimental, TESTEO reiniciado): `adb shell cmd thermalservice override-status 3` -> cartel de calor; Reducir -> resolucion baja en caliente, particulas minimas, distancia <= 6, VFX en Baja; `override-status 0` -> cartel Restaurar y todo vuelve; `adb shell dumpsys battery unplug` + `set level 14` -> aviso 15%, `set level 4` -> aviso 5%; al final `cmd thermalservice reset` y `dumpsys battery reset`.
@@ -200,6 +300,6 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 ## Siguiente paso
 
-Paso 6 (H + I + K) en tres partes, aprobado. Paso 6 hecho y desplegado (pruebas pendientes). Sigue el paso 7 (J, notificaciones). Detalle del paso 6: 6a calor y bateria (`AVISO_SISTEMA`), 6b muesca y escala (`PANTALLA`), 6c menu en partida (resolucion en caliente + seccion Dbr; giroscopio pospuesto). Paso 5 cerrado.
+Paso 7 (J, notificaciones) aprobado, ver "Paso 7 (J) detallado". Toca 7.0: con adb, comprobar que el cliente sigue con tick minimizado; si se para, STOP y replantear con el usuario. Paso 6 hecho y desplegado (pruebas pendientes). Detalle del paso 6: 6a calor y bateria (`AVISO_SISTEMA`), 6b muesca y escala (`PANTALLA`), 6c menu en partida (resolucion en caliente + seccion Dbr; giroscopio pospuesto). Paso 5 cerrado.
 - 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
 - 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
