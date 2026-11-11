@@ -112,3 +112,23 @@ Decisión del usuario (2026-11-11): A2 (argumentos de la JVM) no se hace. El res
 ## Siguiente paso
 - Probar en el móvil el cambio de idioma ES/EN/PT (A0) y el texto del módulo.
 - Push de `d8fb52f5` (DbrServerPack) y `d3a8ab6` (launcher) cuando el usuario lo pida.
+
+## Alcance final (decisión del usuario, 2026-11-11)
+**Se quitan del plan:** A1, A2, A7, A8, A10, A11, A13, A14, B1, B2, B3, B5 y B6.
+**Ya hecho:** A0, A3, A5, A6 y B7 (la resolución por defecto ya está bien).
+**Descartado tras investigar:** A12.
+
+**Queda por hacer:**
+1. **A9 y B8, en DbrServerPack:** no crear un mod aparte ni otra variante del pack, para no tener que compilar y mantener más mods.
+   - Lo que no sirve en Android se apaga solo cuando el dispositivo es Android: DiscordRPC (falla en aarch64 y reintenta cada 15 s).
+   - Detectar Android desde el juego, por ejemplo con `System.getProperty("java.vendor")`, una variable de entorno de Pojav/ZL2 (`POJAV_*`) o `os.arch` junto a `/system/build.prop`. Elegir la señal más fiable.
+   - En PC todo sigue igual.
+   - Revisar también `versionCheck=false` en `forge.cfg` y el error del render del mob del menú, si siguen saliendo en el log.
+   - Verificar: los avisos de DiscordRPC desaparecen de `latest.log` en el Honor y siguen funcionando en PC.
+2. **A4, en el launcher (upstream, VENDOR-PATCHES):** `VERIFY_AND_REPAIR` completo solo tras instalar, al cambiar de versión o cada N días. El resto de veces, comprobar solo existencia y tamaño (`LaunchGame.kt:119-123`, `MinecraftDownloader`). Ganancia estimada: 1-3 s.
+3. **B4, en el launcher (upstream, JNI):** llamar a `bigcore_set_affinity()` (`jni/bigcoreaffinity.c:20`) desde el hilo de render cuando `POJAV_BIG_CORE_AFFINITY` esté activo. Sin B1 no hay medición base: medir FPS en una misma escena antes y después, y vigilar el calor (`dumpsys thermalservice`).
+
+Cada punto se propone con detalle y espera el OK antes de tocar código.
+
+## Bitácora (alcance)
+- 2026-11-11: alcance recortado por el usuario. Quedan A9/B8 (en DbrServerPack, solo en Android), A4 y B4.
