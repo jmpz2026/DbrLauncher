@@ -147,6 +147,8 @@ androidComponents {
                 val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
                 afterEvaluate {
                     val task = tasks.named("merge${variantName}Assets").get() as MergeSourceSetFolders
+                    // DBR: the LWJGL 2 bridge jar lives in assets; rebuild it so it never goes stale.
+                    task.dependsOn(":LWJGL2Bridge:jar")
                     task.doLast {
                         val assetsDir = task.outputDir.get().asFile
                         val jreList = listOf("jre-8", "jre-17", "jre-21", "jre-25")

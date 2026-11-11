@@ -167,6 +167,10 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-11: todo empujado. Desplegado en TESTEO (DbrServerPack, DbrCorePlugin y los 7 plugins de la auditoria, con `.bak-20261111-chips`; DbrAntiCommand retirado como `.jar.bak-20261111-absorbido`), en el cliente PC (`dbr-launcher/game/mods`) y en DBR-ASSETS experimental (65591fe). APK debug 2.4.10 compilado.
 
+- 2026-11-11: prueba en telefono (APK 2.4.10 + experimental). Dos fallas: (1) con bypass/op el popup mostraba los comandos internos de Skript (`?cambiodotps...`, `'`, `.s`); el usuario pide la regla mas escalable. Arreglado en DbrCorePlugin a54aa84: con bypass se ven los comandos de plugins con permiso, pero nunca los de Skript que no esten en `permitidos`/`uso`, los que empiezan con simbolo, ni la lista nueva `ocultos`; vale tambien para el Tab vanilla. Sin desplegar. (2) La fila de chips/frases no aparece. Formato de `SUGERENCIAS` coincide en los dos lados; sospecha: el saludo HOLA/HOLA_ACK no se completa. Falta logcat del telefono. Decision: las frases siguen funcionando solo con canal (sin respaldo por teclas); agregar "Frases" al menu en partida.
+
+- 2026-11-11: causa de la fila de chips: en el telefono `core.movil apagado`. El `dbr-lwjgl2-bridge.jar` de assets era viejo (sin `DBR_CANAL_VERSION`/`dbrSend`/`dbrPoll`): nadie corria `:LWJGL2Bridge:jar` y `version` no cambiaba, asi que el telefono no re-extraia. Arreglo: `mergeAssets` depende de `:LWJGL2Bridge:jar`, jar reproducible y `version` = hash del componente. APK debug reinstalado por adb inalambrico. El canal nunca funciono en telefono: AREA_TEXTO, links y chips quedan por probar de nuevo.
+
 ## Siguiente paso
 
 Paso 4 queda pendiente solo de pruebas: en el servidor de pruebas, que la config migrada de DbrAntiCommand bloquee lo mismo; en el telefono, chips y frases (escribir sin enviar). Luego paso 5: D + E (`core.dbc`, estados, `VisibilityType` ampliado, editor, layout oficial, catalogo de vibracion).
