@@ -12,8 +12,8 @@
       "default": "Controles por defecto de Dragon Block Resurrection",
       "matchQueue": []
     },
-    "versionCode": 3,
-    "versionName": "3.0"
+    "versionCode": 4,
+    "versionName": "4.0"
   },
   "layers": [
     {
@@ -166,7 +166,11 @@
           "isSwipple": false,
           "isPenetrable": false,
           "isToggleable": false,
-          "icon": "chat"
+          "icon": "chat",
+          "dbrHideIf": [
+            "charging_ki",
+            "transforming"
+          ]
         },
         {
           "text": {
@@ -199,7 +203,11 @@
           "isSwipple": false,
           "isPenetrable": false,
           "isToggleable": false,
-          "icon": "backpack"
+          "icon": "backpack",
+          "dbrHideIf": [
+            "charging_ki",
+            "transforming"
+          ]
         },
         {
           "text": {
@@ -232,7 +240,10 @@
           "isSwipple": false,
           "isPenetrable": false,
           "isToggleable": false,
-          "icon": "undo"
+          "icon": "undo",
+          "dbrHideIf": [
+            "transforming"
+          ]
         },
         {
           "text": {
@@ -265,7 +276,11 @@
           "isSwipple": false,
           "isPenetrable": false,
           "isToggleable": false,
-          "icon": "donut_large"
+          "icon": "donut_large",
+          "dbrHideIf": [
+            "charging_ki",
+            "transforming"
+          ]
         },
         {
           "text": {

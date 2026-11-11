@@ -175,8 +175,12 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-11: editor de frases sacado de la fila de chips (se cerraba con el teclado) y teclado reabierto al cerrarlo, launcher 6653138. Probado en telefono por el usuario: chips, frases, popup sin comandos de Skript, todo ok. **Paso 4 cerrado.**
 
+- 2026-11-11: el usuario aprueba el paso 5 en dos partes (5a controles por contexto, luego 5b vibracion). Se empieza 5a.
+
+- 2026-11-11: 5a hecho. Launcher 5c41855 (LayerController `dbrShowIf`/`dbrHideIf` en botones y capas, `EstadoDbr`, sin canal se ignoran; fundido 120 ms; boton apretado se queda aunque se oculte su capa; `ESTADO` tipo 4 + `CAP_ESTADO`; editor "Condiciones del juego" es/en/pt; 22 tests ok). DbrServerPack 52df0b64 (`core.dbc.Dbc` por reflexion, DbrCamaraMod lo usa; `core.movil.EstadoMovil`; 3 tests). Desvio: color del aura y vuelo de otros quedan en DbrCamaraMod (solo los usa la camara; DbrCore no compila contra DBC). Layout oficial v4: con cargando ki o transformando se ocultan Chat, Inventario y Rueda formas; con transformando, Destransformar. Experimental DBR-ASSETS aa00ed8 y APK instalado por adb. Falta prueba del usuario en telefono.
+
 ## Siguiente paso
 
-Paso 5 (D + E), propuesto en dos partes y pendiente del OK del usuario:
+Paso 5 (D + E), aprobado en dos partes; 5a hecho y en prueba, luego 5b:
 - 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
 - 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
