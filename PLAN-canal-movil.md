@@ -603,6 +603,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: prueba ronda 2: doble A no volaba (toque baja/sube en la misma lectura y "mantener" re-apretaba: DBC alterna el vuelo cada tick); guia se apagaba con el cursor del mando (setCursorPosition genera eventos de raton). Arreglado: toques se aprietan una vez y sueltan a los 3 ticks; raton ignorado 300 ms tras actividad del mando. Desplegado + copia al cliente PC.
 
+- 2026-11-11: pistas de partida tipo Bedrock (decision del usuario: todas): GuiaBotones.partida(Situacion) con romper/usar/colocar, atacar/hablar/fijar, comer/beber/tensar, nadar, volar (subir/bajar/dejar de volar), transformar/destransformar, tecnica elegida; max 3, del mapa real, se van a los 4 s. Desplegado + copia al cliente PC.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
