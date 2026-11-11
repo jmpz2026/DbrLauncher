@@ -110,6 +110,7 @@ fun GoldButton(
 ) {
     Row(
         modifier = modifier
+            .dbrFoco()
             .clip(RectangleShape)
             .pixelBevel(background = DbrGoldDeep)
             .clickable(onClick = onClick)
@@ -131,6 +132,7 @@ fun StoneNavButton(
 ) {
     Box(
         modifier = modifier
+            .dbrFoco()
             .clip(RectangleShape)
             .pixelBevel(background = if (selected) DbrGoldDeep else DbrStone)
             .clickable(onClick = onClick)

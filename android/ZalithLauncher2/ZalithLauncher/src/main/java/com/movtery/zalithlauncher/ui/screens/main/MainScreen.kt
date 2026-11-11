@@ -116,6 +116,7 @@ import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.ui.dbr.DbrBottomBar
+import com.movtery.zalithlauncher.ui.dbr.dbrPestanasMando
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
@@ -155,6 +156,15 @@ fun MainScreen(
     val mainScreenKey = screenBackStackModel.mainScreen.currentKey
     val inLauncherScreen = mainScreenKey == null || mainScreenKey is NormalNavKey.LauncherMain
 
+    //DBR 8f.2: lo usan la barra de abajo y LB/RB del mando
+    val toSettingsScreen: () -> Unit = {
+        screenBackStackModel.mainScreen.removeAndNavigateTo(
+            removes = screenBackStackModel.clearBeforeNavKeys,
+            screenKey = screenBackStackModel.settingsScreen
+        )
+    }
+    val alternarPestana: () -> Unit = { if (inLauncherScreen) toSettingsScreen() else toMainScreen() }
+
     val isBackgroundValid = LocalBackgroundViewModel.current?.isValid == true
     val launcherBackgroundOpacity = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f
 
@@ -170,6 +180,7 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .dbrPestanasMando(anterior = alternarPestana, siguiente = alternarPestana)
         ) {
             TopBar(
                 modifier = Modifier
@@ -230,12 +241,7 @@ fun MainScreen(
                 inLauncherScreen = inLauncherScreen,
                 inSettingsScreen = mainScreenKey is NestedNavKey.Settings,
                 toMainScreen = toMainScreen,
-                toSettingsScreen = {
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = screenBackStackModel.settingsScreen
-                    )
-                },
+                toSettingsScreen = toSettingsScreen,
                 onDiscord = {
                     eventViewModel.sendEvent(EventViewModel.Event.OpenLink(DBR_DISCORD_URL))
                 }

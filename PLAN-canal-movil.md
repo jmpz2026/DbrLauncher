@@ -614,10 +614,14 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 - 2026-11-11: el usuario confirma lock-on OK. Mando por Bluetooth en el telefono funcionaba pero con el mapeo viejo: el APK instalado era de las 12:13 y `MandoDbr` (puente al `core.mando`) es de las 14:22 (ff9d5b9), asi que mandaba el remapper de ZL2. APK nuevo compilado e instalado por adb (17:26); falta reprobar. Linux, PlayStation, giroscopio y flick quedan para despues. Nuevo: 8f, launchers navegables con mando (propuesta abajo, pendiente OK).
 - 2026-11-11: 8f, texto en PC: el usuario elige teclado en pantalla.
 - 2026-11-11: plan 8f aprobado (seccion "Paso 8f"). Se empieza 8f.1 (PC).
+- 2026-11-11: 8f.1 escrito en DbrLauncher `main`, sin commit: `src/renderer/src/mando/` (entrada, navegar, teclado, Glifo, MandoRaiz con teclado en pantalla y pistas), montado en `App.tsx`, `FOCUSABLE` exportado, `data-mando-inicio` en Jugar, botones de ventana fuera de la navegacion, anillo de foco en `main.css`, 12 claves `mando.*`. typecheck y build OK; logica pura probada con esbuild (19/19). Falta prueba real con Xbox (`npm run dev`).
+- 2026-11-11: 8f.1 probado por el usuario con Xbox: todo OK. Commit DbrLauncher 0f5047f (main). Se empieza 8f.2.
+- 2026-11-11: 8f.2 escrito, sin commit: `ui/dbr/MandoLauncher.kt` (`dbrFoco` borde dorado, `rememberMandoConectado`, `FocoInicialConMando` pasa a modo teclado y enfoca Jugar, `dbrPestanasMando` LB/RB), aplicado en `GoldButton`/`StoneNavButton`, `MainScreen` (LB/RB alternan Inicio/Ajustes) y `LauncherScreen` (foco en Jugar); `MandoDbr.esMando` pasa a internal. compileDebugKotlin OK, APK instalado. Diagnostico por adb pendiente: el telefono estaba bloqueado con codigo.
+- 2026-11-11: el usuario prueba 8f.2 y el mando en partida por Bluetooth: todo OK. **Paso 8f cerrado.** Sigue 9 (docs) y 10 (release coordinado).
 
 ## Siguiente paso
 
-Reprobar el mando por Bluetooth con el APK nuevo. En curso: 8f.1 (launcher de PC con mando). Antes: Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
+Reprobar el mando por Bluetooth con el APK nuevo. 8f cerrado (PC y Android con mando, probado). Siguiente: 9 (docs) y 10 (release coordinado). Antes: Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
 
 ## Mando en PC, ronda 2 (aprobado 2026-11-11): movimiento DBC, correr, volar con doble toque y guía de botones
 

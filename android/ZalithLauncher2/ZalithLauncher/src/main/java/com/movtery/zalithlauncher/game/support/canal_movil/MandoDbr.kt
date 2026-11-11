@@ -144,7 +144,7 @@ object MandoDbr {
         return if (abs(v) < rango.flat) 0f else v
     }
 
-    private fun esMando(d: InputDevice?): Boolean {
+    internal fun esMando(d: InputDevice?): Boolean {
         if (d == null || d.isVirtual) return false
         val s = d.sources
         return (s and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||

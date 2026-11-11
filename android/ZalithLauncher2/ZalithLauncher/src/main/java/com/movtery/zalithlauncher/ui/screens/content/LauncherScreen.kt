@@ -50,6 +50,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import com.movtery.zalithlauncher.ui.dbr.FocoInicialConMando
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -248,6 +251,8 @@ private fun DbrHome(
                 style = MaterialTheme.typography.displaySmall,
                 maxLines = 1
             )
+            val focoJugar = remember { FocusRequester() }
+            FocoInicialConMando(focoJugar)
             GoldButton(
                 onClick = {
                     if (hasDbr) {
@@ -259,7 +264,7 @@ private fun DbrHome(
                         dbrVm.install(context)
                     }
                 },
-                modifier = Modifier.width(280.dp),
+                modifier = Modifier.width(280.dp).focusRequester(focoJugar),
                 contentPadding = PaddingValues(vertical = 18.dp)
             ) {
                 Text(
