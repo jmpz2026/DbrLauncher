@@ -136,6 +136,12 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrcore/rendimiento.cfg"
     },
     {
+      "path": "config/dbrcore/vibracion.json",
+      "sha1": "8124a924a7bb02f9e933ff4ba072223e1839a630",
+      "size": 1104,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrcore/vibracion.json"
+    },
+    {
       "path": "config/dbrshieldki.cfg",
       "sha1": "5a9441793c9c5471abd8babeaeaee38c7b20c5dc",
       "size": 631,
@@ -440,8 +446,8 @@
     },
     {
       "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "70078d43dbd421b29fb73a3e4e2af52be619a861",
-      "size": 38054818,
+      "sha1": "16a5547481798269c8ad83901b890c4155f3d664",
+      "size": 38057676,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.8.0.jar"
     },
     {
@@ -543,12 +549,6 @@
       "sha1": "753014f5223307381428e73116c0a44dc9826b99",
       "size": 17967,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/shaderpacks/Dbr%20Shaders.zip"
-    },
-    {
-      "path": "config/dbrcore/vibracion.json",
-      "sha1": "8124a924a7bb02f9e933ff4ba072223e1839a630",
-      "size": 1104,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/config/dbrcore/vibracion.json"
     }
   ],
   "androidFiles": [
