@@ -612,6 +612,7 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 - 2026-11-11: el usuario confirma que todo el mando en PC funciona por ahora (esquema vanilla, rueda de formas, vuelo, guia y pistas). Queda: telefono con mando por Bluetooth, lock-on y PvP en TESTEO, luego 9 y 10.
 
 - 2026-11-11: el usuario confirma lock-on OK. Mando por Bluetooth en el telefono funcionaba pero con el mapeo viejo: el APK instalado era de las 12:13 y `MandoDbr` (puente al `core.mando`) es de las 14:22 (ff9d5b9), asi que mandaba el remapper de ZL2. APK nuevo compilado e instalado por adb (17:26); falta reprobar. Linux, PlayStation, giroscopio y flick quedan para despues. Nuevo: 8f, launchers navegables con mando (propuesta abajo, pendiente OK).
+- 2026-11-11: 8f, texto en PC: el usuario elige teclado en pantalla.
 
 ## Siguiente paso
 
@@ -747,7 +748,7 @@ El usuario pide poder usar el launcher de PC (Electron, repo DbrLauncher `main`)
 - Botones: stick izquierdo y cruceta mueven el foco; A pulsa; B cierra el modal o vuelve; LB/RB cambian la pestaña de `NavBar`; Start = Jugar en Home; stick derecho hace scroll.
 - Anillo de foco visible solo en modo mando (`data-input="mando"` en `body`); el raton lo apaga.
 - Barra de pistas abajo (A Elegir, B Atras, LB/RB Pestañas) con glifos segun el mando.
-- Texto (nick en Login, campos de Settings): decision del usuario pendiente.
+- Texto (nick en Login, ancho/alto y JVM en Settings): teclado en pantalla propio del launcher (decision del usuario 2026-11-11). Copia en React el diseño del de `core.mando` (8b.5): QWERTY con ñ, X borra, Y espacio, Start acepta, gatillos mueven el cursor; teclado numerico para ancho/alto. No se puede reusar el codigo Java del juego.
 
 ### Android (ZL2 Compose)
 - Android ya convierte cruceta/stick en movimiento de foco, A en confirmar y B en Atras. Primero se prueba con el mando real que pantallas fallan.
