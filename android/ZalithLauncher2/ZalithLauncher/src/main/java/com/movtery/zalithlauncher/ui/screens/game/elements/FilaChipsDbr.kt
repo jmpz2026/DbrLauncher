@@ -56,9 +56,7 @@ private fun archivoFrases() = File(PathManager.DIR_FILES_PRIVATE, "dbr_frases.tx
  * A tap only writes into the chat field through [CanalMovil.insertar]; nothing is ever sent.
  */
 @Composable
-fun FilaChipsDbr(modifier: Modifier = Modifier) {
-    var frases by remember { mutableStateOf(FrasesMovil.cargar(archivoFrases())) }
-    var editando by remember { mutableStateOf(false) }
+fun FilaChipsDbr(frases: List<String>, onEditar: () -> Unit, modifier: Modifier = Modifier) {
     val estado by CanalMovil.sugerencias.collectAsState()
 
     Row(
@@ -71,7 +69,7 @@ fun FilaChipsDbr(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Chip("✎ " + stringResource(R.string.dbr_frases_titulo), CHIP) { editando = true }
+        Chip("✎ " + stringResource(R.string.dbr_frases_titulo), CHIP, onEditar)
         frases.forEach { frase ->
             Chip(frase, CHIP_FRASE) { CanalMovil.insertar(Protocolo.MODO_ESCRIBIR, frase) }
         }
@@ -85,16 +83,22 @@ fun FilaChipsDbr(modifier: Modifier = Modifier) {
             }
         }
     }
+}
 
-    if (editando) {
-        EditorFrases(
-            inicial = frases,
-            onCerrar = { nuevas ->
-                frases = FrasesMovil.limpiar(nuevas)
-                FrasesMovil.guardar(archivoFrases(), frases)
-                editando = false
-            },
-        )
+/** The player's saved phrases. */
+fun cargarFrasesDbr(): List<String> = FrasesMovil.cargar(archivoFrases())
+
+/**
+ * Phrase editor dialog. Hosted by the screen, not by the chip row: opening a dialog hides the
+ * keyboard, the row goes away with it, and a dialog inside the row would vanish too.
+ * [onCerrar] receives the cleaned list, already saved.
+ */
+@Composable
+fun EditorFrasesDbr(inicial: List<String>, onCerrar: (List<String>) -> Unit) {
+    EditorFrases(inicial) { nuevas ->
+        val limpias = FrasesMovil.limpiar(nuevas)
+        FrasesMovil.guardar(archivoFrases(), limpias)
+        onCerrar(limpias)
     }
 }
 

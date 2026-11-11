@@ -54,6 +54,9 @@ import android.graphics.Rect as AndroidRect
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
 import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
+import com.movtery.zalithlauncher.ui.screens.game.elements.EditorFrasesDbr
+import com.movtery.zalithlauncher.ui.screens.game.elements.cargarFrasesDbr
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.getValue
@@ -727,6 +730,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         // Dbr: chip row only with the chat open (DbrCore says so) and the keyboard up.
         val imeVisible = imeInsets.getBottom(LocalDensity.current) > 0 || frameImeHeight > 0
         val mostrarChips = chatDbr.abierto && imeVisible
+        var frasesDbr by remember { mutableStateOf(cargarFrasesDbr()) }
+        var editandoFrases by remember { mutableStateOf(false) }
+        var tecladoAntesDeFrases by remember { mutableStateOf(false) }
+        val scopeFrases = rememberCoroutineScope()
 
         BoxWithConstraints(
             modifier = Modifier
@@ -792,12 +799,37 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
             if (mostrarChips) {
                 FilaChipsDbr(
+                    frases = frasesDbr,
+                    onEditar = {
+                        tecladoAntesDeFrases = vmViewModel.textInputMode == TextInputMode.ENABLE
+                        editandoFrases = true
+                    },
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .absoluteOffset {
                             val imeHeight = maxOf(imeInsets.getBottom(this@absoluteOffset), frameImeHeight)
                             IntOffset(0, -imeHeight)
                         }
+                )
+            }
+
+            if (editandoFrases) {
+                EditorFrasesDbr(
+                    inicial = frasesDbr,
+                    onCerrar = { nuevas ->
+                        frasesDbr = nuevas
+                        editandoFrases = false
+                        // The dialog took the focus and the keyboard closed; the chat is still
+                        // open in the game, so bring the keyboard back (re-entering the input
+                        // layout requests focus and shows it).
+                        if (tecladoAntesDeFrases) {
+                            vmViewModel.textInputMode = TextInputMode.DISABLE
+                            scopeFrases.launch {
+                                delay(150)
+                                vmViewModel.textInputMode = TextInputMode.ENABLE
+                            }
+                        }
+                    },
                 )
             }
         }
