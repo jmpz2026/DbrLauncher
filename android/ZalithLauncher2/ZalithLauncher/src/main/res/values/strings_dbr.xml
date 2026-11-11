@@ -181,4 +181,7 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_notif_conexion_afk_kick">You will be kicked soon for being AFK</string>
     <string name="dbr_notif_conexion_desconectado">You were disconnected from the server</string>
     <string name="dbr_notif_permiso">While the game is in the background, Dbr can tell you about private messages, events, attacks and disconnections. Messages never show their text, and the lock screen never shows names. Allow notifications?</string>
+    <string name="dbr_servicio_juego_titulo">Dbr is still connected</string>
+    <string name="dbr_servicio_juego_texto">The game keeps running in the background so you do not lose the connection.</string>
+    <string name="dbr_servicio_juego_canal">Game in the background</string>
 </resources>

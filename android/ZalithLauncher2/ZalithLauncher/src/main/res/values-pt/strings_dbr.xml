@@ -170,4 +170,7 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_notif_conexion_afk_kick">Você será expulso em breve por estar AFK</string>
     <string name="dbr_notif_conexion_desconectado">Você foi desconectado do servidor</string>
     <string name="dbr_notif_permiso">Com o jogo em segundo plano, o Dbr pode avisar sobre mensagens privadas, eventos, ataques e desconexões. As mensagens nunca mostram o texto e a tela de bloqueio nunca mostra nomes. Permitir notificações?</string>
+    <string name="dbr_servicio_juego_titulo">O Dbr continua conectado</string>
+    <string name="dbr_servicio_juego_texto">O jogo continua em segundo plano para você não perder a conexão.</string>
+    <string name="dbr_servicio_juego_canal">Jogo em segundo plano</string>
 </resources>

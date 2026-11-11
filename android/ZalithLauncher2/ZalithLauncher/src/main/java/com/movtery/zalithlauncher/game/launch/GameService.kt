@@ -36,7 +36,9 @@ class GameService : Service() {
         val data = NotificationChannelData.GAME_SERVICE_CHANNEL
 
         val notification: Notification = NotificationCompat.Builder(this, data.channelId)
-            .setContentTitle(getString(R.string.notification_jvm_running_name))
+            // DBR: own text instead of "JVM Keep-Alive Service" (VENDOR-PATCHES 14).
+            .setContentTitle(getString(R.string.dbr_servicio_juego_titulo))
+            .setContentText(getString(R.string.dbr_servicio_juego_texto))
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setSmallIcon(R.mipmap.ic_launcher)
