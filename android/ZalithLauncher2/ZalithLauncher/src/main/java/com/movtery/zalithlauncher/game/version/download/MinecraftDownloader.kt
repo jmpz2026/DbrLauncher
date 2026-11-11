@@ -26,6 +26,8 @@ import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest
 import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.utils.file.formatFileSize
+import com.movtery.zalithlauncher.game.dbr.DbrHashCache
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.withSpeedReport
 import com.movtery.zalithlauncher.utils.string.getMessageOrToString
@@ -110,23 +112,41 @@ class MinecraftDownloader(
                 task.updateMessage(androidText(
                     getTaskMessage(R.string.minecraft_download_stat_download_task, R.string.minecraft_download_stat_verify_task)
                 ))
-                if (mode == DownloadMode.DOWNLOAD) {
-                    progressNewDownloadTasks(clientName, clientVersionsDir)
-                } else {
-                    val jsonFile = downloader.getVersionJsonPath(customName).takeIf { it.canRead() } ?: throw IOException("Version $customName JSON file is unreadable.")
-                    val jsonText = jsonFile.readText()
-                    val gameManifest = jsonText.parseTo(GameManifest::class.java)
-                    progressDownloadTasks(gameManifest, clientName)
-                }
-
-                if (allDownloadTasks.isNotEmpty()) {
-                    downloadAll(task, allDownloadTasks, getTaskMessage(R.string.minecraft_download_downloading_game_files, R.string.minecraft_download_verifying_and_repairing_files))
-                    if (downloadFailedTasks.isNotEmpty()) {
-                        downloadedFileCount.set(0)
-                        totalFileCount.set(downloadFailedTasks.size.toLong())
-                        downloadAll(task, downloadFailedTasks.toList(), getTaskMessage(R.string.minecraft_download_progress_retry_downloading_files, R.string.minecraft_download_progress_retry_verifying_files))
+                // DBR: VENDOR-PATCHES 15. Al verificar antes de jugar, el SHA-1 de lo que no cambió sale de la caché.
+                val hashCache = if (mode == DownloadMode.VERIFY_AND_REPAIR) {
+                    DbrHashCache.abrir(File(PathManager.DIR_FILES_PRIVATE, ".dbr_verify_cache.json"))
+                } else null
+                val inicioVerificacion = System.currentTimeMillis()
+                try {
+                    if (mode == DownloadMode.DOWNLOAD) {
+                        progressNewDownloadTasks(clientName, clientVersionsDir)
+                    } else {
+                        val jsonFile = downloader.getVersionJsonPath(customName).takeIf { it.canRead() } ?: throw IOException("Version $customName JSON file is unreadable.")
+                        val jsonText = jsonFile.readText()
+                        val gameManifest = jsonText.parseTo(GameManifest::class.java)
+                        progressDownloadTasks(gameManifest, clientName)
                     }
-                    if (downloadFailedTasks.isNotEmpty()) throw DownloadFailedException()
+                    val finProgramar = System.currentTimeMillis()
+
+                    if (allDownloadTasks.isNotEmpty()) {
+                        downloadAll(task, allDownloadTasks, getTaskMessage(R.string.minecraft_download_downloading_game_files, R.string.minecraft_download_verifying_and_repairing_files))
+                        if (downloadFailedTasks.isNotEmpty()) {
+                            downloadedFileCount.set(0)
+                            totalFileCount.set(downloadFailedTasks.size.toLong())
+                            downloadAll(task, downloadFailedTasks.toList(), getTaskMessage(R.string.minecraft_download_progress_retry_downloading_files, R.string.minecraft_download_progress_retry_verifying_files))
+                        }
+                        if (downloadFailedTasks.isNotEmpty()) throw DownloadFailedException()
+                    }
+                    hashCache?.msProgramar = finProgramar - inicioVerificacion
+                } finally {
+                    if (hashCache != null) DbrHashCache.cerrar()
+                }
+                hashCache?.let {
+                    it.guardar()
+                    Logger.info(TAG, "DbrHashCache: ${it.aciertos.get()} de cache, ${it.hasheados.get()} hasheados, " +
+                        "${it.sinSha1.get()} sin sha1 (${it.msSinSha1.get()} ms sumados), " +
+                        "${allDownloadTasks.size} tareas, programar ${it.msProgramar} ms, " +
+                        "total ${System.currentTimeMillis() - inicioVerificacion} ms")
                 }
                 //清除任务信息
                 task.updateProgress(1f)

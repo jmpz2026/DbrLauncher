@@ -202,3 +202,17 @@ arranque buscando TouchController, que no existe para 1.7.10. Es tiempo perdido 
 - `game/launch/GameService.kt`: título y texto propios (`dbr_servicio_juego_titulo`/`_texto`, es/en/pt).
 - `notification/NotificationChannelData.kt`: el canal `game.service` se llama `dbr_servicio_juego_canal`.
   El string `notification_jvm_running_name` de ZL2 queda sin uso; no se borra para no tocar sus traducciones.
+
+## 15) Caché de SHA-1 al verificar antes de jugar (2026-11-11)
+**Motivo:** en cada toque de Jugar, `MinecraftDownloader` en `VERIFY_AND_REPAIR` calculaba el SHA-1
+de todos los archivos de Minecraft, librerías y assets aunque no hubieran cambiado
+(`DIAGNOSTICO-ARRANQUE-ANDROID.md`, mejora A4).
+
+- `game/dbr/DbrHashCache.kt` (propio): ruta → tamaño, mtime y SHA-1 en `files/.dbr_verify_cache.json`.
+  Con el mismo tamaño, mtime y SHA-1 esperado no se lee el archivo; cualquier cambio rehashea y repara
+  como antes. La caché caduca a los 30 días.
+- `game/version/download/DownloadTask.kt` (`verifySha1`) y `Minecraft.DownloadUtils.kt` (JSON ya
+  descargado): `compareSHA1` → `DbrHashCache.comparar`. Sin caché abierta es `compareSHA1` tal cual,
+  así que la instalación y otros usos no cambian.
+- `game/version/download/MinecraftDownloader.kt`: en `VERIFY_AND_REPAIR` abre la caché, la cierra al
+  terminar, la guarda solo si todo salió bien y escribe `DbrHashCache: N de cache, M hasheados, X ms`.

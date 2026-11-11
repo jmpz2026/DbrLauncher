@@ -20,7 +20,7 @@ package com.movtery.zalithlauncher.game.version.download
 
 import com.movtery.zalithlauncher.utils.file.check7z
 import com.movtery.zalithlauncher.utils.file.checkZip
-import com.movtery.zalithlauncher.utils.file.compareSHA1
+import com.movtery.zalithlauncher.game.dbr.DbrHashCache
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.downloadFromMirrorList
 import com.movtery.zalithlauncher.utils.string.getMessageOrToString
@@ -104,10 +104,10 @@ class DownloadTask(
         if (sha1.isNullOrBlank()) {
             //排除目标无法被下载的情况，比如Forge的client
             if (!isDownloadable) return true
-            return verifyFileWithoutSha1(file)
+            return DbrHashCache.medirSinSha1 { verifyFileWithoutSha1(file) } // DBR: VENDOR-PATCHES 15
         }
 
-        return if (compareSHA1(file, sha1)) {
+        return if (DbrHashCache.comparar(file, sha1)) { // DBR: VENDOR-PATCHES 15
             true
         } else {
             FileUtils.deleteQuietly(file)

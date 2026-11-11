@@ -22,7 +22,7 @@ import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.OperatingSystem
 import com.movtery.zalithlauncher.utils.GSON
-import com.movtery.zalithlauncher.utils.file.compareSHA1
+import com.movtery.zalithlauncher.game.dbr.DbrHashCache
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.fetchStringFromUrls
 import com.movtery.zalithlauncher.utils.network.withRetry
@@ -69,7 +69,7 @@ suspend fun <T> downloadAndParseJson(
     }
 
     if (targetFile.exists()) {
-        if (!verifyIntegrity || compareSHA1(targetFile, expectedSHA)) {
+        if (!verifyIntegrity || DbrHashCache.comparar(targetFile, expectedSHA)) { // DBR: VENDOR-PATCHES 15
             return runCatching {
                 targetFile.readText().parseTo(classOfT)
             }.getOrElse {
