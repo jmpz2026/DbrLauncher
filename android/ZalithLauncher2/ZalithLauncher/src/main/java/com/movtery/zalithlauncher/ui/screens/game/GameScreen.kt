@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.game
 
+import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -594,6 +595,9 @@ fun GameScreen(
                 )
             }
 
+            // DBR: game states from DbrCore for the context controls (null = ignore conditions).
+            val estadoDbr by CanalMovil.estado.collectAsStateWithLifecycle()
+
             //控制布局层
             ControlBoxLayout(
                 modifier = Modifier.fillMaxSize(),
@@ -605,7 +609,8 @@ fun GameScreen(
                 isUsingJoystick = isGrabbing && AllSettings.enableJoystickControl.state,
                 isCursorGrabbing = isGrabbing,
                 hideLayerWhen = viewModel.controlLayerHideState,
-                isDark = isLauncherInDarkTheme()
+                isDark = isLauncherInDarkTheme(),
+                estadoDbr = estadoDbr
             ) {
                 //虚拟鼠标控制层
                 MouseControlLayout(

@@ -365,6 +365,8 @@ fun BoxWithConstraintsScope.ControlEditor(
                     hideWhenGamepad = baseLayer.hideWhenGamepad,
                     hideWhenJoystick = baseLayer.hideWhenJoystick,
                     visibilityType = baseLayer.visibilityType,
+                    dbrShowIf = baseLayer.dbrShowIf,
+                    dbrHideIf = baseLayer.dbrHideIf,
                     normalButtons = baseLayer.normalButtons,
                     textBoxes = baseLayer.textBoxes
                 )

@@ -19,6 +19,7 @@
 package com.movtery.layer_controller.layout
 
 import com.movtery.layer_controller.data.NormalData
+import com.movtery.layer_controller.data.EstadoDbr
 import com.movtery.layer_controller.data.TextData
 import com.movtery.layer_controller.data.VisibilityType
 import com.movtery.layer_controller.observable.Modifiable
@@ -57,7 +58,11 @@ data class ControlLayer(
     @SerialName("normalButtons")
     val normalButtons: List<NormalData> = emptyList(),
     @SerialName("textBoxes")
-    val textBoxes: List<TextData> = emptyList()
+    val textBoxes: List<TextData> = emptyList(),
+    @SerialName("dbrShowIf")
+    val dbrShowIf: Set<EstadoDbr> = emptySet(),
+    @SerialName("dbrHideIf")
+    val dbrHideIf: Set<EstadoDbr> = emptySet()
 ): Modifiable<ControlLayer> {
     override fun isModified(other: ControlLayer): Boolean {
         return this.name != other.name ||
@@ -68,7 +73,9 @@ data class ControlLayer(
                 this.hideWhenJoystick != other.hideWhenJoystick ||
                 this.visibilityType != other.visibilityType ||
                 this.normalButtons.isModified(other.normalButtons) ||
-                this.textBoxes.isModified(other.textBoxes)
+                this.textBoxes.isModified(other.textBoxes) ||
+                this.dbrShowIf != other.dbrShowIf ||
+                this.dbrHideIf != other.dbrHideIf
     }
 }
 

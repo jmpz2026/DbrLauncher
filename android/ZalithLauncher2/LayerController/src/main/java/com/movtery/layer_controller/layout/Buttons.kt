@@ -18,6 +18,9 @@
 
 package com.movtery.layer_controller.layout
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -98,7 +101,14 @@ internal fun TextButton(
     isPressed: Boolean,
     onTapInEditMode: () -> Unit = {}
 ) {
-    if (visible) {
+    // DBR: ~120 ms fade when a button appears or goes away (context controls). The button stays
+    // composed while it fades out; touch already ignores it (collectVisibleWidgets).
+    val alphaDbr by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 120),
+        label = "dbrFade"
+    )
+    if (visible || alphaDbr > 0f) {
         val styleId = data.styleId
         val style = allStyles
             .takeIf { data.styleId != null }
@@ -109,6 +119,7 @@ internal fun TextButton(
 
         Box(
             modifier = Modifier
+                .graphicsLayer { alpha = alphaDbr }
                 .buttonSize(data, screenSize)
                 .buttonStyle(
                     style = style,

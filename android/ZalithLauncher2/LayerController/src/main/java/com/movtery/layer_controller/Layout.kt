@@ -48,7 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movtery.layer_controller.data.HideLayerWhen
+import com.movtery.layer_controller.data.EstadoDbr
 import com.movtery.layer_controller.data.VisibilityType
+import com.movtery.layer_controller.data.condicionesDbr
 import com.movtery.layer_controller.event.EventHandler
 import com.movtery.layer_controller.layout.TextButton
 import com.movtery.layer_controller.observable.ObservableButtonStyle
@@ -82,6 +84,7 @@ fun ControlBoxLayout(
     markPointerAsMoveOnly: (PointerId) -> Unit = {},
     hideLayerWhen: HideLayerWhen = HideLayerWhen.None,
     isDark: Boolean = isSystemInDarkTheme(),
+    estadoDbr: Set<EstadoDbr>? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     when {
@@ -113,6 +116,7 @@ fun ControlBoxLayout(
                             isCursorGrabbing = isCursorGrabbing,
                             hideLayerWhen = hideLayerWhen,
                             isDark = isDark,
+                            estadoDbr = estadoDbr,
                             content = content
                         )
                     }
@@ -137,6 +141,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
     isCursorGrabbing: Boolean,
     hideLayerWhen: HideLayerWhen,
     isDark: Boolean,
+    estadoDbr: Set<EstadoDbr>?,
     content: @Composable BoxScope.() -> Unit
 ) {
 //    val isDarkMode by rememberUpdatedState(isSystemInDarkTheme())
@@ -148,6 +153,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
     val currentCheckOccupiedPointers by rememberUpdatedState(checkOccupiedPointers)
     val currentIsCursorGrabbing by rememberUpdatedState(isCursorGrabbing)
     val currentHideLayerWhen by rememberUpdatedState(hideLayerWhen)
+    val currentEstadoDbr by rememberUpdatedState(estadoDbr)
 
     val density = LocalDensity.current
     val screenSize = remember(maxWidth, maxHeight) {
@@ -195,6 +201,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                 hideLayerWhen = currentHideLayerWhen,
                                 isUsingJoystick = isUsingJoystick,
                                 isCursorGrabbing = currentIsCursorGrabbing,
+                                estadoDbr = currentEstadoDbr,
                             )
 
                             touchProcessor.processFrame(
@@ -221,7 +228,8 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
             eventHandler = eventHandler,
             isUsingJoystick = isUsingJoystick,
             isCursorGrabbing = currentIsCursorGrabbing,
-            hideLayerWhen = currentHideLayerWhen
+            hideLayerWhen = currentHideLayerWhen,
+            estadoDbr = currentEstadoDbr
         )
     }
 }
@@ -236,7 +244,8 @@ private fun ControlsRendererLayer(
     eventHandler: EventHandler,
     isUsingJoystick: Boolean,
     isCursorGrabbing: Boolean,
-    hideLayerWhen: HideLayerWhen
+    hideLayerWhen: HideLayerWhen,
+    estadoDbr: Set<EstadoDbr>?
 ) {
     Layout(
         modifier = Modifier.alpha(alpha = opacity),
@@ -248,7 +257,8 @@ private fun ControlsRendererLayer(
                     hideLayerWhen = hideLayerWhen,
                     isUsingJoystick = isUsingJoystick,
                     isCursorGrabbing = isCursorGrabbing,
-                    visibilityType = layer.visibilityType
+                    visibilityType = layer.visibilityType,
+                    estadoDbr = estadoDbr
                 )
                 val normalButtons by layer.normalButtons.collectAsStateWithLifecycle()
                 val textBoxes by layer.textBoxes.collectAsStateWithLifecycle()
@@ -275,7 +285,8 @@ private fun ControlsRendererLayer(
                         allStyles = styles,
                         screenSize = screenSize,
                         isDark = isDark,
-                        visible = layerVisibility && checkButtonVisibility(isCursorGrabbing, data),
+                        visible = (layerVisibility || mantienePulsado(data)) &&
+                                checkButtonVisibility(isCursorGrabbing, data, estadoDbr),
                         getOtherWidgets = { emptyList() }, //不需要计算吸附
                         snapThresholdValue = 4.dp,
                         eventHandler = eventHandler,
@@ -335,6 +346,7 @@ private fun collectVisibleWidgets(
     hideLayerWhen: HideLayerWhen,
     isUsingJoystick: Boolean,
     isCursorGrabbing: Boolean,
+    estadoDbr: Set<EstadoDbr>?,
 ): List<ObservableWidget> {
     return layers
         .filter { layer ->
@@ -344,6 +356,7 @@ private fun collectVisibleWidgets(
                 isUsingJoystick = isUsingJoystick,
                 isCursorGrabbing = isCursorGrabbing,
                 visibilityType = layer.visibilityType,
+                estadoDbr = estadoDbr,
             )
         }
         .flatMap { layer ->
@@ -351,7 +364,7 @@ private fun collectVisibleWidgets(
             layer.normalButtons.value.reversed()
         }
         .filter { widget ->
-            widget.canTouch() && checkButtonVisibility(isCursorGrabbing, widget)
+            widget.canTouch() && checkButtonVisibility(isCursorGrabbing, widget, estadoDbr)
         }
 }
 
@@ -362,14 +375,18 @@ private fun collectVisibleWidgets(
  * tecla y la pantalla se cierra al instante. Un conmutable pulsado solo sigue visible si lo pide
  * con `keepWhileToggled` (Acciones con X): al resto, como Agacharse, conviene soltarlo al abrir un menú.
  */
+private fun mantienePulsado(widget: ObservableWidget): Boolean =
+    widget is ObservableNormalData && widget.isPressed &&
+        (!widget.isToggleable || widget.keepWhileToggled)
+
+/** DBR: also hides by the game-state conditions; a held button stays (see [mantienePulsado]). */
 private fun checkButtonVisibility(
     isCursorGrabbing: Boolean,
-    widget: ObservableWidget
+    widget: ObservableWidget,
+    estadoDbr: Set<EstadoDbr>?
 ): Boolean {
-    if (
-        widget is ObservableNormalData && widget.isPressed &&
-        (!widget.isToggleable || widget.keepWhileToggled)
-    ) return true
+    if (mantienePulsado(widget)) return true
+    if (widget is ObservableNormalData && !condicionesDbr(estadoDbr, widget.dbrShowIf, widget.dbrHideIf)) return false
     return checkVisibility(isCursorGrabbing, widget.onCheckVisibilityType())
 }
 
@@ -378,9 +395,12 @@ private fun checkLayerVisibility(
     hideLayerWhen: HideLayerWhen,
     isUsingJoystick: Boolean,
     isCursorGrabbing: Boolean,
-    visibilityType: VisibilityType
+    visibilityType: VisibilityType,
+    estadoDbr: Set<EstadoDbr>?
 ): Boolean {
-    if (layer.hide || !checkVisibility(isCursorGrabbing, visibilityType)) {
+    if (layer.hide || !checkVisibility(isCursorGrabbing, visibilityType) ||
+        !condicionesDbr(estadoDbr, layer.dbrShowIf, layer.dbrHideIf)
+    ) {
         return false
     }
 

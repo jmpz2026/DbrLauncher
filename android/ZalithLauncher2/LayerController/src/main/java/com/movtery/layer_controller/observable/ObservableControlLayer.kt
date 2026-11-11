@@ -44,6 +44,8 @@ class ObservableControlLayer(
     var hideWhenGamepad by mutableStateOf(layer.hideWhenGamepad)
     var hideWhenJoystick by mutableStateOf(layer.hideWhenJoystick)
     var visibilityType by mutableStateOf(layer.visibilityType)
+    var dbrShowIf by mutableStateOf(layer.dbrShowIf)
+    var dbrHideIf by mutableStateOf(layer.dbrHideIf)
     
     private val _normalButtons = MutableStateFlow(layer.normalButtons.map { ObservableNormalData(it) })
     val normalButtons = _normalButtons.asStateFlow()
@@ -121,7 +123,9 @@ class ObservableControlLayer(
             hideWhenJoystick = hideWhenJoystick,
             visibilityType = visibilityType,
             normalButtons = _normalButtons.value.map { it.packNormal() },
-            textBoxes = _textBoxes.value.map { it.packText() }
+            textBoxes = _textBoxes.value.map { it.packText() },
+            dbrShowIf = dbrShowIf,
+            dbrHideIf = dbrHideIf
         )
     }
 

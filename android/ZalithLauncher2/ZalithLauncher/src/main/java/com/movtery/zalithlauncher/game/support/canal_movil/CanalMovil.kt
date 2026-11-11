@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.game.support.canal_movil
 
+import com.movtery.layer_controller.data.EstadoDbr
 import com.movtery.zalithlauncher.bridge.ZLNativeInvoker
 import com.movtery.zalithlauncher.game.support.canal_movil.Protocolo.Mensaje
 import com.movtery.zalithlauncher.utils.logging.Logger
@@ -25,6 +26,7 @@ object CanalMovil {
             Protocolo.HOLA to LimiteRitmo.Limite(capacidad = 2, porSegundo = 0.5),
             Protocolo.AREA_TEXTO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
             Protocolo.SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
+            Protocolo.ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
             Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
         )
     )
@@ -42,6 +44,13 @@ object CanalMovil {
     private val _sugerencias = MutableStateFlow(Mensaje.Sugerencias(false, emptyList(), emptyList()))
     /** Chat state for the chip row: open or not, server chips and popup suggestions. */
     val sugerencias: StateFlow<Mensaje.Sugerencias> = _sugerencias.asStateFlow()
+
+    private val _estado = MutableStateFlow<Set<EstadoDbr>?>(null)
+    /**
+     * Active game states for the context controls. Null until DbrCore reports them (not connected,
+     * old DbrCore): the layout then ignores its conditions.
+     */
+    val estado: StateFlow<Set<EstadoDbr>?> = _estado.asStateFlow()
 
     private val ritmoInsertar = LimiteRitmo(
         mapOf(Protocolo.INSERTAR to LimiteRitmo.Limite(capacidad = 5, porSegundo = 5.0))
@@ -77,6 +86,7 @@ object CanalMovil {
             is Mensaje.AreaTexto -> if (_conectado.value) _areaTexto.value = mensaje.area
             is Mensaje.AbrirUrl -> if (_conectado.value) ZLNativeInvoker.openLink(mensaje.url)
             is Mensaje.Sugerencias -> if (_conectado.value) _sugerencias.value = mensaje
+            is Mensaje.Estado -> if (_conectado.value) _estado.value = EstadoDbr.desdeBits(mensaje.bits)
         }
     }
 
@@ -85,6 +95,7 @@ object CanalMovil {
         _conectado.value = false
         _areaTexto.value = null
         _sugerencias.value = Mensaje.Sugerencias(false, emptyList(), emptyList())
+        _estado.value = null
         limite.reiniciar()
         ritmoInsertar.reiniciar()
         avisados.clear()

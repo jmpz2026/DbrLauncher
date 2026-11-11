@@ -135,4 +135,15 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_frases_cerrar">Close</string>
     <string name="dbr_frases_vacio">No phrases yet.</string>
     <string name="dbr_frases_llenas">Limit of 20 phrases reached.</string>
+    <string name="dbr_condiciones_titulo">Game conditions (Dbr)</string>
+    <string name="dbr_condiciones_ayuda">Show or hide by what is happening in the game. Only with the Dbr modpack; elsewhere they are ignored.</string>
+    <string name="dbr_condicion_nada">—</string>
+    <string name="dbr_condicion_mostrar">Show</string>
+    <string name="dbr_condicion_ocultar">Hide</string>
+    <string name="dbr_estado_cargando_ki">Charging ki</string>
+    <string name="dbr_estado_transformando">Transforming</string>
+    <string name="dbr_estado_chat">Chat open</string>
+    <string name="dbr_estado_contenedor">Inventory or chest</string>
+    <string name="dbr_estado_pantalla_dbr">Dbr screen</string>
+    <string name="dbr_estado_otra_pantalla">Pause or other screen</string>
 </resources>

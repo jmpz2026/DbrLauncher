@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_layer
 
+import com.movtery.zalithlauncher.ui.screens.main.control_editor.CondicionesDbrEditor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -152,6 +153,17 @@ fun EditControlLayerDialog(
                             selectedItem = layer.visibilityType,
                             onItemSelected = { layer.visibilityType = it },
                             getItemText = { it.getVisibilityText() }
+                        )
+
+                        // DBR: condiciones por estado del juego
+                        CondicionesDbrEditor(
+                            modifier = Modifier.fillMaxWidth(),
+                            mostrarSi = layer.dbrShowIf,
+                            ocultarSi = layer.dbrHideIf,
+                            onCambio = { m, o ->
+                                layer.dbrShowIf = m
+                                layer.dbrHideIf = o
+                            }
                         )
 
                         //默认隐藏控件层

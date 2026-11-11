@@ -124,4 +124,15 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_frases_cerrar">Cerrar</string>
     <string name="dbr_frases_vacio">Todavía no hay frases.</string>
     <string name="dbr_frases_llenas">Llegaste al límite de 20 frases.</string>
+    <string name="dbr_condiciones_titulo">Condiciones del juego (Dbr)</string>
+    <string name="dbr_condiciones_ayuda">Mostrar u ocultar según lo que pasa en el juego. Solo con el modpack Dbr; en otros casos se ignoran.</string>
+    <string name="dbr_condicion_nada">—</string>
+    <string name="dbr_condicion_mostrar">Mostrar</string>
+    <string name="dbr_condicion_ocultar">Ocultar</string>
+    <string name="dbr_estado_cargando_ki">Cargando ki</string>
+    <string name="dbr_estado_transformando">Transformándose</string>
+    <string name="dbr_estado_chat">Chat abierto</string>
+    <string name="dbr_estado_contenedor">Inventario o cofre</string>
+    <string name="dbr_estado_pantalla_dbr">Pantalla Dbr</string>
+    <string name="dbr_estado_otra_pantalla">Pausa u otra pantalla</string>
 </resources>

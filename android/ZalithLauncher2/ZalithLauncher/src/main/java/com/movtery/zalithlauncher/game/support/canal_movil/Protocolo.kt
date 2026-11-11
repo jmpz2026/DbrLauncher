@@ -20,6 +20,8 @@ object Protocolo {
     const val HOLA = 1
     const val AREA_TEXTO = 2
     const val SUGERENCIAS = 3
+    /** Game state bits for the context controls (EstadoDbr.bit), sent only when they change. */
+    const val ESTADO = 4
     const val ABRIR_URL = 9
 
     // Launcher -> game
@@ -30,7 +32,8 @@ object Protocolo {
     const val CAP_AREA_TEXTO = 1 shl 0
     const val CAP_ABRIR_URL = 1 shl 1
     const val CAP_CHIPS = 1 shl 2
-    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS
+    const val CAP_ESTADO = 1 shl 3
+    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO
 
     /** SUGERENCIAS limits: chips from the server tree and popup suggestions, each short. */
     const val MAX_CHIPS = 12
@@ -50,6 +53,8 @@ object Protocolo {
         /** area null = no text field has focus. */
         data class AreaTexto(val area: AreaNormalizada?) : Mensaje
         data class AbrirUrl(val url: String) : Mensaje
+        /** Bit mask of active game states (see EstadoDbr). */
+        data class Estado(val bits: Int) : Mensaje
         /** Chat state for the chip row. abierto false = chat closed, lists are empty. */
         data class Sugerencias(
             val abierto: Boolean,
@@ -69,6 +74,7 @@ object Protocolo {
             HOLA -> if (buf.remaining() == 4) Mensaje.Hola(buf.int) else null
             AREA_TEXTO -> leerArea(buf)
             SUGERENCIAS -> leerSugerencias(buf)
+            ESTADO -> if (buf.remaining() == 4) Mensaje.Estado(buf.int) else null
             ABRIR_URL -> leerTexto(buf)?.let { Mensaje.AbrirUrl(it) }
             else -> null
         }

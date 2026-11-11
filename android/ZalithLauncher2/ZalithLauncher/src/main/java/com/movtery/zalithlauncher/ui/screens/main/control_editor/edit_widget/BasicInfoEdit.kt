@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_widget
 
+import com.movtery.zalithlauncher.ui.screens.main.control_editor.CondicionesDbrEditor
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -108,6 +109,18 @@ fun EditWidgetInfo(
                         buttonSize = data.buttonSize,
                         onButtonSizeChanged = { data.buttonSize = it }
                     )
+                    // DBR: condiciones por estado del juego
+                    item {
+                        CondicionesDbrEditor(
+                            modifier = Modifier.fillMaxWidth(),
+                            mostrarSi = data.dbrShowIf,
+                            ocultarSi = data.dbrHideIf,
+                            onCambio = { m, o ->
+                                data.dbrShowIf = m
+                                data.dbrHideIf = o
+                            }
+                        )
+                    }
                 }
             }
         }
