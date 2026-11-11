@@ -162,6 +162,7 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_menu_aviso_bateria">Low battery warning</string>
     <string name="dbr_menu_reducido">Reduced mode (lower graphics)</string>
     <string name="dbr_menu_chips">Command chips over the keyboard</string>
+    <string name="dbr_menu_texto_sync">Keyboard edits the chat text (autocorrect, voice)</string>
     <string name="dbr_menu_toque">Wider touch zones in Dbr screens</string>
     <string name="dbr_menu_notif">Notifications while the game is in the background</string>
     <string name="dbr_notif_canal_privado">Private messages</string>

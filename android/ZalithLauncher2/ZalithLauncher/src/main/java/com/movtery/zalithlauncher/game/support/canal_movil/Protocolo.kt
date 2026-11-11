@@ -26,6 +26,8 @@ object Protocolo {
     const val VIBRAR = 5
     /** Android notification while the app is in the background: id "categoria.clave" + optional name. */
     const val NOTIFICAR = 6
+    /** Chat field text, selection and composition (TextoSincronizado). */
+    const val TEXTO_ESTADO = 7
     const val ABRIR_URL = 9
 
     // Launcher -> game
@@ -35,6 +37,8 @@ object Protocolo {
     const val REDUCIR = 103
     /** Screen geometry: cutout margins (fraction of the window per side) and size in mm. */
     const val PANTALLA = 104
+    /** Keyboard edit of the chat field: same layout as TEXTO_ESTADO, launcher seq. */
+    const val TEXTO_EDITAR = 105
 
     /** Capabilities this launcher build implements (bit flags, sent in HOLA_ACK). */
     const val CAP_AREA_TEXTO = 1 shl 0
@@ -46,8 +50,18 @@ object Protocolo {
     const val CAP_REDUCIR = 1 shl 5
     const val CAP_PANTALLA = 1 shl 6
     const val CAP_NOTIFICAR = 1 shl 7
+    /** Synced chat text (TEXTO_ESTADO / TEXTO_EDITAR). */
+    const val CAP_TEXTO = 1 shl 8
     const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or
-        CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR
+        CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR or CAP_TEXTO
+
+    /** TEXTO_*: longest text in UTF-16 units (the 1.7.10 chat limit) and in UTF-8 bytes. */
+    const val MAX_TEXTO = 100
+    const val MAX_TEXTO_BYTES = 400
+    /** TEXTO_* index meaning "no composition". */
+    const val SIN_COMPOSICION = 0xFFFF
+    const val TEXTO_ABIERTO = 1
+    private const val CABECERA_TEXTO = 14
 
     /** PANTALLA limits: no cutout takes more than a quarter of a side; window size in mm. */
     const val MAX_MARGEN = 0.25f
@@ -87,6 +101,16 @@ object Protocolo {
         /** nombre is empty when the event has no player name. */
         data class Notificar(val id: String, val nombre: String) : Mensaje
         /** Chat state for the chip row. abierto false = chat closed, lists are empty. */
+        /** Chat field state. comp* are -1 when there is no composition. */
+        data class TextoEstado(
+            val seq: Int,
+            val abierto: Boolean,
+            val selInicio: Int,
+            val selFin: Int,
+            val compInicio: Int,
+            val compFin: Int,
+            val texto: String,
+        ) : Mensaje
         data class Sugerencias(
             val abierto: Boolean,
             val chips: List<String>,
@@ -108,6 +132,7 @@ object Protocolo {
             ESTADO -> if (buf.remaining() == 4) Mensaje.Estado(buf.int) else null
             VIBRAR -> leerVibrar(buf)
             NOTIFICAR -> leerNotificar(buf)
+            TEXTO_ESTADO -> leerTextoEstado(buf)
             ABRIR_URL -> leerTexto(buf)?.let { Mensaje.AbrirUrl(it) }
             else -> null
         }
@@ -129,6 +154,59 @@ object Protocolo {
         val cAlto = alto.coerceIn(0f, 1f - cy)
         if (cAncho <= 0f || cAlto <= 0f) return null
         return Mensaje.AreaTexto(AreaNormalizada(cx, cy, cAncho, cAlto))
+    }
+
+    /**
+     * u16 seq, u8 flags, u16 selection start/end, u16 composition start/end (both [SIN_COMPOSICION]
+     * = none), u16 UTF-8 length + text. Indices are UTF-16 units inside the text, start <= end.
+     */
+    private fun leerTextoEstado(buf: ByteBuffer): Mensaje? {
+        if (buf.remaining() < CABECERA_TEXTO - 1) return null
+        val seq = buf.short.toInt() and 0xFFFF
+        val banderas = buf.get().toInt() and 0xFF
+        val selInicio = buf.short.toInt() and 0xFFFF
+        val selFin = buf.short.toInt() and 0xFFFF
+        val compInicio = buf.short.toInt() and 0xFFFF
+        val compFin = buf.short.toInt() and 0xFFFF
+        val largo = buf.short.toInt() and 0xFFFF
+        if (largo > MAX_TEXTO_BYTES || buf.remaining() != largo) return null
+        val texto = if (largo == 0) "" else leerTexto(buf) ?: return null
+        if (!textoValido(texto)) return null
+        if (selInicio > selFin || selFin > texto.length) return null
+        val sinComp = compInicio == SIN_COMPOSICION && compFin == SIN_COMPOSICION
+        if (!sinComp && (compInicio > compFin || compFin > texto.length)) return null
+        val abierto = (banderas and TEXTO_ABIERTO) != 0
+        if (!abierto && texto.isNotEmpty()) return null
+        return Mensaje.TextoEstado(
+            seq, abierto, selInicio, selFin,
+            if (sinComp || compInicio == compFin) -1 else compInicio,
+            if (sinComp || compInicio == compFin) -1 else compFin,
+            texto,
+        )
+    }
+
+    /** Chat text rule shared by both directions: short, no controls, no surrogates (emoji), no section sign. */
+    fun textoValido(texto: String): Boolean =
+        texto.length <= MAX_TEXTO && texto.none { caracterProhibido(it) }
+
+    fun caracterProhibido(c: Char): Boolean =
+        Character.isISOControl(c) || Character.isSurrogate(c) || c == '§'
+
+    /** TEXTO_EDITAR payload. Null when the state breaks the rules (the caller filters first). */
+    fun textoEditar(
+        seq: Int, selInicio: Int, selFin: Int, compInicio: Int, compFin: Int, texto: String,
+    ): ByteArray? {
+        if (!textoValido(texto)) return null
+        if (selInicio !in 0..selFin || selFin > texto.length) return null
+        val hayComp = compInicio >= 0 && compFin > compInicio && compFin <= texto.length
+        val bytes = texto.toByteArray(StandardCharsets.UTF_8)
+        if (bytes.size > MAX_TEXTO_BYTES) return null
+        return ByteBuffer.allocate(CABECERA_TEXTO + bytes.size).put(VERSION.toByte())
+            .putShort(seq.toShort()).put(TEXTO_ABIERTO.toByte())
+            .putShort(selInicio.toShort()).putShort(selFin.toShort())
+            .putShort((if (hayComp) compInicio else SIN_COMPOSICION).toShort())
+            .putShort((if (hayComp) compFin else SIN_COMPOSICION).toShort())
+            .putShort(bytes.size.toShort()).put(bytes).array()
     }
 
     /** u8 id length + ASCII id + u8 strength. */

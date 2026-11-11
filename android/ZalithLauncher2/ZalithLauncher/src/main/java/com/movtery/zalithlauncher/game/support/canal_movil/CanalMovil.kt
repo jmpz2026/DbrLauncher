@@ -29,6 +29,7 @@ object CanalMovil {
             Protocolo.ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
             Protocolo.VIBRAR to LimiteRitmo.Limite(capacidad = 8, porSegundo = 8.0),
             Protocolo.NOTIFICAR to LimiteRitmo.Limite(capacidad = 4, porSegundo = 1.0),
+            Protocolo.TEXTO_ESTADO to LimiteRitmo.Limite(capacidad = 25, porSegundo = 25.0),
             Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
         )
     )
@@ -54,9 +55,25 @@ object CanalMovil {
      */
     val estado: StateFlow<Set<EstadoDbr>?> = _estado.asStateFlow()
 
+    private val _texto = MutableStateFlow<Mensaje.TextoEstado?>(null)
+    /**
+     * Last chat field state from DbrCore (step 8, synced text). Null until the game reports it
+     * (not connected or DbrCore without CAP_TEXTO): the keyboard then works the old way.
+     */
+    val texto: StateFlow<Mensaje.TextoEstado?> = _texto.asStateFlow()
+
     /** Capabilities DbrCore announced in HOLA. */
     @Volatile
     private var capacidadesJuego = 0
+
+    /** True when the game's DbrCore takes TEXTO_EDITAR. */
+    fun juegoSoportaTexto(): Boolean = _conectado.value && (capacidadesJuego and Protocolo.CAP_TEXTO) != 0
+
+    /** Keyboard edit of the chat field (payload built by TextoSincronizado). */
+    fun enviarTexto(datos: ByteArray): Boolean {
+        if (!juegoSoportaTexto() || _texto.value?.abierto != true) return false
+        return enviar(Protocolo.TEXTO_EDITAR, datos)
+    }
 
     private val ritmoInsertar = LimiteRitmo(
         mapOf(Protocolo.INSERTAR to LimiteRitmo.Limite(capacidad = 5, porSegundo = 5.0))
@@ -122,6 +139,7 @@ object CanalMovil {
             is Mensaje.Estado -> if (_conectado.value) _estado.value = EstadoDbr.desdeBits(mensaje.bits)
             is Mensaje.Vibrar -> if (_conectado.value) VibradorDbr.reproducir(mensaje.id, mensaje.fuerza)
             is Mensaje.Notificar -> if (_conectado.value) NotificadorDbr.publicar(mensaje.id, mensaje.nombre)
+            is Mensaje.TextoEstado -> if (juegoSoportaTexto()) _texto.value = mensaje
         }
     }
 
@@ -135,6 +153,7 @@ object CanalMovil {
         _areaTexto.value = null
         _sugerencias.value = Mensaje.Sugerencias(false, emptyList(), emptyList())
         _estado.value = null
+        _texto.value = null
         limite.reiniciar()
         ritmoInsertar.reiniciar()
         avisados.clear()

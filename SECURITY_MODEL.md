@@ -17,6 +17,8 @@ Launcher Android de DBR (fork de ZalithLauncher2) con sincronización obligatori
 | `version.json` + APK | GitHub raw / releases | SHA-256 + firma de Android | `game/dbr/DbrUpdater.kt` |
 | Importar controles (activity-alias exportada) | otra app | heredado del upstream | `AndroidManifest.xml` |
 | Canal móvil `NOTIFICAR` (tipo 6, juego -> launcher) | DbrCore, que reenvía `DBRNOTIF` del servidor | largo exacto, id con regex + catálogo cerrado, nombre `[A-Za-z0-9_]{0,16}`, 4 de capacidad y 1/s | `game/support/canal_movil/{Protocolo,NotificadorDbr}.kt` |
+| Canal móvil `TEXTO_ESTADO` (tipo 7, juego -> launcher) | DbrCore, texto del chat abierto | largo exacto (u16 bytes <= 400, <= 100 caracteres UTF-16), UTF-8 estricto, sin controles, surrogates ni `§`, índices dentro del texto e inicio <= fin, chat cerrado = texto vacío, 25/s. Solo escribe el estado del teclado; nunca envía el chat | `game/support/canal_movil/{Protocolo,TextoSincronizado}.kt` |
+| Canal móvil `TEXTO_EDITAR` (tipo 105, launcher -> juego) | teclado del teléfono | lado juego: mismas reglas + `ChatAllowedCharacters`, solo con `CAP_TEXTO` y el chat abierto; Enter sigue siendo una tecla | DbrCore `core/movil/TextoMovil.java` |
 
 ## Invariantes propios
 

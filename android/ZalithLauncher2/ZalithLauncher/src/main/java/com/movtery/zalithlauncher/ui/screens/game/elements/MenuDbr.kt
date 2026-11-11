@@ -97,6 +97,7 @@ fun ControlDbr(
             )
         }
         item { interruptor(AllSettings.dbrChips, R.string.dbr_menu_chips) }
+        item { interruptor(AllSettings.dbrTextoSync, R.string.dbr_menu_texto_sync) }
         // PANTALLA carries the flag: refreshing the window size measures and sends it again.
         item { interruptor(AllSettings.dbrToqueAmpliado, R.string.dbr_menu_toque, alCambiar = onRefreshWindowSize) }
         item { interruptor(AllSettings.dbrNotif, R.string.dbr_menu_notif) }

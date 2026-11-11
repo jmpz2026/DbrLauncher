@@ -108,6 +108,7 @@ import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.base.ObserveFullScreenSetting
 import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.control.input.HidableInputLayout
+import com.movtery.zalithlauncher.ui.control.input.DbrTextInputLayout
 import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import com.movtery.zalithlauncher.ui.screens.game.elements.OpenFolderLayer
 import com.movtery.zalithlauncher.ui.screens.game.elements.OpenFolderOperation
@@ -476,7 +477,27 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                         ComposableLayout(vmViewModel.textInputMode)
                     }
 
-                    if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
+                    // DBR step 8: with a DbrCore that syncs the chat text, the keyboard edits the
+                    // real field and opens/closes with the chat (only on the chat's transitions,
+                    // so closing it by hand keeps it closed until the next chat).
+                    val textoJuego by CanalMovil.texto.collectAsStateWithLifecycle()
+                    val textoSync = AllSettings.dbrTextoSync.state
+                    val chatAbierto = textoSync && textoJuego?.abierto == true
+                    var chatAbiertoAntes by remember { mutableStateOf(false) }
+                    LaunchedEffect(chatAbierto) {
+                        if (chatAbierto != chatAbiertoAntes) {
+                            vmViewModel.textInputMode = if (chatAbierto) TextInputMode.ENABLE else TextInputMode.DISABLE
+                            chatAbiertoAntes = chatAbierto
+                        }
+                    }
+
+                    if (vmViewModel.textInputMode == TextInputMode.ENABLE && chatAbierto) {
+                        DbrTextInputLayout(
+                            onClose = {
+                                vmViewModel.textInputMode = TextInputMode.DISABLE
+                            }
+                        )
+                    } else if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
                         //输入栏控制区域
                         HidableInputLayout(
                             onSend = { text ->

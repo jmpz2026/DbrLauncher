@@ -107,6 +107,12 @@ object AllSettings : SettingsRegistry() {
     /** DBR: chip row over the keyboard while the chat is open. */
     val dbrChips = boolSetting("dbrChips", true)
 
+    /**
+     * DBR: the keyboard edits the real chat text (autocorrect, voice, cursor, paste) and opens
+     * and closes with the chat. Needs a DbrCore with CAP_TEXTO; otherwise the old way.
+     */
+    val dbrTextoSync = boolSetting("dbrTextoSync", true)
+
     /** DBR: wider touch zones in Dbr screens (sent to DbrCore inside PANTALLA). */
     val dbrToqueAmpliado = boolSetting("dbrToqueAmpliado", true)
 

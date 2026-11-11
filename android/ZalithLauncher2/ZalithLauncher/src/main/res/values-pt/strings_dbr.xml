@@ -151,6 +151,7 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_menu_aviso_bateria">Aviso de bateria fraca</string>
     <string name="dbr_menu_reducido">Modo reduzido (gráficos mais baixos)</string>
     <string name="dbr_menu_chips">Chips de comandos sobre o teclado</string>
+    <string name="dbr_menu_texto_sync">Teclado completo no chat (corretor, voz)</string>
     <string name="dbr_menu_toque">Área de toque ampliada nas telas Dbr</string>
     <string name="dbr_menu_notif">Notificações com o jogo em segundo plano</string>
     <string name="dbr_notif_canal_privado">Mensagens privadas</string>
