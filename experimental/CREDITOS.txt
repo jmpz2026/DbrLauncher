@@ -53,3 +53,19 @@ launcher del servidor con permiso de KAMKEEL (otorgado el 2026-10-05), con
 la condicion de dar credito y de no publicar esta version en sitios de mods
 como CurseForge o Modrinth. Todos los derechos de la obra original
 pertenecen a sus autores.
+
+-----------------------------------------------------------------------------
+5. Jamepad 2.30.0.0  (dentro de DbrOfficialMod.jar, sin modificar)
+-----------------------------------------------------------------------------
+Mando en PC (Windows y Linux). Va empaquetado dentro de DbrOfficialMod tal
+como sale de Maven Central (com.badlogicgames.jamepad:jamepad:2.30.0.0).
+Autores: libGDX (fork) y William Hartman (Jamepad original).
+Licencia: Apache License 2.0 (LICENCIAS/Apache-2.0.txt); el Jamepad original,
+  Copyright (C) 2016 William Hartman, licencia zlib (LICENCIAS/Zlib-Jamepad.txt).
+Codigo fuente: https://github.com/libgdx/Jamepad/tree/2.30.0.0
+Incluye SDL 2.30.0 compilado dentro de sus bibliotecas nativas:
+  Copyright (C) 1997-2024 Sam Lantinga, licencia zlib (LICENCIAS/Zlib-SDL2.txt).
+  Codigo fuente: https://github.com/libsdl-org/SDL/tree/release-2.30.0
+Incluye gdx-jnigen-loader 2.2.0 (com.badlogicgames.gdx, sin modificar),
+  de libGDX, Apache License 2.0 (LICENCIAS/Apache-2.0.txt).
+  Codigo fuente: https://github.com/libgdx/gdx-jnigen/tree/2.2.0
