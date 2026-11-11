@@ -587,6 +587,12 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: commit y push de 8p, 8c y 8b en todos los repos. Desplegado: DbrServerPack-5.8.0.jar (14:23) y los plugins Core, Arena, TPersonal, Batallas, Staff y Talentos en TESTEO (backups .bak-20261111-mando; TESTEO estaba apagado, no se reinicio) y el pack en DBR-ASSETS experimental (989f3db). Capturas de /dbrmando en 3 idiomas en curso para la critica.
 
+- 2026-11-11: critica de capturas de /dbrmando (3 idiomas): 5,5/10. P0 pestaña prueba cortada (mando de 120 px no cabe, mando fantasma sin mando). P1: rail con 7 iconos iguales; nombres de keybind sin traducir (Turbo Mode, Form Wheel); cabecera de grupo "Dbr" en elegir sin separador. P2: panel botones bajo, iconos/gatillos vacios, glifos sin color, vibracion corta fila. Avisos de fuente (Í, ãõ) = falso positivo. Pendiente: arreglos con OK del usuario.
+
+- 2026-11-11: arreglados P0/P1 de la critica: prueba sin mando = estado vacio con CTA y mando en 2 filas (~65 px); rail con icono por pestaña (hook `SettingsScreen.iconoPestana`); 14 teclas JRMCore/DBC traducidas (`dbrcore.mando.tecla.*`, `NombreAccion.claveTecla`); cabecera "Acciones Dbr" con divisor. Verificado con capturas en 3 idiomas. Sin commit. Quedan los P2.
+
+- 2026-11-11: P2 de la critica: sin franja de ayuda en pestañas propias, vista previa de estilos de iconos y de umbral/combos en gatillos, color en A/B/X/Y (Xbox/PS). Commit d43a51a6, pack desplegado en TESTEO (.bak-20261111-mando2) y experimental (509594b). La fila cortada de Vibracion queda: es el scroll general de SettingsScreen.
+
 ## Siguiente paso
 
-8d/8e: cerrados y subidos. 8p y 8c: subidos y desplegados (TESTEO + experimental); falta dbr-test (PvP en spawn/WorldGuard, arena, sala; lock-on, cambiar, rechazos, aviso al fijado, DbrAntiCheat) y prueba en telefono. En curso aqui: 8b (mando): codigo de 8b completo, subido y desplegado; falta critica de capturas de /dbrmando y probar en PC y telefono. Lote L31-mando: vuelta 1 importada, retoque pedido (`L31-retoque-prompt.md`). Despues 9 (docs), 10 (release).
+Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
