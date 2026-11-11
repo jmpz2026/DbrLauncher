@@ -78,6 +78,24 @@ object CanalMovil {
         return enviar(Protocolo.REDUCIR, Protocolo.reducir(activo))
     }
 
+    /** Last PANTALLA payload; resent when the game (re)connects. */
+    @Volatile
+    private var pantalla: ByteArray? = null
+
+    /** Screen geometry from VMActivity (every window resize). Sent now if the game is connected. */
+    fun actualizarPantalla(datos: ByteArray?) {
+        datos ?: return
+        if (pantalla?.contentEquals(datos) == true) return
+        pantalla = datos
+        enviarPantalla()
+    }
+
+    private fun enviarPantalla() {
+        val datos = pantalla ?: return
+        if (!_conectado.value || (capacidadesJuego and Protocolo.CAP_PANTALLA) == 0) return
+        enviar(Protocolo.PANTALLA, datos)
+    }
+
     fun recibir(tipo: Int, datos: ByteArray?) {
         if (!limite.permitir(tipo)) {
             avisarUnaVez("ritmo-$tipo", "message type $tipo dropped (unknown type or rate limit)")
@@ -95,6 +113,7 @@ object CanalMovil {
                 Logger.info(TAG, "game connected, capabilities 0x${Integer.toHexString(mensaje.capacidades)}")
                 enviar(Protocolo.HOLA_ACK, Protocolo.holaAck())
                 if (AvisosSistema.reducido.value) enviarReducir(true)
+                enviarPantalla()
             }
             is Mensaje.AreaTexto -> if (_conectado.value) _areaTexto.value = mensaje.area
             is Mensaje.AbrirUrl -> if (_conectado.value) ZLNativeInvoker.openLink(mensaje.url)

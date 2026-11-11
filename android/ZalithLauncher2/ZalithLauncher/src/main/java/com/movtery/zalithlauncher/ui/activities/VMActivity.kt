@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.os.Bundle
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -52,6 +53,7 @@ import androidx.compose.ui.platform.LocalView
 import android.view.ViewTreeObserver
 import android.graphics.Rect as AndroidRect
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
+import com.movtery.zalithlauncher.game.support.canal_movil.Protocolo
 import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
 import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
 import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
@@ -581,8 +583,34 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         applySizeToSurface?.invoke(windowWidth, windowHeight)
         ZLBridgeStates.onWindowChange()
         CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight)
+        CanalMovil.actualizarPantalla(medirPantallaDbr(screenSize))
 
         return IntSize(windowWidth, windowHeight)
+    }
+
+    /**
+     * Dbr: cutout margins as a fraction of the game view and the view size in mm, for DbrCore
+     * (PANTALLA). The game view fills the window, so window insets are view insets.
+     */
+    private fun medirPantallaDbr(screenSize: IntSize): ByteArray? {
+        if (screenSize.width <= 0 || screenSize.height <= 0) return null
+        val metrics = resources.displayMetrics
+        val dpi = (metrics.xdpi + metrics.ydpi) / 2f
+        if (dpi <= 0f) return null
+        var izq = 0f
+        var arr = 0f
+        var der = 0f
+        var aba = 0f
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.decorView.rootWindowInsets?.displayCutout?.let { c ->
+                izq = c.safeInsetLeft.toFloat() / screenSize.width
+                arr = c.safeInsetTop.toFloat() / screenSize.height
+                der = c.safeInsetRight.toFloat() / screenSize.width
+                aba = c.safeInsetBottom.toFloat() / screenSize.height
+            }
+        }
+        val mm = 25.4f / dpi
+        return Protocolo.pantalla(izq, arr, der, aba, screenSize.width * mm, screenSize.height * mm)
     }
 
     override fun onDestroy() {

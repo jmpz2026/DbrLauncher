@@ -31,6 +31,8 @@ object Protocolo {
     const val INSERTAR = 102
     /** Reduced mode on/off after the heat warning (AvisosSistema): u8 0 or 1. */
     const val REDUCIR = 103
+    /** Screen geometry: cutout margins (fraction of the window per side) and size in mm. */
+    const val PANTALLA = 104
 
     /** Capabilities this launcher build implements (bit flags, sent in HOLA_ACK). */
     const val CAP_AREA_TEXTO = 1 shl 0
@@ -40,7 +42,14 @@ object Protocolo {
     const val CAP_VIBRAR = 1 shl 4
     /** Game side: DbrCore applies REDUCIR. Launcher side: it may send it. */
     const val CAP_REDUCIR = 1 shl 5
-    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or CAP_REDUCIR
+    const val CAP_PANTALLA = 1 shl 6
+    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or
+        CAP_REDUCIR or CAP_PANTALLA
+
+    /** PANTALLA limits: no cutout takes more than a quarter of a side; window size in mm. */
+    const val MAX_MARGEN = 0.25f
+    const val MIN_MM = 20f
+    const val MAX_MM = 400f
 
     /** VIBRAR id: lowercase ASCII "categoria.nombre", at most this many bytes. */
     const val MAX_ID_VIBRAR = 32
@@ -172,6 +181,19 @@ object Protocolo {
     }
 
     fun reducir(activo: Boolean): ByteArray = byteArrayOf(VERSION.toByte(), if (activo) 1 else 0)
+
+    /**
+     * Version + 6 floats: left, top, right, bottom margins (0..[MAX_MARGEN] of the window) and
+     * window width and height in mm. Null when the size in mm is not plausible.
+     */
+    fun pantalla(izq: Float, arr: Float, der: Float, aba: Float, anchoMm: Float, altoMm: Float): ByteArray? {
+        if (!anchoMm.isFinite() || !altoMm.isFinite()) return null
+        if (anchoMm !in MIN_MM..MAX_MM || altoMm !in MIN_MM..MAX_MM) return null
+        fun m(v: Float) = if (v.isFinite()) v.coerceIn(0f, MAX_MARGEN) else 0f
+        return ByteBuffer.allocate(25).put(VERSION.toByte())
+            .putFloat(m(izq)).putFloat(m(arr)).putFloat(m(der)).putFloat(m(aba))
+            .putFloat(anchoMm).putFloat(altoMm).array()
+    }
 
     fun holaAck(): ByteArray =
         ByteBuffer.allocate(5).put(VERSION.toByte()).putInt(CAPACIDADES).array()
