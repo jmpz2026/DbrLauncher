@@ -593,6 +593,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: P2 de la critica: sin franja de ayuda en pestañas propias, vista previa de estilos de iconos y de umbral/combos en gatillos, color en A/B/X/Y (Xbox/PS). Commit d43a51a6, pack desplegado en TESTEO (.bak-20261111-mando2) y experimental (509594b). La fila cortada de Vibracion queda: es el scroll general de SettingsScreen.
 
+- 2026-11-11: vista previa de iconos ajustada al alto (4 filas siempre). Commit 6a047aae, pack en TESTEO y experimental. Verificado con capturas es_ES/pt_BR.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
