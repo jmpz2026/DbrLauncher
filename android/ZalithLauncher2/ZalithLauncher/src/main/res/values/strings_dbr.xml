@@ -127,4 +127,12 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_link_verified">Verified site</string>
     <string name="dbr_link_unverified">Unverified site. Only open it if you trust it.</string>
     <string name="dbr_link_open">Open</string>
+    <string name="dbr_frases_titulo">Quick phrases</string>
+    <string name="dbr_frases_ayuda">Tapping a phrase only writes it in the chat. It is never sent on its own.</string>
+    <string name="dbr_frases_nueva">New phrase</string>
+    <string name="dbr_frases_agregar">Add</string>
+    <string name="dbr_frases_guardar">Save</string>
+    <string name="dbr_frases_cerrar">Close</string>
+    <string name="dbr_frases_vacio">No phrases yet.</string>
+    <string name="dbr_frases_llenas">Limit of 20 phrases reached.</string>
 </resources>

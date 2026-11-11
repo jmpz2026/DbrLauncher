@@ -19,15 +19,28 @@ object Protocolo {
     // Game -> launcher
     const val HOLA = 1
     const val AREA_TEXTO = 2
+    const val SUGERENCIAS = 3
     const val ABRIR_URL = 9
 
     // Launcher -> game
     const val HOLA_ACK = 101
+    const val INSERTAR = 102
 
     /** Capabilities this launcher build implements (bit flags, sent in HOLA_ACK). */
     const val CAP_AREA_TEXTO = 1 shl 0
     const val CAP_ABRIR_URL = 1 shl 1
-    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL
+    const val CAP_CHIPS = 1 shl 2
+    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS
+
+    /** SUGERENCIAS limits: chips from the server tree and popup suggestions, each short. */
+    const val MAX_CHIPS = 12
+    const val MAX_SUGERENCIAS = 10
+    const val MAX_ITEM_BYTES = 32
+
+    /** INSERTAR: longest text, in characters (the chat line limit of 1.7.10). */
+    const val MAX_INSERTAR = 100
+    const val MODO_ESCRIBIR = 0
+    const val MODO_SUGERENCIA = 1
 
     /** Longest URL accepted, in UTF-8 bytes (the payload limit minus the version byte). */
     const val MAX_URL_BYTES = MAX_PAYLOAD - 1
@@ -37,6 +50,12 @@ object Protocolo {
         /** area null = no text field has focus. */
         data class AreaTexto(val area: AreaNormalizada?) : Mensaje
         data class AbrirUrl(val url: String) : Mensaje
+        /** Chat state for the chip row. abierto false = chat closed, lists are empty. */
+        data class Sugerencias(
+            val abierto: Boolean,
+            val chips: List<String>,
+            val sugerencias: List<String>,
+        ) : Mensaje
     }
 
     /** Rectangle in 0..1 of the game window, origin at the top left. */
@@ -49,6 +68,7 @@ object Protocolo {
         return when (tipo) {
             HOLA -> if (buf.remaining() == 4) Mensaje.Hola(buf.int) else null
             AREA_TEXTO -> leerArea(buf)
+            SUGERENCIAS -> leerSugerencias(buf)
             ABRIR_URL -> leerTexto(buf)?.let { Mensaje.AbrirUrl(it) }
             else -> null
         }
@@ -72,6 +92,37 @@ object Protocolo {
         return Mensaje.AreaTexto(AreaNormalizada(cx, cy, cAncho, cAlto))
     }
 
+    private fun leerSugerencias(buf: ByteBuffer): Mensaje? {
+        if (!buf.hasRemaining()) return null
+        when (buf.get().toInt()) {
+            0 -> return if (buf.hasRemaining()) null else Mensaje.Sugerencias(false, emptyList(), emptyList())
+            1 -> Unit
+            else -> return null
+        }
+        val chips = leerLista(buf, MAX_CHIPS) ?: return null
+        val sugerencias = leerLista(buf, MAX_SUGERENCIAS) ?: return null
+        if (buf.hasRemaining()) return null
+        return Mensaje.Sugerencias(true, chips, sugerencias)
+    }
+
+    /** u8 count, then per item: u8 length + UTF-8 bytes. Null on any violation. */
+    private fun leerLista(buf: ByteBuffer, max: Int): List<String>? {
+        if (!buf.hasRemaining()) return null
+        val n = buf.get().toInt() and 0xFF
+        if (n > max) return null
+        val lista = ArrayList<String>(n)
+        repeat(n) {
+            if (!buf.hasRemaining()) return null
+            val largo = buf.get().toInt() and 0xFF
+            if (largo == 0 || largo > MAX_ITEM_BYTES || buf.remaining() < largo) return null
+            val parte = buf.slice()
+            parte.limit(largo)
+            buf.position(buf.position() + largo)
+            lista.add(leerTexto(parte) ?: return null)
+        }
+        return lista
+    }
+
     /** Strict UTF-8 without control characters. */
     private fun leerTexto(buf: ByteBuffer): String? {
         if (!buf.hasRemaining()) return null
@@ -89,4 +140,16 @@ object Protocolo {
 
     fun holaAck(): ByteArray =
         ByteBuffer.allocate(5).put(VERSION.toByte()).putInt(CAPACIDADES).array()
+
+    /**
+     * Text for the chat field. The game only writes it, it never sends the chat. Null when the
+     * text is empty, too long or has control characters.
+     */
+    fun insertar(modo: Int, texto: String): ByteArray? {
+        if (modo != MODO_ESCRIBIR && modo != MODO_SUGERENCIA) return null
+        if (texto.isEmpty() || texto.length > MAX_INSERTAR) return null
+        if (texto.any { Character.isISOControl(it) || Character.isSurrogate(it) }) return null
+        val bytes = texto.toByteArray(StandardCharsets.UTF_8)
+        return ByteBuffer.allocate(2 + bytes.size).put(VERSION.toByte()).put(modo.toByte()).put(bytes).array()
+    }
 }

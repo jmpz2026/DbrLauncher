@@ -124,4 +124,51 @@ class CanalMovilTest {
         assertFalse(UrlSegura.validar("https://discord.gg.evil.com/x")!!.confiable)
         assertFalse(UrlSegura.validar("https://evildiscord.gg/x")!!.confiable)
     }
+
+    private fun sugerencias(chips: List<String>, sug: List<String>): ByteArray {
+        val b = java.io.ByteArrayOutputStream()
+        b.write(1); b.write(1)
+        for (lista in listOf(chips, sug)) {
+            b.write(lista.size)
+            lista.forEach { val u = it.toByteArray(Charsets.UTF_8); b.write(u.size); b.write(u) }
+        }
+        return b.toByteArray()
+    }
+
+    @Test
+    fun sugerenciasValidas() {
+        val m = Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(listOf("/spawn", "/home"), listOf("/homes")))
+        assertEquals(Mensaje.Sugerencias(true, listOf("/spawn", "/home"), listOf("/homes")), m)
+        assertEquals(
+            Mensaje.Sugerencias(false, emptyList(), emptyList()),
+            Protocolo.leer(Protocolo.SUGERENCIAS, byteArrayOf(1, 0)),
+        )
+    }
+
+    @Test
+    fun sugerenciasMalasSeDescartan() {
+        // Too many chips, item too long, empty item, control char, trailing bytes, cut short.
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(List(13) { "/a" }, emptyList())))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(listOf("x".repeat(33)), emptyList())))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(listOf(""), emptyList())))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(listOf("/a\n"), emptyList())))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, sugerencias(emptyList(), emptyList()) + 0))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, byteArrayOf(1, 1, 1, 5, 0x41)))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, byteArrayOf(1, 0, 0)))
+        assertNull(Protocolo.leer(Protocolo.SUGERENCIAS, byteArrayOf(1, 2)))
+    }
+
+    @Test
+    fun insertarValidaTexto() {
+        val d = Protocolo.insertar(Protocolo.MODO_ESCRIBIR, "/spawn ")!!
+        assertEquals(1, d[0].toInt())
+        assertEquals(0, d[1].toInt())
+        assertEquals("/spawn ", String(d, 2, d.size - 2, Charsets.UTF_8))
+        assertNull(Protocolo.insertar(Protocolo.MODO_ESCRIBIR, ""))
+        assertNull(Protocolo.insertar(Protocolo.MODO_ESCRIBIR, "x".repeat(101)))
+        assertNull(Protocolo.insertar(Protocolo.MODO_ESCRIBIR, "hola\n/op yo"))
+        assertNull(Protocolo.insertar(Protocolo.MODO_ESCRIBIR, "hola \uD83D\uDE00"))
+        assertNull(Protocolo.insertar(7, "hola"))
+        assertNotNull(Protocolo.insertar(Protocolo.MODO_SUGERENCIA, "ñandú"))
+    }
 }

@@ -52,6 +52,10 @@ import androidx.compose.ui.platform.LocalView
 import android.view.ViewTreeObserver
 import android.graphics.Rect as AndroidRect
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
+import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
+import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -702,6 +706,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         val imeInsets = WindowInsets.ime
         val inputArea by withHandler { inputArea }.collectAsStateWithLifecycle()
         val canalArea by CanalMovil.areaTexto.collectAsStateWithLifecycle()
+        val chatDbr by CanalMovil.sugerencias.collectAsStateWithLifecycle()
 
         // Dbr: in fullscreen (legacy immersive flags) Android may not report the IME inset
         // to Compose. Measure the keyboard from the visible window frame as a fallback.
@@ -719,6 +724,9 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             rootView.viewTreeObserver.addOnGlobalLayoutListener(listener)
             onDispose { rootView.viewTreeObserver.removeOnGlobalLayoutListener(listener) }
         }
+        // Dbr: chip row only with the chat open (DbrCore says so) and the keyboard up.
+        val imeVisible = imeInsets.getBottom(LocalDensity.current) > 0 || frameImeHeight > 0
+        val mostrarChips = chatDbr.abierto && imeVisible
 
         BoxWithConstraints(
             modifier = Modifier
@@ -750,7 +758,9 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                             ?: canalArea?.let { ((it.y + it.alto) * screenSize.height).toInt() }
                             ?: screenSize.height
                         val bottomDistance = screenSize.height - areaBottom
-                        val bottomPadding = (imeHeight - bottomDistance).coerceAtLeast(0)
+                        // Dbr: the chip row sits on top of the keyboard, lift the field above it too.
+                        val chipsPx = if (mostrarChips) ALTO_FILA_CHIPS.roundToPx() else 0
+                        val bottomPadding = (imeHeight + chipsPx - bottomDistance).coerceAtLeast(0)
                         IntOffset(0, -bottomPadding)
                     },
                 factory = { context ->
@@ -779,6 +789,17 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             )
 
             content()
+
+            if (mostrarChips) {
+                FilaChipsDbr(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .absoluteOffset {
+                            val imeHeight = maxOf(imeInsets.getBottom(this@absoluteOffset), frameImeHeight)
+                            IntOffset(0, -imeHeight)
+                        }
+                )
+            }
         }
     }
 }

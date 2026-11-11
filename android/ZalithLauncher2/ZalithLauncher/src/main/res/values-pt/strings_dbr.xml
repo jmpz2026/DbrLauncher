@@ -116,4 +116,12 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_link_verified">Site verificado</string>
     <string name="dbr_link_unverified">Site não verificado. Abra só se confiar nele.</string>
     <string name="dbr_link_open">Abrir</string>
+    <string name="dbr_frases_titulo">Frases rápidas</string>
+    <string name="dbr_frases_ayuda">Tocar uma frase só a escreve no chat. Ela nunca é enviada sozinha.</string>
+    <string name="dbr_frases_nueva">Nova frase</string>
+    <string name="dbr_frases_agregar">Adicionar</string>
+    <string name="dbr_frases_guardar">Salvar</string>
+    <string name="dbr_frases_cerrar">Fechar</string>
+    <string name="dbr_frases_vacio">Ainda não há frases.</string>
+    <string name="dbr_frases_llenas">Você chegou ao limite de 20 frases.</string>
 </resources>

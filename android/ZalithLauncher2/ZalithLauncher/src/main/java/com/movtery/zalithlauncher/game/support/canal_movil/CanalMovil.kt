@@ -24,6 +24,7 @@ object CanalMovil {
         mapOf(
             Protocolo.HOLA to LimiteRitmo.Limite(capacidad = 2, porSegundo = 0.5),
             Protocolo.AREA_TEXTO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
+            Protocolo.SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
             Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
         )
     )
@@ -37,6 +38,25 @@ object CanalMovil {
     private val _areaTexto = MutableStateFlow<Protocolo.AreaNormalizada?>(null)
     /** Focused text field reported by DbrCore, in 0..1 of the game window. Null = none. */
     val areaTexto: StateFlow<Protocolo.AreaNormalizada?> = _areaTexto.asStateFlow()
+
+    private val _sugerencias = MutableStateFlow(Mensaje.Sugerencias(false, emptyList(), emptyList()))
+    /** Chat state for the chip row: open or not, server chips and popup suggestions. */
+    val sugerencias: StateFlow<Mensaje.Sugerencias> = _sugerencias.asStateFlow()
+
+    private val ritmoInsertar = LimiteRitmo(
+        mapOf(Protocolo.INSERTAR to LimiteRitmo.Limite(capacidad = 5, porSegundo = 5.0))
+    )
+
+    /**
+     * Writes [texto] into the game's chat field (a chip or phrase tap). The game never sends it.
+     * False when the game is not connected, the text is invalid or taps come too fast.
+     */
+    fun insertar(modo: Int, texto: String): Boolean {
+        if (!_conectado.value || !_sugerencias.value.abierto) return false
+        val datos = Protocolo.insertar(modo, texto) ?: return false
+        if (!ritmoInsertar.permitir(Protocolo.INSERTAR)) return false
+        return enviar(Protocolo.INSERTAR, datos)
+    }
 
     fun recibir(tipo: Int, datos: ByteArray?) {
         if (!limite.permitir(tipo)) {
@@ -56,6 +76,7 @@ object CanalMovil {
             }
             is Mensaje.AreaTexto -> if (_conectado.value) _areaTexto.value = mensaje.area
             is Mensaje.AbrirUrl -> if (_conectado.value) ZLNativeInvoker.openLink(mensaje.url)
+            is Mensaje.Sugerencias -> if (_conectado.value) _sugerencias.value = mensaje
         }
     }
 
@@ -63,16 +84,20 @@ object CanalMovil {
     fun reiniciar() {
         _conectado.value = false
         _areaTexto.value = null
+        _sugerencias.value = Mensaje.Sugerencias(false, emptyList(), emptyList())
         limite.reiniciar()
+        ritmoInsertar.reiniciar()
         avisados.clear()
     }
 
-    private fun enviar(tipo: Int, datos: ByteArray) {
-        if (datos.size > Protocolo.MAX_PAYLOAD) return
-        try {
+    private fun enviar(tipo: Int, datos: ByteArray): Boolean {
+        if (datos.size > Protocolo.MAX_PAYLOAD) return false
+        return try {
             CallbackBridge.nativeDbrPush(tipo, datos)
+            true
         } catch (e: UnsatisfiedLinkError) {
             avisarUnaVez("push", "native push not available: ${e.message}")
+            false
         }
     }
 

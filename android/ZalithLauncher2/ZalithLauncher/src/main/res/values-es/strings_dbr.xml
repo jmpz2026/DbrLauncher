@@ -116,4 +116,12 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_link_verified">Sitio verificado</string>
     <string name="dbr_link_unverified">Sitio no verificado. Ábrelo solo si confías en él.</string>
     <string name="dbr_link_open">Abrir</string>
+    <string name="dbr_frases_titulo">Frases rápidas</string>
+    <string name="dbr_frases_ayuda">Tocar una frase solo la escribe en el chat. Nunca se envía sola.</string>
+    <string name="dbr_frases_nueva">Frase nueva</string>
+    <string name="dbr_frases_agregar">Agregar</string>
+    <string name="dbr_frases_guardar">Guardar</string>
+    <string name="dbr_frases_cerrar">Cerrar</string>
+    <string name="dbr_frases_vacio">Todavía no hay frases.</string>
+    <string name="dbr_frases_llenas">Llegaste al límite de 20 frases.</string>
 </resources>
