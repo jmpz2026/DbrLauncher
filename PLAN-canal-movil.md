@@ -595,6 +595,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: vista previa de iconos ajustada al alto (4 filas siempre). Commit 6a047aae, pack en TESTEO y experimental. Verificado con capturas es_ES/pt_BR.
 
+- 2026-11-11: prueba en PC con mando, fallos y arreglo (3d17816e, experimental 526c865, TESTEO): tecnicas por JRMCoreH.EnAtSlct (no barra; DBC exige mano vacia); teclas virtuales como fisicas (Keyboard.keyDownBuffer) + KeyInputEvent propio (rueda de formas npcdbc); lo abierto desde la radial queda apretado hasta A/B; raton suelto = stick derecho mueve cursor (menu de acciones JRMCore); camara F5 directa; LB+abajo destransforma, ficha a LB+derecha (Perfil.VERSION 2, migracion); LB/RB cambian pestaña en UiScreen. Teclado en pantalla OK. Falta reprobar.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
