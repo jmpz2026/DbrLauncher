@@ -132,3 +132,27 @@ Cada punto se propone con detalle y espera el OK antes de tocar código.
 
 ## Bitácora (alcance)
 - 2026-11-11: alcance recortado por el usuario. Quedan A9/B8 (en DbrServerPack, solo en Android), A4 y B4.
+
+## Propuesta A9/B8 (2026-11-11, pendiente del OK)
+Investigación:
+- DiscordRPC es código propio: `DbrMod/.../client/discord/DiscordPresence.java`, arrancado en `ClientProxy` (`DiscordPresence.start()`).
+- El launcher ya pasa `-Ddbr.movil.canal=1` (`LaunchArgs.kt:221`), pero solo con LWJGL 2. ZL2 pone siempre las variables `POJAV_NATIVEDIR` y `POJAV_RENDERER`.
+- `Main menu mob rendering encountered a serious error` sale de bspkrsCore (`showMainMenuMobs=true`). `GuiDbrMainMenu` hereda de `GuiMainMenu` a propósito para que bspkrsCore haga el warm-up que deja ver las skins de raza con OptiFine. Apagarlo puede romper esas skins.
+- `disableVersionCheck=false` en `config/forge.cfg`, `lite/` y `experimental/` de DBR-ASSETS.
+
+Cambios propuestos:
+1. DbrCore: clase `dbr.machitos.core.movil.Plataforma` con `esAndroid()` (cacheado). Señales, en orden: `dbr.movil.canal=1`; variable `POJAV_NATIVEDIR`; `os.name` Linux y existe `/system/build.prop`. Test unitario de la lógica de decisión.
+2. DbrMod: `DiscordPresence.start()` sale al principio si `Plataforma.esAndroid()`, con una línea de log.
+3. forge.cfg: poner `disableVersionCheck=true`. Solo se puede por config, así que afecta también a PC (el check de Forge 1.7.10 no aporta nada). Necesita decisión del usuario.
+4. Mob del menú: no tocar, por el warm-up de skins.
+
+## Bitácora (A9/B8)
+- 2026-11-11: el usuario aprueba todo, incluido `disableVersionCheck=true` en PC.
+- 2026-11-11: DbrServerPack `8c90f9fb` (`Plataforma.esAndroid()` + DiscordRPC apagado en Android; tests y `compileJava` OK). DBR-ASSETS `23565f6` (3 `forge.cfg` + sha1/size en los 3 manifests). Sin push.
+
+- 2026-11-11: push de DbrServerPack (`main` hasta `8c90f9fb`, incluye `c3d51c12`) y DBR-ASSETS (`23565f6`, `25123a8`: jar de experimental compilado en worktree limpio `C:\dev\dsp-a9`, porque la carpeta normal tenía cambios sin commit de otra sesión). Mirror R2 OK.
+- 2026-11-11: el APK debug pedía actualizar. `DbrUpdater.check()` devuelve null en debug (el paquete `.debug` no se actualiza con el APK de release). APK reinstalado por adb.
+- 2026-11-11: verificado en el Honor: jar `dbe4dc4d`, `disableVersionCheck=true`, `latest.log` con `[DiscordRPC] Android: Rich Presence desactivado.` y sin version check. Sigue `Main menu mob rendering ...` (bspkrsCore, se deja a propósito).
+
+## Siguiente paso
+- Proponer A4 (launcher) y esperar el OK.

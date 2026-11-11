@@ -43,8 +43,12 @@ object DbrUpdater {
         val sha256: String = ""
     )
 
-    /** Devuelve la info si hay una versión más nueva; null si está al día o falla. */
+    /**
+     * Devuelve la info si hay una versión más nueva; null si está al día o falla.
+     * En debug siempre null: el paquete `.debug` no se puede actualizar con el APK de release.
+     */
     suspend fun check(): UpdateInfo? = withContext(Dispatchers.IO) {
+        if (BuildConfig.DEBUG) return@withContext null
         runCatching {
             val conn = URL(VERSION_URL).openConnection()
             conn.connectTimeout = 10_000
