@@ -440,8 +440,8 @@
     },
     {
       "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "3f7f7ab6412600de50592007ba225c84e47f3a0a",
-      "size": 38007061,
+      "sha1": "9ac61b31c30d6b14ad6a3436097f829bffc4fea5",
+      "size": 38045477,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.8.0.jar"
     },
     {
@@ -560,5 +560,9 @@
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/android/options.txt"
     }
+  ],
+  "mirrors": [
+    "https://dbr-assets.dbrlauncher.workers.dev/f/",
+    "https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/"
   ]
 }
