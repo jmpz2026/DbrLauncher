@@ -16,12 +16,17 @@ Launcher Android de DBR (fork de ZalithLauncher2) con sincronización obligatori
 | Archivos del modpack | Mirror R2 / release `assets-files` / GitHub raw | SHA-1 del manifest + `safeJoin` | `game/dbr/DbrSync.kt` |
 | `version.json` + APK | GitHub raw / releases | SHA-256 + firma de Android | `game/dbr/DbrUpdater.kt` |
 | Importar controles (activity-alias exportada) | otra app | heredado del upstream | `AndroidManifest.xml` |
+| Canal móvil `NOTIFICAR` (tipo 6, juego -> launcher) | DbrCore, que reenvía `DBRNOTIF` del servidor | largo exacto, id con regex + catálogo cerrado, nombre `[A-Za-z0-9_]{0,16}`, 4 de capacidad y 1/s | `game/support/canal_movil/{Protocolo,NotificadorDbr}.kt` |
 
 ## Invariantes propios
 
 - **INV-1** — Nada que diga el manifiesto escribe o borra fuera de la carpeta del juego.
 - **INV-2** — Un archivo bajado solo se usa si su SHA-1 coincide con el del manifiesto.
 - **INV-3** — El APK publicado va firmado con la clave de DBR.
+- **INV-4** — Una notificación del juego nunca muestra texto que venga del canal salvo un nombre de
+  jugador validado; el resto sale de los strings del launcher. En la pantalla de bloqueo va la
+  versión sin nombre (`VISIBILITY_PRIVATE` + `publicVersion`). Tocarla abre la app con el intent
+  del ícono, nunca un intent armado con datos del canal.
 
 ## Datos y secretos
 
