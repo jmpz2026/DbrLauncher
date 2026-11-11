@@ -202,6 +202,27 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: 8a y 8b escritos en el launcher, sin compilar ni commit (pausa: otra sesion usa el worktree para el diagnostico de arranque). Cambio de formato: el largo del texto de `TEXTO_*` va en u16 (100 caracteres UTF-8 pueden pasar de 255 B). `seq` de `TEXTO_ESTADO` = ultimo seq de `TEXTO_EDITAR` aplicado por el juego (eco). Falta: compilar y tests del launcher, 8c DbrCore.
 - 2026-11-11: 8a, 8b y 8c hechos, sin commit. Launcher: tests `canal_movil` OK, `assembleDebug` OK e instalado por adb. DbrCore: `TextoMovil` + tipo 105 + `CAP_TEXTO` + subrayado en `ChatAutocompletado`, `gradlew build` OK (7 tests nuevos). `SECURITY_MODEL.md` con tipos 7 y 105. Falta: commits, jar de DbrCore a experimental DBR-ASSETS, prueba en telefono.
 - 2026-11-11: paso 8 empujado y desplegado. Launcher 5fc066f, DbrServerPack 9265d96a, TESTEO RESURRECTION (`.bak-20261111-texto`, servidor apagado), experimental DBR-ASSETS d63b518. APK debug ya instalado por adb. Falta prueba en telefono (seccion "Verificacion" del paso 8).
+- 2026-11-11: paso 8 funciona en el telefono, pero con SwiftKey en horizontal (257 dp de 360) no se ve lo que se escribe. Plan 8d aprobado: barra de texto propia sobre el teclado + juego levantado con toques corregidos.
+- 2026-11-11: 8d hecho, sin commit. `TextoTeclado` (estado del teclado para la barra), `DistribucionTeclado` (una o dos filas + levantado, 2 tests), `BarraTextoDbr`/`FranjaTecladoDbr` (cursor, seleccion, subrayado, tocar mueve el cursor, contador desde 90), `VMActivity` usa la franja para levantar el juego y esconde el campo del juego bajo la barra, `DesplazamientoJuego` corrige toques en `sendPosition` y en el tap. Tests canal_movil OK (69), APK por adb. Falta prueba en telefono y commit/push.
+- 2026-11-11: el usuario confirma probados 5a, 5b, 6a, 6b y 6c. **Paso 6 cerrado.** Se planifica 8b (mando).
+- 2026-11-11: fase 8 restante afinada y aprobada (seccion "Fase 8 restante"): orden 8p (servicio PvP unificado, todos los usos) -> 8c (lock-on) -> 8b (mando, Android + PC juego; Electron, giroscopio y flick despues). Se empieza 8p.
+- 2026-11-11: 8p codigo hecho, sin commit ni despliegue. DbrCore `core.combate.ReglasPvp` (vetos por id, falla = veto, 5 tests). DbrCorePlugin `corelib.combate.PvpMod` (puente por reflexion, lista local sin mod, se quita al deshabilitar el plugin, 3 tests, 148 total OK) + `ProveedoresPvp` (mundo y WorldGuard por reflexion; WorldGuard sumado a softdepend). Vetos: Arena (`canDamage`), TPersonal (mundos de sala), Batallas (`Reglas.vetoPvp`), Staff (vanish, se quita con el modulo), DbrTierra (`GuardiaZonas.registrarPvp`). Consumidores: Talentos (`Efectos.puedePegar` lee ReglasPvp; `MotorPuente` sin evento falso), DbrKiMod (`RazaKi.herir` cancela ki entre jugadores sin PvP; curas usan `Combate.rivales`). Compilan los 3 mods; tests de los 5 plugins OK. Falta: probar con dbr-test (spawn/WorldGuard, arena, sala) y desplegar. Sigue 8c.
+- 2026-11-11: 8c codigo hecho, sin commit ni despliegue. DbrKiMod: `cliente/LockOn` (Z fija/suelta con Ki Sense y `JRMCoreConfig.lockon`; mas cercano a la mira en cono 30 grados, 35 bloques; keybind "Cambiar objetivo" = clic de la rueda, `cambiar(dir)` para el mando; camara suave 80 ms en RenderTick START; se suelta muerto/lejos/sin vista 1 s/menu/rechazo), `MixinJRMCoreCliTicH_LockOn` (redirige la lectura de `JRMCoreConfig.lockon` en `onRenderTick` y `onInputEvent`, verificado contra JRMCore-v1.3.51), `Guiado` valida cada FIJAR (Ki Sense, 35+3, vista con 1.5 s de gracia, jugador: `jrmcRelease >= 5` y `ReglasPvp`) y manda `0x0C` rechazo / `0x0D` aviso al fijado; `GuiadoCliente` manda FIJAR aunque el guiado este apagado; config `e2_lockon` (`nuevo`, `liberacionMin`) con `lockOnNuevo` al final de CONFIG; lang es/en/pt + variantes. DbrMod `DbrHudKi.pintarFijado` (ojo rojo 9x5 sobre la mira, dibujado con rects como la marca del guiado, no con el atlas). DbrCore `Dbc.fijando()` + bit ESTADO `FIJANDO` (1<<6). Launcher: `EstadoDbr.FIJANDO` (`lock_on`) + texto del editor, icono `swap_horiz`, boton "Cambiar" (clic de rueda, `dbrShowIf: lock_on`) sobre "Fijar" en `default_layout.json`. Compilan DbrKiMod, DbrMod, DbrCore y el launcher. Falta: dbr-test (lock, cambiar, rechazo por ki oculto y zona sin PvP, aviso al fijado, DbrAntiCheat sin VL con melee + lock) y prueba en telefono. Sigue 8b.
+- 2026-11-11: 8b.0 resuelto (usuario + bytecode de DBC 1.4.85 / JRMCore 1.3.51). DBC no registra teclas de tecnicas: con "2nd Fn" (LCtrl, configurable) mantenido, el numero de la barra o la rueda eligen la tecnica (DBC lee `inventory.currentItem`), y "2nd Fn" + clic derecho mantenido carga y dispara al soltar. Hay **4** tecnicas equipables, no 8. Keybinds de JRMCore: Energy Release C, Energy Control/Flight F, Turbo Mode R, Lock On Z, 2nd Fn LCtrl, Action menu X, Data Sheet V, Bloodline On G / Off H; DBC: 3rd Fn, Scouter. Consecuencias para 8b: "LB + A/B/X/Y = tecnica 1-4" es una macro que sigue las teclas reales del jugador (busca "2nd Fn" por descripcion): mantiene 2nd Fn, elige el slot N, mantiene clic derecho mientras el boton siga apretado, al soltar suelta todo y devuelve el slot de la mano que tenia. El radial ya no lleva "tecnicas 5-8": por defecto F5, lista de jugadores, ocultar HUD, rueda de formas, menu de acciones, Data Sheet, Turbo, ajustes del mando.
+- 2026-11-11: 8b.1 hecho, sin commit. DbrCore `core.mando`: puras `Boton`, `EstadoMando`, `Ejes` (zona muerta radial + curva), `Accion` (`tecla:<descripcion>` o `dbr:*`), `Perfil` (JSON en `config/dbrcore/mando/<modelo>.json`, defaults Sparking Zero, normalizar), `Interprete` (tocar/mantener 250 ms, modificador LB, cambiar de tabla suelta todo sin redisparar); 15 tests OK. Con Minecraft: `Backend` (interfaz para 8b.2/8b.3), `TeclaVirtual` (aprieta el KeyBinding por objeto: `pressed`/`pressTime`, SRG verificados, por el limite de una accion por tecla), `MovimientoMando` (stick izquierdo analogico; solo reemplaza el MovementInput de vanilla para no romper cinematicas ni choques), `Mando` (tick START, macro de tecnica 2nd Fn + slot + clic derecho y devuelve el slot, hotbar, menu, atras, camara por fotograma, stick a un lado con lock = `LockOn.cambiar` por reflexion, `usandoMando()`), registrado en el ClientProxy de DbrMod. Compilan DbrCore y DbrMod. Sin backend todavia no hace nada. Sigue 8b.2 (backend Android por el canal).
+- 2026-11-11: 8b.2 hecho, sin commit ni prueba. Protocolo: `CAP_MANDO` (1<<9) en los dos lados, `MANDO_ESTADO` 106 (short botones en orden de `Boton`, 4 bytes de sticks con signo, 2 de gatillos sin signo) y `MANDO_INFO` 107 (conectado + modelo UTF-8 hasta 64 B); no hizo falta `MANDO_VIBRAR`. Juego: `core.mando.BackendCanal` (se pone solo como backend al primer MANDO_INFO; 2 tests), despacho en `Canal`; `Vibrar` aplica el perfil del mando (interruptor, categorias, intensidad) cuando se usa el mando. Launcher: `MandoDbr` (captura teclas y ejes del mando solo si el juego trae CAP_MANDO, hat como cruceta, zona plana del dispositivo, como mucho un envio cada 8 ms y siempre el ultimo cambio, desconexion por `InputDeviceListener`, reanuncia tras un HOLA nuevo, `vibrador()` del mando en Android 12+), enganchado en `GameHandler.shouldIgnoreKeyEvent` (antes del remapper de ZL2), `VMActivity.dispatchGenericMotionEvent` y `GameScreen` (esconde los controles tactiles con actividad del mando); `VibradorDbr` hace vibrar el mando si tiene motor. `MandoProtocoloTest` (4) + canal_movil OK; launcher compila. Sigue 8b.3 (Jamepad en PC).
+- 2026-11-11: 8b.3 hecho, sin commit ni prueba. Decision del usuario: Jamepad va dentro de **DbrMod** (DbrCore no tiene jar propio). Jamepad 2.30.0.0 (SDL 2.30.0, Java 7) + gdx-jnigen-loader 2.2.0, jars oficiales de Maven Central (sha1 verificado) vendorizados en `DbrMod/libs-embed` y en `embed` de los dos build.gradle (DbrMod y raiz); licencias Apache-2.0 + zlib (Hartman, SDL) en `META-INF/licencias` del jar y en DBR-ASSETS `experimental/CREDITOS.txt` (seccion 5) + `LICENCIAS/` (Apache-2.0, Zlib-SDL2, Zlib-Jamepad), sin publicar. `dbr.main.client.mando.BackendJamepad` (primer mando, hotplug, SDL se inicia en la primera lectura en el hilo del cliente, si falla queda apagado; nunca en Android), registrado en el ClientProxy de DbrMod. Las natives las extrae gdx-jnigen-loader a su carpeta temporal, no a `.minecraft/natives/dbr` como decia el plan. Vibracion en PC: `Vibrar` manda al backend con duracion por categoria y `Movil` corre la deteccion local solo con el mando en uso (sin abrir DBRVIBRAR del servidor en PC). DbrOfficialMod pasa de 6.8 a 10.3 MB. Compilan DbrCore y DbrMod; tests de DbrCore OK. Sigue 8b.4 (navegacion de menus).
+- 2026-11-11: 8b.4 hecho, sin commit ni prueba. `core.mando.Navegador` (pixeles reales): destinos = rects de `hit()` del ultimo frame de `UiScreen` (`destinosMando()`, mas los botones del marco), slots de `GuiContainer` (guiLeft/guiTop por SRG) y `buttonList` vanilla. Cruceta o stick izquierdo saltan al destino en esa direccion (avance + 2x desvio; repite a 350 ms y cada 110 ms); sin destinos el stick izquierdo y siempre el derecho mueven un cursor libre. A/X = clic izq/der (baja y sube como el raton, por `mouseClicked`/`mouseMovedOrUp`), Y = shift-clic (`handleMouseClick` modo 1, sirve en creativo), B/Start = ESC (`keyTyped`), LB/RB = `UiScreen.scrollMando`. Cursor en el raton de LWJGL (hover) + anillo de foco / cursor propio en `DrawScreenEvent.Post`; si se mueve el raton de verdad, manda el raton. Funciona tambien sin mundo (titulo, servidores). 5 tests (`NavegadorTest`); compilan DbrCore y DbrMod. A probar: si en Android `Mouse.setCursorPosition` mueve el hover (si no, solo se ve el anillo). Sigue 8b.5 (teclado en pantalla, solo PC).
+- 2026-11-11: 8b.5 hecho, sin commit ni prueba. `core.mando.TecladoMando` (solo PC; en Android sigue el teclado del sistema) + `TecladoDisposicion` (pura: QWERTY con ñ, pagina de simbolos, 10 unidades por fila; 4 tests). Aparece solo con el mando en uso y un campo con foco (`DetectorCampo.area()`, ahora publico; `CampoActivo` tambien reporta en PC con el mando), en la mitad opuesta al campo (chat abajo = teclado arriba). Botones fijos: cruceta/stick mueven, A aprieta, X borra (repite), Y espacio, Start envia, LB mayus, RB simbolos, LT/RT cursor (repiten), B sigue siendo ESC. Arriba, barra con las sugerencias del popup o los comandos del servidor: `ChipsMovil` guarda la ultima lista tambien sin launcher; chip = reemplaza el texto por el comando, sugerencia = `aceptarSugerencia`. Teclas por `keyTyped` (chat, campos vanilla, `TextInput`). `Interprete.Evento` lleva el boton para que Mando no pase al Navegador los del teclado. Textos `dbrcore.mando.teclado.*` es/en/pt + sync-lang. Compilan DbrCore y DbrMod, tests OK. Sigue 8b.6 (radial).
+- 2026-11-11: 8b.6 hecho, sin commit ni prueba. `core.mando.RadialMando`: se abre al mantener RB (accion `dbr:radial`, solo sin pantalla), el stick derecho apunta 1 de 8 casillas (0 arriba, horario; `casilla()` pura, 3 tests), LT/RT cambian de pagina (hasta 3, del perfil; con la radial abierta los gatillos no atacan ni usan), al soltar RB se toca la accion apuntada (baja y sube a los 2 ticks); soltar sin apuntar no hace nada; la camara queda quieta; se cancela al abrir una pantalla o perder el mando. Dibujo en `RenderGameOverlayEvent.Post` (pixeles reales). `NombreAccion` (keybind por I18n, `dbr:*` por `dbrcore.mando.accion.*` es/en/pt), sirve tambien para 8b.7. Cambio de defaults: en 1.7.10 F1 no es keybind, asi que `tecla:key.hideGui` pasa a `dbr:ocultar_hud` (nuevo, alterna `hideGUI`), y la lista de jugadores (solo se veria 2 ticks; ya esta en BACK mantenido) pasa a `key.chat`. Compilan DbrCore y DbrMod, tests OK. Sigue 8b.7 (iconos y ajustes).
+- 2026-11-11: 8b.7 se parte en 8b.7a (glifos), 8b.7b (pantalla de ajustes), 8b.7c (entradas). 8b.7a hecho, sin commit: atlas nuevo `DbrCore/.../textures/gui/mando.png` (16 px, 4 estilos x 32 celdas: Xbox, PlayStation, Switch, generico; glifo = orden de `Boton` + stick izq/der + cruceta; sin logos), generador `tools/gen-mando-icons.py` registrado en `atlaslib` (alias `mando`, sin .java de indices) e `iconlib.LOTE_PROPIO` (L31-mando). Placeholder dibujado con pruebas exactas, revisado por subagente en 3 vueltas (OK); `check-atlas mando` ok. Lote L31-mando abierto para el Taller de Claude Design: `tools/art/L31-mando/` (manifiesto + kit.py), kit `tools/_preview/design-kit-L31-mando.zip`, encargo `docs/rediseno-texturas/L31-prompt.md` (falta que el usuario lo pase al Taller). Java: `core.mando.GlifosMando` (atlas, `celda(estilo, boton)`, estilo por el nombre del mando o `Perfil.estiloIconos` = auto/xbox/ps/switch/generico; 2 tests). Sigue 8b.7b (pantalla de ajustes del mando en core.ui).
+- 2026-11-11: L31-mando vuelta 1 de Claude Design importada (80 celdas reemplazan al placeholder; checks ok). La revision pide retoques (rotulos de gatillos apretados, flechas del stick R, cruceta, genericos, guia, triangulo PS): encargo `docs/rediseno-texturas/L31-retoque-prompt.md`. No bloquea 8b.7b.
+- 2026-11-11: 8b.7b hecho, sin commit ni prueba en el juego. `core.mando.MandoAjustesScreen` sobre `SettingsScreen` (host propio como `AccesibilidadScreen`, textos `mando.cfg.*` es/en/pt + sync-lang). Pestañas de campos: sticks (zona muerta izq/der, velocidad H/V, curva, invertir Y), gatillos y combos (umbral, boton de tecnicas LB/RB: al cambiarlo los combos pasan al nuevo y las acciones de los dos se cruzan), vibracion (interruptor, intensidad, 4 categorias), iconos (auto/xbox/ps/switch/generico); se guardan con Aplicar/Listo (`onApplied` vuelca al perfil). Pestañas propias, se guardan al momento: Botones (tabla en partida / en menus, tocar y mantener por boton con su glifo, combos del modificador; los de tecnica 1-4 fijos), Rueda (paginas 1-3, agregar/quitar, 8 casillas), Probar (dibujo del mando en vivo: botones, gatillos con barra, sticks). Elegir accion: Nada + acciones Dbr + todos los keybinds por categoria. Preset "Valores de fabrica". `Mando.paraEditar()` (copia del perfil conectado o el generico) y la accion `dbr:ajustes` (rueda) abre la pantalla. El `.cfg` `_pantalla.cfg` solo existe porque SettingsScreen pide un store; la verdad es el JSON. 2 tests (`MandoAjustesTest`), detector de diseno 0/0, compilan DbrCore y DbrMod. Pendiente: critica de diseno con capturas (dbr-test) y probarla con mando. Sigue 8b.7c (entradas: Opciones > Controles, menu en partida Dbr, aviso al conectar un mando nuevo).
+- 2026-11-11: 8b.7c hecho, sin commit ni prueba. Entradas a `MandoAjustesScreen`: comando de cliente `/dbrmando` (alias mando, controller, controle; `MandoAjustesScreen.registrar()` desde el ClientProxy de DbrMod), boton "Mando..." arriba a la derecha de Opciones > Controles (`InitGuiEvent`/`ActionPerformedEvent` en `Mando`), tarjeta "Mando" en la categoria Sistema del menu ESC de DbrMenuMod (`Locales`, orden 9, aparece si existe el comando), aviso en el chat (clic = `/dbrmando`) la primera vez que se conecta un modelo, y la casilla de la rueda. Textos es/en/pt + sync-lang. Compilan DbrCore, DbrMod y DbrMenuMod; tests de DbrCore OK. **Con esto el codigo de 8b esta completo**; falta probar (PC con Xbox y telefono con mando), critica de la pantalla con capturas y el retoque L31.
+- 2026-11-11: prueba de 8d en telefono: con SwiftKey + barra de herramientas + fila de numeros quedan ~21 dp libres y la barra (44 dp) sale por arriba. Plan 8e aprobado: cadena de modos (dos filas, una fila, barra compacta, pantalla completa del teclado) y franja nunca fuera de pantalla.
+- 2026-11-11: 8e hecho, sin commit. Medido por adb: region tactil del teclado desde y=61 px (~20 dp libres). `DistribucionTeclado` con `Modo` (DOS_FILAS, UNA_FILA, COMPACTA, PANTALLA_COMPLETA, RESPALDO) y `subirFranja`; `TextoDbrView.ponerPantallaCompleta` (quita NO_FULLSCREEN/NO_EXTRACT_UI + restartInput, vuelve al cerrar el chat); barra compacta 12 sp; aviso `dbr_teclado_tapa_chat` una vez por sesion. Tests canal_movil OK (Distribucion 4/4), APK por adb. Falta prueba en telefono.
+- 2026-11-11: prueba 8e: la primera apertura del chat paso sola al editor a pantalla completa de SwiftKey; las siguientes, bien (una fila). Causa probable: medida falsa del teclado al abrirse. Fix: pedir pantalla completa solo si dura 400 ms (`ESPERA_PANTALLA_COMPLETA_MS` en `VMActivity`). APK por adb.
+- 2026-11-11: el usuario confirma en telefono que 8d y 8e funcionan (primera apertura incluida). **Pasos 8d y 8e cerrados.** Falta commit/push.
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
@@ -354,13 +375,216 @@ Paso 8 de `PLAN-canal-movil.md`. Hoy el teclado de Android escribe en un `EditTe
   - 100 caracteres: no deja escribir más; emoji: no entra;
   - con el ajuste apagado o canal apagado: escribe como hoy.
 
+## Paso 8d (aprobado 2026-11-11): ver lo que se escribe con el teclado abierto (barra de texto + juego levantado)
+
+### Context
+Paso 8 (texto sincronizado) funciona en el telefono, pero con el teclado abierto no se ve lo que se escribe. Medido por adb (Honor, 2388x1080, densidad 3): SwiftKey en horizontal ocupa y=309..1080 px, o sea 257 dp de 360. Quedan **103 dp** libres arriba. Ahi ya estan la fila de chips (40 dp, `FilaChipsDbr`) y el juego levantado (`VMActivity.kt:824-841`, `absoluteOffset` del `AndroidView` usando `CanalMovil.areaTexto`). La opcion 2 ya existe a medias: levanta el juego, pero el chat queda casi tapado por los chips y el poco espacio que sobra. Ademas, los toques no se corrigen al levantar: el juego se dibuja mas arriba, pero `GameScreen.kt:1052` manda la coordenada sin el desplazamiento.
+
+El usuario pidio implementar la 1 (barra de texto propia sobre el teclado, como Roblox o los juegos hechos con Unity) y la 2 (juego levantado, como Bedrock) juntas.
+
+### Diseno
+
+### 1. Barra de texto Dbr (launcher)
+- Fuente del estado: `TextoDbrView` (`ui/control/input/TextoDbrInput.kt`) publica su `EstadoTexto` en un objeto nuevo `TextoTeclado` (StateFlow `estado: EstadoTexto?`, null sin texto sincronizado). Se actualiza en `editar` y `aplicarJuego` y vuelve a null en `cerrar`. `TextoTeclado.moverCursor(i)` llama a la vista activa (referencia debil) y esta usa `EdicionTexto.seleccionar` + `programarEnvio` + `imm.updateSelection`.
+- Composable nuevo `BarraTextoDbr` (en `ui/screens/game/elements/`, junto a `FilaChipsDbr.kt`), con los mismos colores y forma que los chips:
+  - texto con cursor que parpadea, seleccion resaltada y la composicion subrayada (como en el juego);
+  - desplazamiento horizontal para que el cursor siempre se vea;
+  - tocar mueve el cursor al caracter tocado (`TextLayoutResult.getOffsetForPosition`);
+  - contador `n/100` solo desde 90 caracteres;
+  - texto gris "Escribe en el chat…" cuando esta vacio (es/en/pt).
+- Solo aparece con texto sincronizado activo (`TextoTeclado.estado != null`). Sin `CAP_TEXTO` o con el ajuste apagado todo queda como hoy.
+- Distribucion segun el espacio libre `libre = alto - teclado` (en dp):
+  - `libre >= 40 + 40 + 96`: dos filas, la barra pegada al teclado y los chips encima;
+  - si no: **una sola fila de 44 dp**, con la barra a la izquierda (peso 0.5) y los chips a la derecha con desplazamiento horizontal. Es el caso de SwiftKey en este telefono.
+- El alto total que ocupan (`altoFranjaDbr`) se calcula en un solo lugar de `VMActivity.Screen` y lo usan la barra, los chips y el levantado del juego. Reemplaza el `chipsPx` actual.
+
+### 2. Juego levantado (ajuste de lo que ya hay)
+- Con la barra activa, el campo del chat del juego queda escondido justo debajo de la franja Dbr. Asi lo que sobra arriba muestra los ultimos mensajes y el popup de autocompletado, en lugar de repetir la linea que ya muestra la barra: `levantar = teclado + franja - distanciaAbajo - altoCampo`, con `altoCampo` de `canalArea.alto`. Sin barra, la cuenta de hoy.
+- **Toques corregidos**: el desplazamiento aplicado se publica en un estado compartido (`DesplazamientoJuego.px`, junto a `ALTO_FILA_CHIPS` o en `CanalMovil`) y `Offset.sendPosition()` (`GameScreen.kt:1052`) suma ese valor a `y` antes de `sumPosition()`. Se verifica tambien el camino de los toques de LayerController o del mouse virtual, si usa otra conversion.
+- Las sugerencias del popup ya salen como chips (`SUGERENCIAS`): no hace falta nada nuevo.
+
+### Fuera de alcance
+- Achicar la ventana (opcion 3) y el editor del teclado a pantalla completa (opcion 4).
+- DbrCore no cambia.
+
+### Archivos
+- Nuevo: `ui/screens/game/elements/BarraTextoDbr.kt`, `ui/control/input/TextoTeclado.kt` (o dentro de `TextoDbrInput.kt`).
+- `ui/control/input/TextoDbrInput.kt`: publicar el estado y mover el cursor.
+- `ui/activities/VMActivity.kt` (`Screen`, ~769-883): calcular `altoFranjaDbr`, ubicar la barra y los chips, nueva cuenta del levantado y publicar el desplazamiento.
+- `ui/screens/game/elements/FilaChipsDbr.kt`: aceptar `Modifier`/ancho para ir a la derecha de la barra en modo una fila.
+- `ui/screens/game/GameScreen.kt`: `sendPosition` con el desplazamiento.
+- `res/values*/strings_dbr.xml`: texto de ayuda de la barra vacia (es/en/pt).
+- Test JVM: la cuenta de la distribucion (una o dos filas) y del levantado como funcion pura (`DistribucionTeclado.kt` en `canal_movil`).
+
+### Pasos
+0. Al aprobar: copiar este plan a `PLAN-canal-movil.md` como "Paso 8d" con una entrada en la bitacora.
+1. `TextoTeclado` + publicar el estado desde `TextoDbrView`.
+2. Funcion pura de distribucion y levantado, con tests.
+3. `BarraTextoDbr` + cambios de `FilaChipsDbr`.
+4. `VMActivity.Screen`: franja, levantado y desplazamiento publicado.
+5. Toques corregidos en `GameScreen.sendPosition`.
+6. Compilar, tests, APK por adb. Commit y push solo si el usuario lo pide.
+
+### Verificacion
+- `testDebugUnitTest --tests "*canal_movil*"` (desde la ruta real; si falla el daemon de Kotlin, `-Pkotlin.compiler.execution.strategy=in-process`), `assembleDebug` desde `X:`, instalar por adb.
+- Telefono, TESTEO, SwiftKey en horizontal:
+  - abrir el chat: una fila con la barra a la izquierda y los chips a la derecha; el texto se ve mientras escribes, con cursor, seleccion y subrayado del autocorrector;
+  - encima se ven los ultimos mensajes del chat (el juego levantado); el popup de autocompletado tambien aparece como chips;
+  - tocar la barra mueve el cursor; con mas de 90 caracteres aparece el contador;
+  - tocar un mensaje o un link del chat levantado cae en el lugar correcto (toques corregidos);
+  - Gboard, o SwiftKey con el teclado achicado: dos filas;
+  - con "Teclado completo en el chat" apagado: como antes, sin barra.
+
+## Paso 8e (aprobado 2026-11-11): el texto del chat siempre visible, sea cual sea el alto del teclado
+
+### Context
+Prueba de 8d en telefono: con SwiftKey en horizontal, barra de herramientas abierta y fila de numeros, el teclado
+ocupa ~94% del alto (~21 dp libres de 360). La franja Dbr mide 44 dp y se ancla encima del teclado
+(`VMActivity.kt`, `IntOffset(0, -imeHeight)`), asi que sale por arriba. `DistribucionTeclado.franja` no tiene caso
+para `libre < 44 dp`. No se puede dibujar sobre el teclado (otra ventana). Objetivo: que el texto se vea siempre.
+
+### Diseno: modos segun `libre = alto - teclado` (dp)
+1. `libre >= 44+40+96`: dos filas (como hoy).
+2. `libre >= 44`: una fila, barra + chips (como hoy).
+3. `24 <= libre < 44`: barra compacta de alto = `libre`, sin chips, texto 12 sp.
+4. `libre < 24`: pantalla completa del teclado (extract UI): `TextoDbrView` hace `restartInput` sin
+   `IME_FLAG_NO_FULLSCREEN | IME_FLAG_NO_EXTRACT_UI`; el teclado muestra su editor con el texto (`getExtractedText`
+   ya existe). Franja Dbr y levantado apagados. Se mantiene hasta cerrar el chat o el teclado.
+   - Respaldo si el teclado ignora el extract UI: barra compacta pegada arriba (minimo 20 dp) + aviso unico.
+5. La franja nunca sale por arriba: `offsetY = -min(imeAlto, alto - altoFranjaPx)`.
+
+### Archivos
+- `canal_movil/DistribucionTeclado.kt` (+ test): `Franja.modo`, `MIN_COMPACTA_DP`, offset seguro.
+- `ui/control/input/TextoDbrInput.kt`: `pantallaCompleta` cambia `imeOptions` + `restartInput`; reset en `cerrar`.
+- `ui/activities/VMActivity.kt` (`Screen`): modos, offset recortado, sin levantar en pantalla completa.
+- `ui/screens/game/elements/BarraTextoDbr.kt`: variante compacta.
+- `res/values*/strings_dbr.xml`: aviso (es/en/pt).
+
+### Verificacion
+- Tests `canal_movil`, `assembleDebug` desde `C:\dev\dbr-wt`, APK por adb.
+- Telefono: SwiftKey con barra de herramientas (pantalla completa del teclado con el texto), sin ella (compacta o
+  una fila, siempre entera), Gboard (dos filas), respaldo + aviso si SwiftKey no hace pantalla completa.
+
+## Fase 8 restante (aprobada 2026-11-11): PvP unificado (8p), lock-on (8c), mando (8b)
+
+### Context
+`PLAN-canal-movil.md`: pasos 1-8 cerrados, 8d (barra de texto) hecho y pendiente de prueba en teléfono. Faltan L (mando) y M (lock-on). Al afinar salió que el lock-on necesita saber si hay PvP entre dos jugadores, y hoy hay 7 reglas PvP sueltas (ningún mod ve WorldGuard). El usuario pidió unificarlas dentro de la fase 8.
+
+Orden: **8p → 8c → 8b**. Release de Android + juego en PC. El launcher Electron, el giroscopio y el flick stick quedan para un release posterior.
+
+### Decisiones del usuario (2026-11-11)
+- 8c antes que 8b. Mando de prueba: Xbox (BT/USB).
+- PvP: servicio único y escalable, con **todos** los usos migrados en la fase 8.
+- Lock-on: alcance **35 fijo** (como DBC). En PC se cambia de objetivo con el **clic de la rueda** y en el teléfono con un **botón "cambiar"** (solo visible con el lock activo). Las reglas de soltar y el ki oculto (<5%) quedan como en el plan. El aviso al fijado es un **ícono chico en el HUD**, sin nombre.
+- Mando: ajustes **dentro del juego** (`core.ui`), iguales en PC y Android.
+- Remapeo con dos vistas: lista por acción y dibujo del mando.
+- Se puede asignar: acciones Dbr fijas, cualquier keybind, y tocar vs mantener. Combo fijo **LB + A/B/X/Y = técnicas 1-4**; el modificador se puede cambiar, pero no hay combos libres.
+- Dos mapas: en partida y en menús. Un perfil por modelo de mando.
+- Ajustes: sticks (zona muerta, sensibilidad H/V, curva, invertir Y), umbral de gatillos y vibración del mando.
+- Entradas a los ajustes: Opciones > Controles, menú en partida Dbr y aviso al conectar un mando nuevo.
+- Otras GUIs: saltar entre botones vanilla y, si no hay, cursor virtual.
+- Teclado: en Android, el del sistema (con la barra del 8d). En PC, el teclado propio del juego.
+- Radial: 8 casillas editables, hasta 3 páginas que se cambian con los gatillos.
+- Vibración en Android: vibra el mando si tiene motor (API 31+), si no el teléfono.
+- Natives de Jamepad dentro del jar de DbrCore, extraídas al iniciar; no se cargan en Android.
+
+### 8p. Servicio PvP unificado
+Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.GuardiaMod` (DbrCorePlugin): `Class.forName`, solo tipos JDK, append-only, sin `@Mod`.
+- **DbrCore `core.combate.ReglasPvp`**: lista de proveedores `(UUID atacante, UUID victima) -> motivo de veto o null`. `permite(a, b)` y `motivo(a, b)` se llaman solo en el hilo del servidor. Lo pueden registrar los mods directo y los plugins por `corelib.combate.PvpMod`.
+- **Proveedores en plugins (por `PvpMod`)**:
+  - DbrCorePlugin: mundo (`world.getPVP()`) y WorldGuard (flag `PVP` en las dos posiciones; softdepend por reflexión).
+  - DbrArenaPlugin `ArenaManager.canDamage`.
+  - DbrTPersonalPlugin salas (`SalaProtectionListener`).
+  - DbrBatallasPlugin protegidos (`Reglas`).
+  - DbrStaffPlugin vanish (veto al atacante).
+  - Cada plugin mantiene su listener Bukkit actual: el proveedor se agrega, no reemplaza nada.
+- **Proveedor en mod**: DbrTierra `GuardiaZonas`. `RegionesDbc` (la copia a WorldGuard) se mantiene por ahora y se anota como duplicado.
+- **Consumidores**:
+  - DbrTalentosMod `Efectos.fijarPvp` lee de `ReglasPvp`; `MotorPuente` deja el evento de daño falso.
+  - DbrKiMod `RazaKi` (AoE y curas): `Combate.enPvp && ReglasPvp.permite`.
+  - Lock-on (8c).
+  - DbrCombatTagPlugin sin cambio: marca golpes reales, y eso ya respeta las reglas.
+- Fuera: InvasionPlugin y AldeasPlugin (no son PvP).
+- Tests: `ReglasPvp` (JUnit, puro) y `PvpMod` con dbr-testkit.
+
+### 8c. Lock-on nuevo (DbrKiMod)
+- **Mixin en `JRMCoreCliTicH`** (DbrKiMod ya tiene mixins): anula el toggle de Z (:233-247) y el `setAngles` de golpe (:162-183). Se sigue escribiendo el mismo campo `lockOn`, así que no cambian el render de Ki Sense, `GuiadoCliente` ni `CineCliente.soltarLockOn`. Se respeta `JRMCoreConfig.lockon`.
+- **Cliente `cliente/LockOn.java`**:
+  - Elige el objetivo más cercano a la mira dentro de 35 bloques. Hace falta Ki Sense (`SklLvl(6) > 0`).
+  - Objetivos: NPCs, jefes y mobs; jugadores solo si el servidor lo acepta.
+  - Cámara suave (~80 ms, exponencial) en `RenderTickEvent START`: mueve `rotationYaw`/`rotationPitch` y los `prev*`. No pelea con `CamaraCine.activa()`.
+  - Se suelta fuera de 35 bloques, sin línea de vista más de 1 s, con el objetivo muerto o al abrir un menú.
+  - Cambiar objetivo: keybind nuevo "Cambiar objetivo" (por defecto el clic de la rueda; en el teléfono, el botón del layout) y el stick derecho (8b).
+- **Red `KiRed`**:
+  - Se reusa `0x10 FIJAR` (`Guiado`, que ya llega al cambiar y cada 20 ticks).
+  - El servidor valida al recibirlo: Ki Sense > 0, distancia ≤ 35, línea de vista (1 s de gracia), objetivo jugador con `jrmcRelease >= 5` y `ReglasPvp.permite`.
+  - Nuevos S→C: `0x0C LOCK_RECHAZO` (el cliente suelta) y `0x0D FIJADO` (on/off al jugador fijado).
+  - Los topes de `Guiado` no cambian.
+- **HUD del fijado**: ícono chico cerca de la mira (zona `core.hud`, ícono del atlas Dbr) mientras alguien te tiene fijado.
+- **Android**: bit nuevo `ESTADO` "lock activo" (`EstadoMovil.java` + `EstadoDbr.kt`). En el layout oficial, botón "cambiar" con `dbrShowIf = lock`.
+- **DbrAntiCheat**: no hay check de snap; `KillAuraCheck` marca a más de 80°. Verificar con dbr-test que el melee con lock no suma VL.
+
+### 8b. Mando (`core.mando` en DbrCore)
+0. **Verificar en el juego** qué keybinds lanzan las técnicas DBC 1-8, transformar, dash y volar. `options.txt` no tiene teclas de técnicas, y `TalentosTeclas` menciona hotbar y F4. Esto define las "acciones Dbr fijas".
+1. **Núcleo**:
+   - `EstadoMando` (botones + 6 ejes) y la interfaz `Backend`.
+   - `Accion` (fijas Dbr o keybind por descripción) y `Mapeo` (partida y menús; tocar vs mantener; modificador LB fijo y editable).
+   - `Perfil` por modelo en `config/dbrcore/mando/<modelo>.json`.
+   - Simula teclas con `KeyBinding.setKeyBindState`/`onTick` (patrón `DbrAutoClicker/ClickerTicker`; hotbar en `KeyInputEvent` según `TalentosTeclas`).
+   - Cámara con zona muerta, curva y sensibilidad; umbral de gatillos.
+   - Cambio automático entre mando y teclado/táctil.
+   - Tests puros (mapeo, tocar/mantener, zona muerta).
+2. **Backend Android (canal)**:
+   - `CAP_MANDO = 1<<9`.
+   - `MANDO_ESTADO` 106 (launcher → juego, solo al cambiar, como mucho uno por fotograma, ~20 B).
+   - `MANDO_INFO` 107 (modelo, conectado/desconectado).
+   - Con `HOLA` que trae `CAP_MANDO`, el launcher no usa el remapper de ZL2 (`GameHandler.shouldIgnoreKeyEvent`, `SimpleGamepadCapture`).
+   - Los controles táctiles ya se esconden con mando (`hideWhenGamepad`).
+   - `VibradorDbr`: usa `InputDevice.vibratorManager` si el mando tiene motor; si no, el teléfono.
+   - Con mando, el chat abre el teclado del sistema (barra 8d).
+3. **Backend PC (Jamepad 2.x)**:
+   - Va shadeado en DbrCore. Natives a `.minecraft/natives/dbr` al iniciar, solo si no es Android (`Plataforma`).
+   - Vibración del mando.
+   - Licencias Apache 2.0 + zlib en `CREDITOS.txt` (skill dbr-licencias).
+4. **Navegación**:
+   - `GuiContainer`: el cursor salta de slot en slot.
+   - `UiScreen`: anillo de foco. Se registran los rects de `hit()` en cada fotograma (`UiScreen.java:1337`).
+   - Pantallas vanilla: salto por `buttonList`; si no hay botones, cursor virtual.
+   - Guía de botones según el contexto.
+5. **Teclado en pantalla (solo PC)**: QWERTY con ñ, chips y autocompletado arriba. X borra, Y pone espacio, Start envía, los gatillos mueven el cursor.
+6. **Radial (RB)**:
+   - 3 páginas de 8 casillas editables, que se cambian con los gatillos.
+   - Por defecto: técnicas 5-8, F5, lista de jugadores, ocultar HUD, ajustes del mando.
+7. **Iconos y ajustes**:
+   - Atlas de glifos Xbox/PS/Switch/genérico con mc-pixel-art, sin logos.
+   - Pantalla `core.ui` de ajustes: lista por acción + dibujo del mando, perfiles, sticks, gatillos, vibración, prueba en vivo y restaurar valores.
+   - Entradas: botón "Mando" en Opciones > Controles, pestaña en el menú en partida Dbr y aviso al conectar un modelo nuevo.
+
+### Archivos clave
+- DbrCore: `core/combate/ReglasPvp.java` (nuevo), `core/mando/*` (nuevo), `core/movil/Canal.java` + `EstadoMovil.java`, `ui/UiScreen.java`, `ui/IconAtlas.java`.
+- DbrCorePlugin: `corelib/combate/PvpMod.java` (nuevo), proveedores mundo y WorldGuard.
+- DbrKiMod: `cliente/LockOn.java`, mixin `JRMCoreCliTicH`, `red/KiRed.java`, `logica/Guiado.java`, `logica/RazaKi.java`.
+- DbrTalentosMod `efecto/Efectos.java` + DbrTalentosPlugin `MotorPuente.java`. DbrTierra `GuardiaZonas.java`. Plugins Arena, TPersonal, Batallas y Staff (un proveedor cada uno).
+- Launcher: `canal_movil/Protocolo.kt`, `CanalMovil.kt`, `VibradorDbr.kt`, `GameHandler`, `EstadoDbr.kt`, layout oficial.
+
+### Verificación
+- Tests: `ReglasPvp`, `PvpMod` (testkit), núcleo `core.mando`, `canal_movil` (`MANDO_*`) y `mvn test` de cada plugin tocado.
+- dbr-test (servidor aislado):
+  - PvP: en spawn/WorldGuard, Arena y sala no hay lock ni AoE de ki entre jugadores; en zona PvP sí.
+  - Lock-on: el melee con lock no suma VL en DbrAntiCheat.
+- Teléfono con Xbox: combate, LB+botón, radial, navegación de inventario y `UiScreen`, chat con teclado del sistema, vibración en el mando, botón "cambiar" del lock.
+- PC con Xbox: lo mismo con Jamepad, más el teclado en pantalla.
+- Desconectar el mando a mitad de partida: vuelven los controles táctiles o el teclado.
+
+### Al aprobar
+1. Copiar este plan a `PLAN-canal-movil.md` como "Fase 8 restante" y anotarlo en la bitácora.
+2. Empezar por 8p.
+3. Commit y push solo si el usuario lo pide.
+
 ## Pruebas pendientes en telefono
-- 6a (variante experimental, TESTEO reiniciado): `adb shell cmd thermalservice override-status 3` -> cartel de calor; Reducir -> resolucion baja en caliente, particulas minimas, distancia <= 6, VFX en Baja; `override-status 0` -> cartel Restaurar y todo vuelve; `adb shell dumpsys battery unplug` + `set level 14` -> aviso 15%, `set level 4` -> aviso 5%; al final `cmd thermalservice reset` y `dumpsys battery reset`.
-- 6c: menu en partida > pestana estrella: cada interruptor hace efecto (vibracion, avisos, chips al abrir el chat, modo reducido on/off, toque ampliado al reabrir una pantalla Dbr); slider de resolucion cambia sin reiniciar en 1.7.10.
-- 6b: en horizontal con la muesca a un lado, una pantalla Dbr grande (caja maxima) y el HUD Dbr no quedan debajo de la muesca; girar el telefono 180 grados y ver que cambian de lado. Tocar justo al lado de un boton chico (X de cerrar, flechas de scroll, casillas) lo activa; tocar entre dos botones activa el mas cercano; arrastrar un HUD con el editor y que no salte.
+- Ninguna de los pasos 5 y 6: 5a, 5b, 6a, 6b y 6c probados por el usuario (2026-11-11).
+- 8d/8e: probados por el usuario (2026-11-11).
 
 ## Siguiente paso
 
-Paso 8 (F, texto sincronizado): hecho, empujado y desplegado (TESTEO + experimental + APK). Toca la prueba en telefono de "Verificacion" del paso 8. Paso 7 cerrado. Paso 6 hecho y desplegado (pruebas pendientes).
-- 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
-- 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
+8d/8e: cerrados (probados en telefono 2026-11-11), sin commit: falta commit/push cuando el usuario lo pida. 8p y 8c: codigo hecho, sin commit; falta dbr-test (PvP en spawn/WorldGuard, arena, sala; lock-on, cambiar, rechazos, aviso al fijado, DbrAntiCheat) y prueba en telefono. En curso aqui: 8b (mando): 8b.0-8b.6 y 8b.7a hechos sin commit ni prueba; 8b.7b y 8b.7c hechos: codigo de 8b completo, falta probar en PC y telefono. Lote L31-mando: vuelta 1 importada, retoque pedido (`L31-retoque-prompt.md`). Despues 9 (docs), 10 (release).
