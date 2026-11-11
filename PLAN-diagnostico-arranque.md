@@ -102,3 +102,13 @@ Decisión del usuario (2026-11-11): A2 (argumentos de la JVM) no se hace. El res
 ### Commits
 - Uno por bloque, en su repo: launcher (android-zalith), DbrServerPack y DBR-ASSETS.
 - Sin push, tag ni APK publicado sin preguntar.
+
+## Bitácora (A3, A5, A6, A12)
+- 2026-11-11: el usuario aprueba el plan sin A2 ni A8.
+- 2026-11-11: A3 (`.dbr_hashes.json`), A5 (reusar el manifest de `checkStatus` durante menos de 2 min) y A6 (sin `checkEnableTouchProxy` en 1.7.10, VENDOR-PATCHES 13). Commit `d3a8ab6`, sin push.
+- 2026-11-11: arranques 7 y 8 con un APK de prueba sin aviso de actualización (código revertido): del toque al proceso `:game`, 7,4 y 10,3 s (antes 11,0 s); del toque al menú, 94 y 97 s. A6 confirmado.
+- 2026-11-11: A12 descartada. La caché LITE de CoreTweaks va por clase (adler32 de la entrada) y no se invalida al cambiar mods.
+
+## Siguiente paso
+- Probar en el móvil el cambio de idioma ES/EN/PT (A0) y el texto del módulo.
+- Push de `d8fb52f5` (DbrServerPack) y `d3a8ab6` (launcher) cuando el usuario lo pida.

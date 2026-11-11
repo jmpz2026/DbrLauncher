@@ -288,10 +288,18 @@ Ordenadas por ganancia esperada frente a esfuerzo y riesgo. «Upstream» = toca 
 
 **Orden recomendado:**
 1. A0: 9 s medidos con un mixin pequeño. Hecho: ~9,4 s menos en el arranque 6.
-2. A2: es la que más puede dar, pero hay que confirmarla con A/B.
-3. A3, A5 y A6: fáciles.
-4. A8.
-5. A12, si las actualizaciones son frecuentes.
+2. A2: es la que más puede dar, pero hay que confirmarla con A/B. **No se hace** (decisión del usuario, 2026-11-11).
+3. A3, A5 y A6: fáciles. **Hechas** (commit `d3a8ab6`, ver abajo).
+4. A8. **No se hace** (decisión del usuario, 2026-11-11).
+5. A12. **Descartada**: la hipótesis era falsa (ver abajo).
+
+**Resultado de A3, A5 y A6** (arranques 7 y 8, 2026-11-11; el 7 crea `.dbr_hashes.json` y el 8 la usa):
+- Del toque al proceso `:game`: 7,4 s y 10,3 s, frente a 11,0 s en el arranque 6.
+- A6 confirmado: no queda ningún aviso de `AllModReader` en el log.
+- A3 y A5 no se pueden separar del ruido de red sin marcas de tiempo propias del sync. Por la medida con `sha1sum` (1,2 s para todo el juego), A3 ahorra como mucho 1-2 s.
+- Del toque al menú: 94 s y 97 s. Los arranques 4-6 llevaban el `log4j2.xml` de tiempos (TRACE), que infla la fase 2, así que no sirven para comparar el total. Los arranques 2 y 3, sin TRACE, dieron 113 s y 121 s.
+
+**A12 descartada:** la caché LITE de CoreTweaks no se invalida al cambiar un mod. `CacheMeta` solo guarda `enableDiffs`, y cada entrada lleva el nombre de la clase y el adler32 (más el largo) de sus bytes de entrada. Solo guarda 5 transformers deterministas (deobf, Side, Terminal, FluidId y el de CodeChicken). Una actualización solo recalcula las clases que cambiaron. `modFilesToIgnore` solo afecta al modo FULL. Los ~40 s que se suponían no existen.
 
 Ya no hace falta instrumentar FML para saber qué mod tarda: la receta de log4j de §1 basta.
 
