@@ -201,6 +201,22 @@ public class CallbackBridge {
         }
     }
 
+    // DBR mobile channel, game -> launcher (dbr_canal.c). Called on the game thread; payload length is
+    // already capped by the native side. All validation happens in CanalMovil.
+    @SuppressWarnings("unused")
+    @Keep
+    private static void onDbrMessage(int type, byte[] data) {
+        try {
+            com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil.INSTANCE.recibir(type, data);
+        } catch (Throwable t) {
+            // Never let a bad message reach the native caller.
+            System.out.println("DBR-CANAL: message dropped: " + t);
+        }
+    }
+
+    // DBR mobile channel, launcher -> game: queued in dbr_canal.c, read by the game with GLFW.dbrPoll().
+    public static native void nativeDbrPush(int type, byte[] data);
+
     //Called from JRE side
     @SuppressWarnings("unused")
     @Keep

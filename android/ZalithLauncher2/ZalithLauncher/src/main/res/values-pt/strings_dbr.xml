@@ -111,4 +111,9 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_net_error_friendly">A conexão caiu (rede instável ou a tela desligou). Verifique sua internet e tente de novo: continua de onde parou.</string>
     <string name="dbr_retry">Tentar de novo</string>
     <string name="dbr_retrying">Tentando de novo (%1$d/%2$d)…</string>
+    <string name="dbr_link_title">Abrir o link?</string>
+    <string name="dbr_link_message">O jogo quer abrir:\n\n%1$s\n\nSite: %2$s</string>
+    <string name="dbr_link_verified">Site verificado</string>
+    <string name="dbr_link_unverified">Site não verificado. Abra só se confiar nele.</string>
+    <string name="dbr_link_open">Abrir</string>
 </resources>

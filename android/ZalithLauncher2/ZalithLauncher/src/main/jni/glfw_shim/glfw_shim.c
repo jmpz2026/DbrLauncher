@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "environ/environ.h"
+#include "dbr_canal/dbr_canal.h"
 
 #define API __attribute__((visibility("default")))
 
@@ -115,6 +116,36 @@ static void JNICALL nDbrWindowAttrib(JNIEnv* env, jclass clazz, jint attrib, jin
     else if (attrib == GLFW_ICONIFIED) atomic_store(&g_pending_iconify, value);
 }
 
+/* DBR mobile channel, game -> launcher: GLFW.dbrSend(type, data). Length is checked before any copy. */
+static void JNICALL nDbrSend(JNIEnv* env, jclass clazz, jint type, jbyteArray data) {
+    (void) clazz;
+    if (data == NULL) return;
+    jsize length = (*env)->GetArrayLength(env, data);
+    if (length < 0 || length > DBR_CANAL_MAX_PAYLOAD) return;
+    uint8_t buffer[DBR_CANAL_MAX_PAYLOAD];
+    if (length > 0) (*env)->GetByteArrayRegion(env, data, 0, length, (jbyte*) buffer);
+    if ((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+        return;
+    }
+    dbr_canal_to_android(type, buffer, length);
+}
+
+/* DBR mobile channel, launcher -> game: GLFW.dbrPoll(). Returns [type, payload...] or null when empty. */
+static jbyteArray JNICALL nDbrPoll(JNIEnv* env, jclass clazz) {
+    (void) clazz;
+    uint8_t buffer[DBR_CANAL_MAX_PAYLOAD];
+    int type = 0;
+    int length = dbr_canal_pop(&type, buffer);
+    if (length < 0) return NULL;
+    jbyteArray array = (*env)->NewByteArray(env, length + 1);
+    if (array == NULL) return NULL;
+    jbyte head = (jbyte) type;
+    (*env)->SetByteArrayRegion(env, array, 0, 1, &head);
+    if (length > 0) (*env)->SetByteArrayRegion(env, array, 1, length, (const jbyte*) buffer);
+    return array;
+}
+
 API jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     (void) reserved;
     g_vm = vm;
@@ -130,6 +161,14 @@ API jint JNI_OnLoad(JavaVM* vm, void* reserved) {
         JNINativeMethod methods[] = {{"nDbrWindowAttrib", "(II)V", (void*) nDbrWindowAttrib}};
         if ((*env)->RegisterNatives(env, glfw, methods, 1) != 0) DBG("WARNING: could not register the window attrib native");
         else DBG("window attrib native registered on org.lwjgl.glfw.GLFW");
+        if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
+
+        JNINativeMethod canal[] = {
+            {"nDbrSend", "(I[B)V", (void*) nDbrSend},
+            {"nDbrPoll", "()[B", (void*) nDbrPoll},
+        };
+        if ((*env)->RegisterNatives(env, glfw, canal, 2) != 0) DBG("WARNING: could not register the mobile channel natives");
+        else DBG("mobile channel natives registered on org.lwjgl.glfw.GLFW");
     } else {
         DBG("WARNING: stub class org.lwjgl.glfw.GLFW not found; Android focus changes will not reach LWJGL 2");
     }

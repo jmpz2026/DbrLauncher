@@ -236,6 +236,7 @@ class GameLauncher(
             }
         ).getAllArgs()
 
+        com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil.reiniciar()
         tryStartTouchProxy()
 
         return launchJvm(

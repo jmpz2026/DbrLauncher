@@ -217,6 +217,8 @@ class LaunchArgs(
             argsList.add("-javaagent:${File(lwjgl2Dir, "dbr-lwjgl2-bridge.jar").absolutePath}")
             argsList.add("-Dorg.lwjgl.librarypath=${PathManager.DIR_NATIVE_LIB}")
             argsList.add("-Dorg.lwjgl.util.Debug=true")
+            // DBR mobile channel: DbrCore turns on core.movil only with this flag and the bridge natives present.
+            argsList.add("-Ddbr.movil.canal=1")
         }
 
         val configFilePath = version.getVersionPath().child("log4j2.xml")

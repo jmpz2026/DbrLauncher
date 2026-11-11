@@ -44,7 +44,14 @@ import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
+import android.view.ViewTreeObserver
+import android.graphics.Rect as AndroidRect
+import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -694,6 +701,24 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     ) {
         val imeInsets = WindowInsets.ime
         val inputArea by withHandler { inputArea }.collectAsStateWithLifecycle()
+        val canalArea by CanalMovil.areaTexto.collectAsStateWithLifecycle()
+
+        // Dbr: in fullscreen (legacy immersive flags) Android may not report the IME inset
+        // to Compose. Measure the keyboard from the visible window frame as a fallback.
+        val rootView = LocalView.current
+        var frameImeHeight by remember { mutableIntStateOf(0) }
+        DisposableEffect(rootView) {
+            val frame = AndroidRect()
+            val listener = ViewTreeObserver.OnGlobalLayoutListener {
+                rootView.getWindowVisibleDisplayFrame(frame)
+                val total = rootView.rootView.height
+                val hidden = total - frame.bottom
+                // Below 15% of the screen it is a nav bar or nothing, not a keyboard.
+                frameImeHeight = if (total > 0 && hidden > total * 0.15f) hidden else 0
+            }
+            rootView.viewTreeObserver.addOnGlobalLayoutListener(listener)
+            onDispose { rootView.viewTreeObserver.removeOnGlobalLayoutListener(listener) }
+        }
 
         BoxWithConstraints(
             modifier = Modifier
@@ -716,9 +741,15 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                 modifier = Modifier
                     .fillMaxSize()
                     .absoluteOffset {
-                        val area = inputArea ?: return@absoluteOffset IntOffset.Zero
-                        val imeHeight = imeInsets.getBottom(this@absoluteOffset)
-                        val bottomDistance = screenSize.height - area.bottom
+                        val imeHeight = maxOf(imeInsets.getBottom(this@absoluteOffset), frameImeHeight)
+                        if (imeHeight <= 0) return@absoluteOffset IntOffset.Zero
+                        // Dbr: field position, in order: TouchController (modern versions), DbrCore
+                        // through the mobile channel (1.7.10), else assume the field sits at the
+                        // bottom like the chat bar and lift the whole game above the keyboard.
+                        val areaBottom = inputArea?.bottom
+                            ?: canalArea?.let { ((it.y + it.alto) * screenSize.height).toInt() }
+                            ?: screenSize.height
+                        val bottomDistance = screenSize.height - areaBottom
                         val bottomPadding = (imeHeight - bottomDistance).coerceAtLeast(0)
                         IntOffset(0, -bottomPadding)
                     },

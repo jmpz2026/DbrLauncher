@@ -23,15 +23,15 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
 import androidx.annotation.Keep
-import androidx.core.net.toUri
 import com.movtery.zalithlauncher.BuildKeys
 import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.game.launch.Launcher
-import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.killProgress
 import com.movtery.zalithlauncher.utils.logging.Logger
-import com.movtery.zalithlauncher.utils.network.openLink
-import java.io.File
+import com.movtery.zalithlauncher.utils.network.openLinkInternal
+import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.game.support.canal_movil.UrlSegura
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 private const val TAG = "ZLNativeInvoker"
 
@@ -40,51 +40,29 @@ object ZLNativeInvoker {
     @JvmStatic
     var staticLauncher: Launcher? = null
 
+    /**
+     * DBR: single gate for every link the game asks to open (AWT Desktop.browse, clipboard "open",
+     * DbrCore through the mobile channel). Only http/https pass [UrlSegura]; file: and any other
+     * scheme are refused (file: used to share any path on the device without asking). The user
+     * always confirms in a dialog that shows the real host as punycode.
+     */
     @Keep
     @JvmStatic
     fun openLink(link: String) {
-        (GlobalContext as? Activity)?.let { activity ->
-            Logger.info(TAG, "collect link: $link")
-            activity.runOnUiThread {
-                if (link.startsWith("file:")) {
-                    val newLink = formatFilePath(link) ?: return@runOnUiThread
-                    Logger.info(TAG, "open link: $newLink")
-
-                    val file = File(newLink)
-                    if (link.endsWith('/')) {
-                        //可能是一个目录，创建并发起浏览目录请�?
-                        file.mkdirs()
-                        staticLauncher?.openPath(file)
-                    } else {
-                        shareFile(activity, file)
-                        Logger.info(TAG, "In-game Share File: ${file.absolutePath}")
-                    }
-                } else {
-                    activity.openLink(link, "*/*")
-                }
-            }
+        val url = UrlSegura.validar(link)
+        if (url == null) {
+            Logger.warning(TAG, "link refused (only http/https): ${link.take(120)}")
+            return
         }
-    }
-
-    /**
-     * 格式化文件路径
-     */
-    private fun formatFilePath(input: String): String? {
-        return try {
-            val uri = input.toUri()
-            if (uri.scheme == "file") {
-                uri.path
-            } else {
-                null
-            }
-        } catch (_: Exception) {
-            when {
-                input.startsWith("file:") -> {
-                    input
-                        .replace(Regex("^file:/+"), "/")
-                        .replace("%20", " ")
-                }
-                else -> null
+        (GlobalContext as? Activity)?.let { activity ->
+            activity.runOnUiThread {
+                val aviso = activity.getString(if (url.confiable) R.string.dbr_link_verified else R.string.dbr_link_unverified)
+                MaterialAlertDialogBuilder(activity)
+                    .setTitle(R.string.dbr_link_title)
+                    .setMessage(activity.getString(R.string.dbr_link_message, url.url, url.hostAscii) + "\n\n" + aviso)
+                    .setPositiveButton(R.string.dbr_link_open) { _, _ -> activity.openLinkInternal(url.url) }
+                    .setNegativeButton(R.string.generic_cancel) { dialog, _ -> dialog.dismiss() }
+                    .show()
             }
         }
     }

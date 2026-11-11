@@ -111,4 +111,9 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_net_error_friendly">Se cortó la conexión (red inestable o la pantalla se apagó). Revisa tu internet y reintenta: sigue donde se quedó.</string>
     <string name="dbr_retry">Reintentar</string>
     <string name="dbr_retrying">Reintentando (%1$d/%2$d)…</string>
+    <string name="dbr_link_title">¿Abrir el link?</string>
+    <string name="dbr_link_message">El juego quiere abrir:\n\n%1$s\n\nSitio: %2$s</string>
+    <string name="dbr_link_verified">Sitio verificado</string>
+    <string name="dbr_link_unverified">Sitio no verificado. Ábrelo solo si confías en él.</string>
+    <string name="dbr_link_open">Abrir</string>
 </resources>

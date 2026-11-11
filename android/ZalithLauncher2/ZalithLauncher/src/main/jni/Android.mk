@@ -30,6 +30,7 @@ LOCAL_SRC_FILES := \
     environ/environ.c \
     logger/logger.c \
     input_bridge_v3.c \
+    dbr_canal/dbr_canal.c \
     jre_launcher.c \
     utils.c \
     stdio_is.c \
