@@ -209,3 +209,13 @@ Lo hace Claude por adb, sin el usuario. Herramientas comprobadas:
 - Escena: mundo de un jugador en el móvil, semilla fija, creativo, mismo punto y misma vista (`/tp`). No hay saves en el móvil y el servidor pide contraseña.
 - Orden A-B-A-B (opción apagada/encendida), con el móvil a la misma temperatura de batería (±1 °C) al empezar cada corrida.
 - Por confirmar en la práctica: escribir el comando en el chat con `adb shell input`.
+
+## Bitácora (B4)
+- 2026-11-11: paso 0 empezado y pausado por el usuario ("después lo probamos"). Sin código.
+- Preparado en el Honor: mundo `saves/BenchB4` (copia de "Mundo nuevo" del PC, creativo con trucos), extraído con `tar` desde `adb shell` (`adb push` de una carpeta desde Windows la dejó vacía).
+- Cómo entrar: el menú de DBR abre la lista de mundos con clic derecho en el icono de abajo a la derecha (~2331,1023). El launcher usa puntero virtual: el cursor se mueve 1:1 arrastrando (`input swipe`), y un toque hace clic izquierdo donde está el cursor, no donde se toca. El clic derecho sale del botón "Usar" del layout, que solo se ve dentro de la partida. Para la prueba se cambia a `visibilityType: always` en `files/control_layouts/dbr_layout.json` y al terminar se restaura (restaurado el 2026-11-11). Esc por adb no sale de la lista de mundos.
+- Para el bench: el juego tiene `maxFps:60` (la barra del launcher marcaba ~30 FPS en el menú); quitar el tope antes de comparar con la opción apagada y encendida.
+
+## Siguiente paso
+- Retomar B4 paso 0 cuando el usuario lo pida.
+- Pendiente: probar el cambio de idioma ES/EN/PT en el móvil (A0) y hacer push del launcher.

@@ -609,9 +609,11 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: prueba del esquema vanilla: todo OK salvo la rueda de formas desde ←, que crasheaba. Causa: al soltar la tecla, la rueda se cierra mientras se dibuja y la guía recibía partida sin situación (NPE). Arreglo: la guía no se dibuja si la pantalla ya cerró, y las teclas DBC (no `key.*`) que abren un menú desde un botón quedan sostenidas hasta A o B. DbrServerPack 86c7d438, experimental b90f9a2, TESTEO y copia al cliente PC.
 
+- 2026-11-11: el usuario confirma que todo el mando en PC funciona por ahora (esquema vanilla, rueda de formas, vuelo, guia y pistas). Queda: telefono con mando por Bluetooth, lock-on y PvP en TESTEO, luego 9 y 10.
+
 ## Siguiente paso
 
-Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
+Fase 8 escrita, subida y desplegada (TESTEO + experimental). Mando en PC con Xbox probado y OK (2026-11-11). Falta probar a mano: telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
 
 ## Mando en PC, ronda 2 (aprobado 2026-11-11): movimiento DBC, correr, volar con doble toque y guía de botones
 
