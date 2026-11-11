@@ -142,4 +142,9 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_vibracion_ki">Ki y formas</string>
     <string name="dbr_vibracion_mundo">Mundo (romper bloques, caídas)</string>
     <string name="dbr_vibracion_avisos">Avisos (privados, menciones, nivel, premio del gacha)</string>
+    <string name="dbr_aviso_calor">El teléfono se está calentando. ¿Bajar los gráficos para enfriarlo?</string>
+    <string name="dbr_aviso_fresco">El teléfono ya está más fresco. ¿Volver a los gráficos de antes?</string>
+    <string name="dbr_aviso_bateria">Batería al %1$d%%</string>
+    <string name="dbr_aviso_reducir">Reducir</string>
+    <string name="dbr_aviso_restaurar">Restaurar</string>
 </resources>

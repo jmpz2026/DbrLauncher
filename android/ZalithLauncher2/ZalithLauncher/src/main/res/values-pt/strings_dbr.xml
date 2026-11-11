@@ -142,4 +142,9 @@ Ao ativá-la, o motor de renderização muda para LTW (OpenGL ES 3), que é o qu
     <string name="dbr_vibracion_ki">Ki e formas</string>
     <string name="dbr_vibracion_mundo">Mundo (quebrar blocos, quedas)</string>
     <string name="dbr_vibracion_avisos">Avisos (mensagens privadas, menções, nível, prêmio do gacha)</string>
+    <string name="dbr_aviso_calor">O celular está esquentando. Baixar os gráficos para esfriar?</string>
+    <string name="dbr_aviso_fresco">O celular esfriou. Voltar aos gráficos de antes?</string>
+    <string name="dbr_aviso_bateria">Bateria em %1$d%%</string>
+    <string name="dbr_aviso_reducir">Reduzir</string>
+    <string name="dbr_aviso_restaurar">Restaurar</string>
 </resources>

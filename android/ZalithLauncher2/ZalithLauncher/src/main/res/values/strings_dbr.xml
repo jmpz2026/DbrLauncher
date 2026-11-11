@@ -153,4 +153,9 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_vibracion_ki">Ki and forms</string>
     <string name="dbr_vibracion_mundo">World (breaking blocks, falls)</string>
     <string name="dbr_vibracion_avisos">Alerts (private messages, mentions, level, gacha prize)</string>
+    <string name="dbr_aviso_calor">The phone is getting hot. Lower the graphics to cool it down?</string>
+    <string name="dbr_aviso_fresco">The phone is cooler. Restore the graphics?</string>
+    <string name="dbr_aviso_bateria">Battery at %1$d%%</string>
+    <string name="dbr_aviso_reducir">Reduce</string>
+    <string name="dbr_aviso_restaurar">Restore</string>
 </resources>

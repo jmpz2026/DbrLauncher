@@ -53,6 +53,10 @@ object CanalMovil {
      */
     val estado: StateFlow<Set<EstadoDbr>?> = _estado.asStateFlow()
 
+    /** Capabilities DbrCore announced in HOLA. */
+    @Volatile
+    private var capacidadesJuego = 0
+
     private val ritmoInsertar = LimiteRitmo(
         mapOf(Protocolo.INSERTAR to LimiteRitmo.Limite(capacidad = 5, porSegundo = 5.0))
     )
@@ -68,6 +72,12 @@ object CanalMovil {
         return enviar(Protocolo.INSERTAR, datos)
     }
 
+    /** Reduced mode for DbrCore. False when the game is not connected or its DbrCore is older. */
+    fun enviarReducir(activo: Boolean): Boolean {
+        if (!_conectado.value || (capacidadesJuego and Protocolo.CAP_REDUCIR) == 0) return false
+        return enviar(Protocolo.REDUCIR, Protocolo.reducir(activo))
+    }
+
     fun recibir(tipo: Int, datos: ByteArray?) {
         if (!limite.permitir(tipo)) {
             avisarUnaVez("ritmo-$tipo", "message type $tipo dropped (unknown type or rate limit)")
@@ -81,8 +91,10 @@ object CanalMovil {
         when (mensaje) {
             is Mensaje.Hola -> {
                 _conectado.value = true
+                capacidadesJuego = mensaje.capacidades
                 Logger.info(TAG, "game connected, capabilities 0x${Integer.toHexString(mensaje.capacidades)}")
                 enviar(Protocolo.HOLA_ACK, Protocolo.holaAck())
+                if (AvisosSistema.reducido.value) enviarReducir(true)
             }
             is Mensaje.AreaTexto -> if (_conectado.value) _areaTexto.value = mensaje.area
             is Mensaje.AbrirUrl -> if (_conectado.value) ZLNativeInvoker.openLink(mensaje.url)
@@ -95,7 +107,9 @@ object CanalMovil {
     /** Called when a new game starts; [gameDir] holds the modpack's vibration catalog. */
     fun reiniciar(gameDir: java.io.File? = null) {
         VibradorDbr.cargar(gameDir)
+        AvisosSistema.reiniciar()
         _conectado.value = false
+        capacidadesJuego = 0
         _areaTexto.value = null
         _sugerencias.value = Mensaje.Sugerencias(false, emptyList(), emptyList())
         _estado.value = null

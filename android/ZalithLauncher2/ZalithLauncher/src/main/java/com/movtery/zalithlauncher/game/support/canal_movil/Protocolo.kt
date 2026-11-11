@@ -29,6 +29,8 @@ object Protocolo {
     // Launcher -> game
     const val HOLA_ACK = 101
     const val INSERTAR = 102
+    /** Reduced mode on/off after the heat warning (AvisosSistema): u8 0 or 1. */
+    const val REDUCIR = 103
 
     /** Capabilities this launcher build implements (bit flags, sent in HOLA_ACK). */
     const val CAP_AREA_TEXTO = 1 shl 0
@@ -36,7 +38,9 @@ object Protocolo {
     const val CAP_CHIPS = 1 shl 2
     const val CAP_ESTADO = 1 shl 3
     const val CAP_VIBRAR = 1 shl 4
-    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR
+    /** Game side: DbrCore applies REDUCIR. Launcher side: it may send it. */
+    const val CAP_REDUCIR = 1 shl 5
+    const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or CAP_REDUCIR
 
     /** VIBRAR id: lowercase ASCII "categoria.nombre", at most this many bytes. */
     const val MAX_ID_VIBRAR = 32
@@ -166,6 +170,8 @@ object Protocolo {
         }
         return if (texto.any { Character.isISOControl(it) }) null else texto
     }
+
+    fun reducir(activo: Boolean): ByteArray = byteArrayOf(VERSION.toByte(), if (activo) 1 else 0)
 
     fun holaAck(): ByteArray =
         ByteBuffer.allocate(5).put(VERSION.toByte()).putInt(CAPACIDADES).array()

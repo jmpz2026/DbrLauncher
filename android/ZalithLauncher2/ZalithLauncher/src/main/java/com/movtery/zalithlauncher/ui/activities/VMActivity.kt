@@ -52,6 +52,7 @@ import androidx.compose.ui.platform.LocalView
 import android.view.ViewTreeObserver
 import android.graphics.Rect as AndroidRect
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
+import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
 import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
 import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
 import com.movtery.zalithlauncher.ui.screens.game.elements.EditorFrasesDbr
@@ -565,7 +566,11 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         fun getDisplayPixels(pixels: Int): Int {
             return withHandler {
                 when (type) {
-                    HandlerType.GAME -> getDisplayFriendlyRes(pixels, AllSettings.resolutionRatio.getValue().toFloat() / 100f)
+                    HandlerType.GAME -> {
+                        // Dbr: reduced mode after the heat warning lowers the player's own ratio.
+                        val reduccion = if (AvisosSistema.reducido.value) AvisosSistema.FACTOR_REDUCIDO else 1f
+                        getDisplayFriendlyRes(pixels, AllSettings.resolutionRatio.getValue().toFloat() / 100f * reduccion)
+                    }
                     HandlerType.JVM -> getDisplayFriendlyRes(pixels, 0.8f)
                 }
             }
@@ -743,6 +748,15 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
             val screenSize = rememberBoxSize()
 
             val changed by vmViewModel.onConfigurationChanged.collectAsStateWithLifecycle()
+            // Dbr: reduced mode toggled from the heat warning, apply the new resolution live.
+            val reducidoDbr by AvisosSistema.reducido.collectAsStateWithLifecycle()
+            var reducidoAplicado by remember { mutableStateOf(reducidoDbr) }
+            LaunchedEffect(reducidoDbr) {
+                if (reducidoDbr != reducidoAplicado && vmViewModel.isRunning) {
+                    refreshWindowSize(screenSize = screenSize)
+                }
+                reducidoAplicado = reducidoDbr
+            }
             LaunchedEffect(screenSize, changed) {
                 vmViewModel.screenSize = screenSize
                 vmViewModel.screenSizeBridge.provideData(screenSize)

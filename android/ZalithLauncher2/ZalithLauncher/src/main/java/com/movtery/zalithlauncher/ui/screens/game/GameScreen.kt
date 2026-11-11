@@ -19,6 +19,8 @@
 package com.movtery.zalithlauncher.ui.screens.game
 
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
+import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
+import com.movtery.zalithlauncher.ui.screens.game.elements.AvisoSistemaDbr
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -682,6 +684,13 @@ fun GameScreen(
                 sensitivity = AllSettings.gyroscopeSensitivity.state / 100f
             )
         }
+
+        // DBR: heat and battery warnings (AvisosSistema), listened to only while in game.
+        DisposableEffect(context) {
+            AvisosSistema.iniciar(context)
+            onDispose { AvisosSistema.detener(context) }
+        }
+        AvisoSistemaDbr(modifier = Modifier.align(Alignment.TopCenter))
 
         GameInfoBox(
             modifier = Modifier
