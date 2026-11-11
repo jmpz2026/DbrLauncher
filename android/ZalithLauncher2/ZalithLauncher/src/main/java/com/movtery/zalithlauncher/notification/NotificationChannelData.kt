@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.notification
 
+import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.Context
 import com.movtery.zalithlauncher.R
@@ -37,5 +38,11 @@ enum class NotificationChannelData(
     /**
      * JVM 保活服务
      */
-    GAME_SERVICE_CHANNEL("game.service", { it.getString(R.string.notification_jvm_running_name) }, null, IMPORTANCE_LOW)
+    GAME_SERVICE_CHANNEL("game.service", { it.getString(R.string.notification_jvm_running_name) }, null, IMPORTANCE_LOW),
+
+    /** DBR: game events while the app is in the background (canal_movil/NotificadorDbr). */
+    DBR_PRIVADO("dbr.privado", { it.getString(R.string.dbr_notif_canal_privado) }, null, IMPORTANCE_DEFAULT),
+    DBR_EVENTOS("dbr.eventos", { it.getString(R.string.dbr_notif_canal_eventos) }, null, IMPORTANCE_DEFAULT),
+    DBR_PELIGRO("dbr.peligro", { it.getString(R.string.dbr_notif_canal_peligro) }, null, IMPORTANCE_DEFAULT),
+    DBR_CONEXION("dbr.conexion", { it.getString(R.string.dbr_notif_canal_conexion) }, null, IMPORTANCE_DEFAULT)
 }

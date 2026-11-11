@@ -36,6 +36,7 @@ fun ControlDbr(
 ) {
     val reducido by AvisosSistema.reducido.collectAsStateWithLifecycle()
     val vibra = AllSettings.dbrVibracion.state
+    val notif = AllSettings.dbrNotif.state
     val listState = rememberLazyListState()
 
     @Composable
@@ -98,5 +99,10 @@ fun ControlDbr(
         item { interruptor(AllSettings.dbrChips, R.string.dbr_menu_chips) }
         // PANTALLA carries the flag: refreshing the window size measures and sends it again.
         item { interruptor(AllSettings.dbrToqueAmpliado, R.string.dbr_menu_toque, alCambiar = onRefreshWindowSize) }
+        item { interruptor(AllSettings.dbrNotif, R.string.dbr_menu_notif) }
+        item { interruptor(AllSettings.dbrNotifPrivado, R.string.dbr_notif_canal_privado, notif) }
+        item { interruptor(AllSettings.dbrNotifEventos, R.string.dbr_notif_canal_eventos, notif) }
+        item { interruptor(AllSettings.dbrNotifPeligro, R.string.dbr_notif_canal_peligro, notif) }
+        item { interruptor(AllSettings.dbrNotifConexion, R.string.dbr_notif_canal_conexion, notif) }
     }
 }

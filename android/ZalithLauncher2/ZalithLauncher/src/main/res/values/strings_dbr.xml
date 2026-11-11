@@ -163,4 +163,22 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_menu_reducido">Reduced mode (lower graphics)</string>
     <string name="dbr_menu_chips">Command chips over the keyboard</string>
     <string name="dbr_menu_toque">Wider touch zones in Dbr screens</string>
+    <string name="dbr_menu_notif">Notifications while the game is in the background</string>
+    <string name="dbr_notif_canal_privado">Private messages</string>
+    <string name="dbr_notif_canal_eventos">Server events</string>
+    <string name="dbr_notif_canal_peligro">Danger</string>
+    <string name="dbr_notif_canal_conexion">Connection</string>
+    <string name="dbr_notif_cuenta">%1$d new</string>
+    <string name="dbr_notif_privado_mensaje_de">Private message from %1$s</string>
+    <string name="dbr_notif_privado_mensaje">New private message</string>
+    <string name="dbr_notif_privado_mencion_de">%1$s mentioned you in the chat</string>
+    <string name="dbr_notif_privado_mencion">Someone mentioned you in the chat</string>
+    <string name="dbr_notif_eventos_invasion">An invasion has started</string>
+    <string name="dbr_notif_eventos_generico">A server event has started</string>
+    <string name="dbr_notif_peligro_atacado">You are being attacked</string>
+    <string name="dbr_notif_peligro_vida_baja">Your health is low</string>
+    <string name="dbr_notif_conexion_afk">You are AFK</string>
+    <string name="dbr_notif_conexion_afk_kick">You will be kicked soon for being AFK</string>
+    <string name="dbr_notif_conexion_desconectado">You were disconnected from the server</string>
+    <string name="dbr_notif_permiso">While the game is in the background, Dbr can tell you about private messages, events, attacks and disconnections. Messages never show their text, and the lock screen never shows names. Allow notifications?</string>
 </resources>

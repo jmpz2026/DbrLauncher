@@ -28,6 +28,7 @@ object CanalMovil {
             Protocolo.SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
             Protocolo.ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
             Protocolo.VIBRAR to LimiteRitmo.Limite(capacidad = 8, porSegundo = 8.0),
+            Protocolo.NOTIFICAR to LimiteRitmo.Limite(capacidad = 4, porSegundo = 1.0),
             Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
         )
     )
@@ -120,6 +121,7 @@ object CanalMovil {
             is Mensaje.Sugerencias -> if (_conectado.value) _sugerencias.value = mensaje
             is Mensaje.Estado -> if (_conectado.value) _estado.value = EstadoDbr.desdeBits(mensaje.bits)
             is Mensaje.Vibrar -> if (_conectado.value) VibradorDbr.reproducir(mensaje.id, mensaje.fuerza)
+            is Mensaje.Notificar -> if (_conectado.value) NotificadorDbr.publicar(mensaje.id, mensaje.nombre)
         }
     }
 
@@ -127,6 +129,7 @@ object CanalMovil {
     fun reiniciar(gameDir: java.io.File? = null) {
         VibradorDbr.cargar(gameDir)
         AvisosSistema.reiniciar()
+        NotificadorDbr.reiniciar()
         _conectado.value = false
         capacidadesJuego = 0
         _areaTexto.value = null

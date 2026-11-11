@@ -21,6 +21,7 @@ package com.movtery.zalithlauncher.ui.screens.game
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
 import com.movtery.zalithlauncher.ui.screens.game.elements.AvisoSistemaDbr
+import com.movtery.zalithlauncher.ui.screens.game.elements.PermisoNotifDbr
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -691,6 +692,7 @@ fun GameScreen(
             onDispose { AvisosSistema.detener(context) }
         }
         AvisoSistemaDbr(modifier = Modifier.align(Alignment.TopCenter))
+        PermisoNotifDbr()
 
         GameInfoBox(
             modifier = Modifier

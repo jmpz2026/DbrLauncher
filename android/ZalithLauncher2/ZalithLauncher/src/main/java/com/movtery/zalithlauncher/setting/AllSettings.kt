@@ -110,6 +110,15 @@ object AllSettings : SettingsRegistry() {
     /** DBR: wider touch zones in Dbr screens (sent to DbrCore inside PANTALLA). */
     val dbrToqueAmpliado = boolSetting("dbrToqueAmpliado", true)
 
+    /** DBR: Android notifications while the game is in the background (canal_movil/NotificadorDbr). */
+    val dbrNotif = boolSetting("dbrNotif", true)
+    val dbrNotifPrivado = boolSetting("dbrNotifPrivado", true)
+    val dbrNotifEventos = boolSetting("dbrNotifEventos", true)
+    val dbrNotifPeligro = boolSetting("dbrNotifPeligro", true)
+    val dbrNotifConexion = boolSetting("dbrNotifConexion", true)
+    /** The permission explanation was already shown once. */
+    val dbrNotifPermisoPedido = boolSetting("dbrNotifPermisoPedido", false)
+
     //Renderer
     /**
      * 全局渲染器

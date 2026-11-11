@@ -55,6 +55,7 @@ import android.graphics.Rect as AndroidRect
 import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import com.movtery.zalithlauncher.game.support.canal_movil.Protocolo
 import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
+import com.movtery.zalithlauncher.game.support.canal_movil.NotificadorDbr
 import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
 import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
 import com.movtery.zalithlauncher.ui.screens.game.elements.EditorFrasesDbr
@@ -530,11 +531,13 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     override fun onStart() {
         super.onStart()
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1)
+        NotificadorDbr.alVolver(this)
     }
 
     override fun onStop() {
         super.onStop()
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 0)
+        NotificadorDbr.alSalir(this)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

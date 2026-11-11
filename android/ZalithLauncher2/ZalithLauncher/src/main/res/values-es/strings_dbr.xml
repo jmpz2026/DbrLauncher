@@ -152,4 +152,22 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_menu_reducido">Modo reducido (gráficos más bajos)</string>
     <string name="dbr_menu_chips">Chips de comandos sobre el teclado</string>
     <string name="dbr_menu_toque">Zona de toque ampliada en pantallas Dbr</string>
+    <string name="dbr_menu_notif">Notificaciones con el juego en segundo plano</string>
+    <string name="dbr_notif_canal_privado">Mensajes privados</string>
+    <string name="dbr_notif_canal_eventos">Eventos del servidor</string>
+    <string name="dbr_notif_canal_peligro">Peligro</string>
+    <string name="dbr_notif_canal_conexion">Conexión</string>
+    <string name="dbr_notif_cuenta">%1$d nuevas</string>
+    <string name="dbr_notif_privado_mensaje_de">Mensaje privado de %1$s</string>
+    <string name="dbr_notif_privado_mensaje">Nuevo mensaje privado</string>
+    <string name="dbr_notif_privado_mencion_de">%1$s te mencionó en el chat</string>
+    <string name="dbr_notif_privado_mencion">Alguien te mencionó en el chat</string>
+    <string name="dbr_notif_eventos_invasion">Empezó una invasión</string>
+    <string name="dbr_notif_eventos_generico">Empezó un evento del servidor</string>
+    <string name="dbr_notif_peligro_atacado">Te están atacando</string>
+    <string name="dbr_notif_peligro_vida_baja">Tienes poca vida</string>
+    <string name="dbr_notif_conexion_afk">Estás AFK</string>
+    <string name="dbr_notif_conexion_afk_kick">Pronto te expulsarán por estar AFK</string>
+    <string name="dbr_notif_conexion_desconectado">Te desconectaste del servidor</string>
+    <string name="dbr_notif_permiso">Con el juego en segundo plano, Dbr puede avisarte de mensajes privados, eventos, ataques y desconexiones. Los mensajes nunca muestran su texto y la pantalla de bloqueo nunca muestra nombres. ¿Permitir notificaciones?</string>
 </resources>

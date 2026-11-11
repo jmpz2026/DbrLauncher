@@ -24,6 +24,8 @@ object Protocolo {
     const val ESTADO = 4
     /** Haptic event: short id "categoria.nombre" + strength (Vibracion.kt plays it). */
     const val VIBRAR = 5
+    /** Android notification while the app is in the background: id "categoria.clave" + optional name. */
+    const val NOTIFICAR = 6
     const val ABRIR_URL = 9
 
     // Launcher -> game
@@ -43,8 +45,9 @@ object Protocolo {
     /** Game side: DbrCore applies REDUCIR. Launcher side: it may send it. */
     const val CAP_REDUCIR = 1 shl 5
     const val CAP_PANTALLA = 1 shl 6
+    const val CAP_NOTIFICAR = 1 shl 7
     const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or
-        CAP_REDUCIR or CAP_PANTALLA
+        CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR
 
     /** PANTALLA limits: no cutout takes more than a quarter of a side; window size in mm. */
     const val MAX_MARGEN = 0.25f
@@ -54,6 +57,10 @@ object Protocolo {
     /** VIBRAR id: lowercase ASCII "categoria.nombre", at most this many bytes. */
     const val MAX_ID_VIBRAR = 32
     private val ID_VIBRAR = Regex("[a-z]{1,12}[.][a-z0-9_]{1,19}")
+
+    /** NOTIFICAR name: a player name, at most 16 ASCII letters, digits or underscores. */
+    const val MAX_NOMBRE = 16
+    private val NOMBRE = Regex("[A-Za-z0-9_]{0,16}")
 
     /** SUGERENCIAS limits: chips from the server tree and popup suggestions, each short. */
     const val MAX_CHIPS = 12
@@ -77,6 +84,8 @@ object Protocolo {
         data class Estado(val bits: Int) : Mensaje
         /** fuerza in 0..1 (u8 / 255). */
         data class Vibrar(val id: String, val fuerza: Float) : Mensaje
+        /** nombre is empty when the event has no player name. */
+        data class Notificar(val id: String, val nombre: String) : Mensaje
         /** Chat state for the chip row. abierto false = chat closed, lists are empty. */
         data class Sugerencias(
             val abierto: Boolean,
@@ -98,6 +107,7 @@ object Protocolo {
             SUGERENCIAS -> leerSugerencias(buf)
             ESTADO -> if (buf.remaining() == 4) Mensaje.Estado(buf.int) else null
             VIBRAR -> leerVibrar(buf)
+            NOTIFICAR -> leerNotificar(buf)
             ABRIR_URL -> leerTexto(buf)?.let { Mensaje.AbrirUrl(it) }
             else -> null
         }
@@ -132,6 +142,23 @@ object Protocolo {
         if (!ID_VIBRAR.matches(id)) return null
         val fuerza = (buf.get().toInt() and 0xFF) / 255f
         return Mensaje.Vibrar(id, fuerza)
+    }
+
+    /** u8 id length + ASCII id + u8 name length + ASCII name (0..[MAX_NOMBRE]). */
+    private fun leerNotificar(buf: ByteBuffer): Mensaje? {
+        val id = leerAscii(buf, 1, MAX_ID_VIBRAR) ?: return null
+        val nombre = leerAscii(buf, 0, MAX_NOMBRE) ?: return null
+        if (buf.hasRemaining() || !ID_VIBRAR.matches(id) || !NOMBRE.matches(nombre)) return null
+        return Mensaje.Notificar(id, nombre)
+    }
+
+    private fun leerAscii(buf: ByteBuffer, min: Int, max: Int): String? {
+        if (!buf.hasRemaining()) return null
+        val largo = buf.get().toInt() and 0xFF
+        if (largo < min || largo > max || buf.remaining() < largo) return null
+        val bytes = ByteArray(largo)
+        buf.get(bytes)
+        return String(bytes, StandardCharsets.US_ASCII)
     }
 
     private fun leerSugerencias(buf: ByteBuffer): Mensaje? {
