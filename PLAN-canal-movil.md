@@ -173,6 +173,10 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-11: DbrCorePlugin a54aa84 desplegado en TESTEO (respaldo `.bak-20261111-skript`) y empujado; launcher fd8ff9d empujado. Falta probar en telefono: fila de chips/frases, campo de texto sobre el teclado y links.
 
+- 2026-11-11: editor de frases sacado de la fila de chips (se cerraba con el teclado) y teclado reabierto al cerrarlo, launcher 6653138. Probado en telefono por el usuario: chips, frases, popup sin comandos de Skript, todo ok. **Paso 4 cerrado.**
+
 ## Siguiente paso
 
-Paso 4 queda pendiente solo de pruebas: en el servidor de pruebas, que la config migrada de DbrAntiCommand bloquee lo mismo; en el telefono, chips y frases (escribir sin enviar). Luego paso 5: D + E (`core.dbc`, estados, `VisibilityType` ampliado, editor, layout oficial, catalogo de vibracion).
+Paso 5 (D + E), propuesto en dos partes y pendiente del OK del usuario:
+- 5a (D, controles por contexto): `core.dbc` en DbrCore (mover `DbrCamaraMod/client/Dbc.java`, DbrCamaraMod lo usa); mensaje `ESTADO` (tipo 4, juego -> launcher, bits: cargando ki, transformando, chat, contenedor, pantalla Dbr, otra pantalla; solo al cambiar); `CAP_ESTADO`; LayerController: campos opcionales `mostrarSi`/`ocultarSi` (listas de estados) en capa y widget, compatibles con layouts viejos; evaluacion en `Layout.kt` junto a `VisibilityType`; fundido 120 ms y boton tocado no desaparece hasta soltar; editor: seccion "Condiciones" con casillas; layout oficial Dbr con condiciones.
+- 5b (E, vibracion): mensaje `VIBRAR` (tipo 5, id corto + fuerza); `core.movil.Vibrar` con los eventos del plan; catalogo `vibracion.json` en DBR-ASSETS verificado por `DbrSync`; topes en codigo (duracion, pulsos, separacion, por segundo); ajustes (general, intensidad, por categoria) sobre `VibrationHandler`.
