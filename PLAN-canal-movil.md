@@ -228,6 +228,7 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: el mod de prueba crasheaba el juego en el menu principal (`IllegalAccessError`: la clase `Abuso` con `@SubscribeEvent` no era `public`). Corregido, recompilado y subido de nuevo. Fallo del mod de prueba, no del launcher.
 - 2026-11-11: `/dbrabuso` corrido en el telefono (18:26). Fases 1–4 OK, sin crash ni cuelgue; URLs 1–5 rechazadas; juego vivo al terminar. Falta confirmacion del usuario: vibracion de la fase 5 y dialogos de las URLs 6–7.
 - 2026-11-11: el usuario confirma fase 5 y URLs 6–7. **Parte 1 del paso 10 cerrada**, sin bloqueantes. Jar de prueba quitado del telefono. Siguiente: parte 2 (push `android-zalith`, tag `android-v31`, tag del launcher PC).
+- 2026-11-11: **parte 2 hecha.** Launcher PC `v1.0.38` publicado (exe, blockmap, AppImage, deb, latest*.yml). `android-v31`: el primer CI fallo (`generateReleaseLintVitalReportModel` lee `src/main/assets` donde escribe `:LWJGL2Bridge:jar` sin dependencia, efecto de fd8ff9d); arreglo 2f733f8 (las tareas lint dependen del jar), tag movido, CI verde, APK publicado y `version.json` build 31 (3343814). 8 tests JVM heredados de ZL2 fallan desde la base (rutas `F:\Download`, `VersionCompareTest`); no bloquean. Siguiente: parte 3 (inventario de produccion por SFTP, solo lectura).
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
