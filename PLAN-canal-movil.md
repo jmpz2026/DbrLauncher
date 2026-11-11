@@ -165,6 +165,8 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: chips hechos. Launcher a6bb973 (`SUGERENCIAS`/`INSERTAR`, `FrasesMovil` en `dbr_frases.txt`, `FilaChipsDbr` sobre el teclado; el juego sube lo que mide la fila). DbrCore f33d1fdf (`core.movil.ChipsMovil`, `ChatAutocompletado` publica y recibe). 16 tests launcher + 4 DbrCore ok, DbrMod compila. Sin probar en telefono.
 - 2026-11-11: auditoria aplicada (subagente, sin push): DbrStaff f90112f, DbrBendicion 75f8276, DbrLogros 8433574, DbrPlugin ad55a3a, DbrPoder bf32c66, DbrBattlePass 16659bc, DbrQuestion 46e7975. Antes de desplegar: dar `dbrbendicion.admin`/`dbrlogros.admin` a quien hoy tiene `Admin` y `dbrpoder.dar` a quien usa /darpoder (o activar `permiso-admin-legado`). `dbrpoder.poderu` solo declarado.
 
+- 2026-11-11: todo empujado. Desplegado en TESTEO (DbrServerPack, DbrCorePlugin y los 7 plugins de la auditoria, con `.bak-20261111-chips`; DbrAntiCommand retirado como `.jar.bak-20261111-absorbido`), en el cliente PC (`dbr-launcher/game/mods`) y en DBR-ASSETS experimental (65591fe). APK debug 2.4.10 compilado.
+
 ## Siguiente paso
 
 Paso 4 queda pendiente solo de pruebas: en el servidor de pruebas, que la config migrada de DbrAntiCommand bloquee lo mismo; en el telefono, chips y frases (escribir sin enviar). Luego paso 5: D + E (`core.dbc`, estados, `VisibilityType` ampliado, editor, layout oficial, catalogo de vibracion).
