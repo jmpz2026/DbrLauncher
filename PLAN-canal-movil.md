@@ -605,6 +605,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 
 - 2026-11-11: pistas de partida tipo Bedrock (decision del usuario: todas): GuiaBotones.partida(Situacion) con romper/usar/colocar, atacar/hablar/fijar, comer/beber/tensar, nadar, volar (subir/bajar/dejar de volar), transformar/destransformar, tecnica elegida; max 3, del mapa real, se van a los 4 s. Desplegado + copia al cliente PC.
 
+- 2026-11-11: diagnóstico frente al mando de Bedrock: en partida, 7 de 13 acciones vanilla estaban en su sitio. El usuario eligió el esquema punto por punto (sección "Mando: esquema vanilla", al final). Hecho en DbrServerPack dd2bdbaf (perfil v4 con migración solo de los perfiles de fábrica v3; las pistas de la rueda y del lock-on salen del mapeo real; tests del mando sin fallos), experimental 51edde0, TESTEO y copia al cliente PC. Falta la prueba del usuario con Xbox.
+
 ## Siguiente paso
 
 Fase 8 escrita, subida y desplegada (TESTEO + experimental). Falta probarla a mano: PC con mando Xbox, telefono con mando por Bluetooth, lock-on y PvP en TESTEO; ver la lista de la respuesta del 2026-11-11 y la seccion Verificacion. Despues 9 (docs) y 10 (release android-v30 coordinado). Pendiente aparte: retoque L31 (glifos) cuando vuelva de Claude Design.
@@ -702,3 +704,28 @@ El usuario probó el mando en PC con el pack `ecf3c800`, copiado a mano. Las té
    - franja en inventario, pantallas Dbr y vanilla;
    - guía con lock-on, rueda y menú DBC.
 8. Bitácora en `PLAN-canal-movil.md`.
+
+## Mando: esquema vanilla (2026-11-11)
+
+Decisiones del usuario: lo vanilla en el sitio de Bedrock y lo de DBC encima.
+
+| Botón | Toque | Otro |
+|---|---|---|
+| RT / LT | atacar / usar | |
+| A | saltar | doble: vuelo DBC |
+| B | soltar objeto | |
+| X | técnica elegida | LB+X: técnica 3 |
+| Y | inventario | mantener: cargar ki |
+| LB | barra anterior | mantener: modificador (LB+A/B/X/Y técnicas 1-4) |
+| RB | barra siguiente | mantener: rueda |
+| LS | correr | doble: turbo |
+| RS | agacharse | LB+RS: lock-on |
+| ↑ | cámara | LB+↑: transformar |
+| ↓ | menú de acciones DBC | LB+↓: destransformar |
+| ← / → | rueda de formas / Data Sheet | |
+| BACK | chat | mantener: lista de jugadores |
+| START | pausa | |
+
+- **Rueda, página 1:** ocultar HUD, menú de acciones, lista de jugadores, destransformar, Info Panel, Scouter Functions, Story System y ajustes.
+- **Menús:** sin cambios.
+- **Migración v4:** solo pasa al esquema nuevo el perfil que seguía igual al de fábrica v3 con modificador LB. Al cambiar el modificador a RB, la barra sigue la posición de los botones.
