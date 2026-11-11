@@ -135,6 +135,7 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_estado_contenedor">Inventario o cofre</string>
     <string name="dbr_estado_pantalla_dbr">Pantalla Dbr</string>
     <string name="dbr_estado_otra_pantalla">Pausa u otra pantalla</string>
+    <string name="dbr_estado_fijando">Objetivo fijado (lock-on)</string>
     <string name="dbr_vibracion_title">Vibración</string>
     <string name="dbr_vibracion_summary">El teléfono vibra con lo que pasa en el juego (golpes, ki, avisos).</string>
     <string name="dbr_vibracion_intensidad">Intensidad</string>
@@ -152,6 +153,8 @@ Al activarla se cambia el motor de render a LTW (OpenGL ES 3), que es el que nec
     <string name="dbr_menu_reducido">Modo reducido (gráficos más bajos)</string>
     <string name="dbr_menu_chips">Chips de comandos sobre el teclado</string>
     <string name="dbr_menu_texto_sync">Teclado completo en el chat (autocorrector, voz)</string>
+    <string name="dbr_barra_vacia">Escribe en el chat…</string>
+    <string name="dbr_teclado_tapa_chat">Tu teclado tapa el chat: cierra su barra de herramientas o usa el modo flotante.</string>
     <string name="dbr_menu_toque">Zona de toque ampliada en pantallas Dbr</string>
     <string name="dbr_menu_notif">Notificaciones con el juego en segundo plano</string>
     <string name="dbr_notif_canal_privado">Mensajes privados</string>

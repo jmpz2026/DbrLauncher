@@ -69,6 +69,15 @@ object CanalMovil {
     /** True when the game's DbrCore takes TEXTO_EDITAR. */
     fun juegoSoportaTexto(): Boolean = _conectado.value && (capacidadesJuego and Protocolo.CAP_TEXTO) != 0
 
+    fun juegoSoportaMando(): Boolean = _conectado.value && (capacidadesJuego and Protocolo.CAP_MANDO) != 0
+
+    /** Gamepad state (MandoDbr). */
+    fun enviarMandoEstado(estado: ByteArray): Boolean =
+        juegoSoportaMando() && enviar(Protocolo.MANDO_ESTADO, Protocolo.mandoEstado(estado))
+
+    fun enviarMandoInfo(conectado: Boolean, modelo: String): Boolean =
+        juegoSoportaMando() && enviar(Protocolo.MANDO_INFO, Protocolo.mandoInfo(conectado, modelo))
+
     /** Keyboard edit of the chat field (payload built by TextoSincronizado). */
     fun enviarTexto(datos: ByteArray): Boolean {
         if (!juegoSoportaTexto() || _texto.value?.abierto != true) return false
@@ -130,6 +139,7 @@ object CanalMovil {
                 capacidadesJuego = mensaje.capacidades
                 Logger.info(TAG, "game connected, capabilities 0x${Integer.toHexString(mensaje.capacidades)}")
                 enviar(Protocolo.HOLA_ACK, Protocolo.holaAck())
+                MandoDbr.reiniciar()
                 if (AvisosSistema.reducido.value) enviarReducir(true)
                 enviarPantalla()
             }

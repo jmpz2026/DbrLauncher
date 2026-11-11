@@ -73,4 +73,5 @@ private fun EstadoDbr.textoRes(): Int = when (this) {
     EstadoDbr.CONTENEDOR -> R.string.dbr_estado_contenedor
     EstadoDbr.PANTALLA_DBR -> R.string.dbr_estado_pantalla_dbr
     EstadoDbr.OTRA_PANTALLA -> R.string.dbr_estado_otra_pantalla
+    EstadoDbr.FIJANDO -> R.string.dbr_estado_fijando
 }

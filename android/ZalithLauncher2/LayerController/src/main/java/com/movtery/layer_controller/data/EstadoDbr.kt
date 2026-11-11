@@ -33,7 +33,11 @@ enum class EstadoDbr(val bit: Int) {
 
     /** Pause menu or any other screen open. */
     @SerialName("other_screen")
-    OTRA_PANTALLA(5);
+    OTRA_PANTALLA(5),
+
+    /** Lock-on active (DBC or DbrKiMod). */
+    @SerialName("lock_on")
+    FIJANDO(6);
 
     companion object {
         /** Decodes the ESTADO bit mask; unknown bits are ignored. */

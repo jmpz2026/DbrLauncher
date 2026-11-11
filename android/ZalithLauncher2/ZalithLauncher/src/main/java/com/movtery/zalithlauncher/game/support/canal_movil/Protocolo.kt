@@ -39,6 +39,10 @@ object Protocolo {
     const val PANTALLA = 104
     /** Keyboard edit of the chat field: same layout as TEXTO_ESTADO, launcher seq. */
     const val TEXTO_EDITAR = 105
+    /** Gamepad raw state (MandoDbr): short buttons, 4 signed stick bytes, 2 unsigned trigger bytes. */
+    const val MANDO_ESTADO = 106
+    /** Gamepad connected or not + model name (UTF-8, up to 64 bytes). */
+    const val MANDO_INFO = 107
 
     /** Capabilities this launcher build implements (bit flags, sent in HOLA_ACK). */
     const val CAP_AREA_TEXTO = 1 shl 0
@@ -52,8 +56,9 @@ object Protocolo {
     const val CAP_NOTIFICAR = 1 shl 7
     /** Synced chat text (TEXTO_ESTADO / TEXTO_EDITAR). */
     const val CAP_TEXTO = 1 shl 8
+    const val CAP_MANDO = 1 shl 9
     const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or
-        CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR or CAP_TEXTO
+        CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR or CAP_TEXTO or CAP_MANDO
 
     /** TEXTO_*: longest text in UTF-16 units (the 1.7.10 chat limit) and in UTF-8 bytes. */
     const val MAX_TEXTO = 100
@@ -305,6 +310,16 @@ object Protocolo {
         return ByteBuffer.allocate(26).put(VERSION.toByte())
             .putFloat(m(izq)).putFloat(m(arr)).putFloat(m(der)).putFloat(m(aba))
             .putFloat(anchoMm).putFloat(altoMm).put(flags.toByte()).array()
+    }
+
+    fun mandoEstado(estado: ByteArray): ByteArray =
+        ByteBuffer.allocate(1 + estado.size).put(VERSION.toByte()).put(estado).array()
+
+    fun mandoInfo(conectado: Boolean, modelo: String): ByteArray {
+        var b = modelo.trim().toByteArray(Charsets.UTF_8)
+        if (b.size > 64) b = b.copyOf(64)
+        return ByteBuffer.allocate(3 + b.size).put(VERSION.toByte()).put(if (conectado) 1 else 0)
+            .put(b.size.toByte()).put(b).array()
     }
 
     fun holaAck(): ByteArray =

@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -573,6 +574,11 @@ fun GameScreen(
         val screenSize = rememberBoxSize()
 
         if (!viewModel.isEditingLayout) {
+            // DBR 8b.2: with DbrCore the gamepad goes through the channel; it still hides the touch controls.
+            val actividadMando by com.movtery.zalithlauncher.game.support.canal_movil.MandoDbr.actividad.collectAsState()
+            LaunchedEffect(actividadMando) {
+                if (actividadMando > 0L) viewModel.switchControlLayer(HideLayerWhen.WhenGamepad)
+            }
             if (AllSettings.gamepadControl.state && gamepadViewModel.gamepadEngaged) {
                 //手柄事件监听
                 GamepadKeyListener(
@@ -1003,7 +1009,7 @@ private fun MouseControlLayout(
             onMouse = onMouseMoved,
             gamepadViewModel = gamepadViewModel,
             onTap = { position ->
-                CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), position.x.sumPosition(), position.y.sumPosition())
+                CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT.toInt(), position.x.sumPosition(), (position.y + com.movtery.zalithlauncher.game.support.canal_movil.DesplazamientoJuego.px).sumPosition())
             },
             onCapturedTap = {
                 if (AllSettings.gestureControl.state) {
@@ -1050,7 +1056,9 @@ private fun MouseControlLayout(
 }
 
 private fun Offset.sendPosition() {
-    CallbackBridge.sendCursorPos(x.sumPosition(), y.sumPosition())
+    // Dbr step 8d: the game may be drawn lifted above the keyboard; touch where it is seen.
+    val yJuego = y + com.movtery.zalithlauncher.game.support.canal_movil.DesplazamientoJuego.px
+    CallbackBridge.sendCursorPos(x.sumPosition(), yJuego.sumPosition())
 }
 
 private fun Float.sumPosition(): Float {

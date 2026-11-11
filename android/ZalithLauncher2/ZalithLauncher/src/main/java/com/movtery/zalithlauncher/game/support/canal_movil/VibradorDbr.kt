@@ -51,6 +51,13 @@ object VibradorDbr {
 
     fun reproducir(id: String, fuerza: Float) {
         val categoria = CategoriaVibracion.de(id) ?: return
+        // Playing with a gamepad that has a motor: it vibrates instead of the phone. The game already
+        // applied the gamepad profile's switches and intensity (DbrCore Vibrar), so the phone ones do not count.
+        MandoDbr.vibrador()?.let { m ->
+            val patron = catalogo.patron(id)
+            if (ritmo.permitir(SystemClock.uptimeMillis(), patron.duracion, patron.maxFuerza * fuerza)) tocar(m, patron, fuerza, 1f)
+            return
+        }
         if (!AllSettings.dbrVibracion.getValue() || !categoriaActiva(categoria)) return
         val intensidad = AllSettings.dbrVibracionIntensidad.getValue() / 100f
         if (intensidad <= 0f || fuerza <= 0f) return

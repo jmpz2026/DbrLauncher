@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.movtery.zalithlauncher.R
@@ -43,10 +44,10 @@ import java.io.File
 /** Height of the chip row; the game is lifted this much more so the chat bar stays visible. */
 val ALTO_FILA_CHIPS = 40.dp
 
-private val FONDO = Color(0xE01A1626)
-private val CHIP = Color(0xFF2B2440)
+internal val FONDO = Color(0xE01A1626)
+internal val CHIP = Color(0xFF2B2440)
 private val CHIP_FRASE = Color(0xFF3A2E5C)
-private val BORDE = Color(0xFF6E56CF)
+internal val BORDE = Color(0xFF6E56CF)
 
 private fun archivoFrases() = File(PathManager.DIR_FILES_PRIVATE, "dbr_frases.txt")
 
@@ -56,13 +57,18 @@ private fun archivoFrases() = File(PathManager.DIR_FILES_PRIVATE, "dbr_frases.tx
  * A tap only writes into the chat field through [CanalMovil.insertar]; nothing is ever sent.
  */
 @Composable
-fun FilaChipsDbr(frases: List<String>, onEditar: () -> Unit, modifier: Modifier = Modifier) {
+fun FilaChipsDbr(
+    frases: List<String>,
+    onEditar: () -> Unit,
+    modifier: Modifier = Modifier,
+    alto: Dp = ALTO_FILA_CHIPS,
+) {
     val estado by CanalMovil.sugerencias.collectAsState()
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(ALTO_FILA_CHIPS)
+            .height(alto)
             .background(FONDO)
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 6.dp),

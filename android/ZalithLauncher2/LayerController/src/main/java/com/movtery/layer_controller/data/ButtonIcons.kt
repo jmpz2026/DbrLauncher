@@ -25,6 +25,7 @@ object ButtonIcons {
         "list" to R.drawable.ctl_icon_list,
         "my_location" to R.drawable.ctl_icon_my_location,
         "speed" to R.drawable.ctl_icon_speed,
+        "swap_horiz" to R.drawable.ctl_icon_swap_horiz,
         "swords" to R.drawable.ctl_icon_swords,
         "touch_app" to R.drawable.ctl_icon_touch_app,
         "undo" to R.drawable.ctl_icon_undo

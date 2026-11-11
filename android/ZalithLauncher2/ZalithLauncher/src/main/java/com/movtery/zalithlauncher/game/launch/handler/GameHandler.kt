@@ -157,6 +157,8 @@ class GameHandler(
     override fun shouldIgnoreKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_UP && (event.flags and KeyEvent.FLAG_CANCELED) != 0) return false
 
+        // DBR 8b.2: games with DbrCore get the raw gamepad through the mobile channel.
+        if (com.movtery.zalithlauncher.game.support.canal_movil.MandoDbr.tecla(event)) return true
         if (event.isGamepadKeyEvent()) {
             return if (AllSettings.gamepadControl.state) {
                 //开启时，提前发送事件，在UI层处理（或重映射）

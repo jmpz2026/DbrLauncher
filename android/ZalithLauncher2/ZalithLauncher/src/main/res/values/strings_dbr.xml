@@ -146,6 +146,7 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_estado_contenedor">Inventory or chest</string>
     <string name="dbr_estado_pantalla_dbr">Dbr screen</string>
     <string name="dbr_estado_otra_pantalla">Pause or other screen</string>
+    <string name="dbr_estado_fijando">Target locked (lock-on)</string>
     <string name="dbr_vibracion_title">Vibration</string>
     <string name="dbr_vibracion_summary">The phone vibrates with game events (hits, ki, alerts).</string>
     <string name="dbr_vibracion_intensidad">Intensity</string>
@@ -163,6 +164,8 @@ Turning it on switches the render engine to LTW (OpenGL ES 3), which it needs. Y
     <string name="dbr_menu_reducido">Reduced mode (lower graphics)</string>
     <string name="dbr_menu_chips">Command chips over the keyboard</string>
     <string name="dbr_menu_texto_sync">Keyboard edits the chat text (autocorrect, voice)</string>
+    <string name="dbr_barra_vacia">Type in the chat…</string>
+    <string name="dbr_teclado_tapa_chat">Your keyboard covers the chat: close its toolbar or use floating mode.</string>
     <string name="dbr_menu_toque">Wider touch zones in Dbr screens</string>
     <string name="dbr_menu_notif">Notifications while the game is in the background</string>
     <string name="dbr_notif_canal_privado">Private messages</string>

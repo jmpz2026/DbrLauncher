@@ -56,8 +56,11 @@ import com.movtery.zalithlauncher.game.support.canal_movil.CanalMovil
 import com.movtery.zalithlauncher.game.support.canal_movil.Protocolo
 import com.movtery.zalithlauncher.game.support.canal_movil.AvisosSistema
 import com.movtery.zalithlauncher.game.support.canal_movil.NotificadorDbr
-import com.movtery.zalithlauncher.ui.screens.game.elements.ALTO_FILA_CHIPS
-import com.movtery.zalithlauncher.ui.screens.game.elements.FilaChipsDbr
+import com.movtery.zalithlauncher.ui.screens.game.elements.FranjaTecladoDbr
+import com.movtery.zalithlauncher.game.support.canal_movil.DistribucionTeclado
+import com.movtery.zalithlauncher.game.support.canal_movil.DesplazamientoJuego
+import com.movtery.zalithlauncher.ui.control.input.TextoTeclado
+import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.ui.screens.game.elements.EditorFrasesDbr
 import com.movtery.zalithlauncher.ui.screens.game.elements.cargarFrasesDbr
 import androidx.compose.runtime.rememberCoroutineScope
@@ -137,6 +140,9 @@ private const val INTENT_RUN_GAME = "BUNDLE_RUN_GAME"
 private const val INTENT_RUN_JAR = "INTENT_RUN_JAR"
 private const val INTENT_GAME_CONFIG = "INTENT_GAME_CONFIG"
 private const val INTENT_JAR_INFO = "INTENT_JAR_INFO"
+
+/** Dbr step 8e: how long "no room over the keyboard" must last before the full-screen editor. */
+private const val ESPERA_PANTALLA_COMPLETA_MS = 400L
 
 data class LaunchSession(
     val launcher: Launcher,
@@ -343,6 +349,9 @@ class VMViewModel : ViewModel() {
 class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolder.Callback {
     override fun isIgnoreNotch(): Boolean = AllSettings.gameFullScreen.getValue()
 
+    /** Dbr step 8e: the "your keyboard covers the chat" hint already showed in this session. */
+    private var avisoTecladoAltoDbr = false
+
     private val errorViewModel: ErrorViewModel by viewModels()
 
     private val eventViewModel: EventViewModel by viewModels()
@@ -370,6 +379,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         //加载插件
         PluginLoader.loadAllPlugins(this, false)
         refreshData()
+        com.movtery.zalithlauncher.game.support.canal_movil.MandoDbr.iniciar(this)
 
         //初始化物理鼠标连接检查器
         PhysicalMouseChecker.initChecker(this)
@@ -651,6 +661,12 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
     }
 
     @SuppressLint("RestrictedApi")
+    /** DBR 8b.2: sticks and triggers go to DbrCore when the game has it; otherwise as before. */
+    override fun dispatchGenericMotionEvent(ev: android.view.MotionEvent): Boolean {
+        if (vmViewModel.keyHandle && com.movtery.zalithlauncher.game.support.canal_movil.MandoDbr.movimiento(ev)) return true
+        return super.dispatchGenericMotionEvent(ev)
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (!vmViewModel.keyHandle) return super.dispatchKeyEvent(event)
 
@@ -790,6 +806,11 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
         // Dbr: chip row only with the chat open (DbrCore says so) and the keyboard up.
         val imeVisible = imeInsets.getBottom(LocalDensity.current) > 0 || frameImeHeight > 0
         val mostrarChips = chatDbr.abierto && imeVisible && AllSettings.dbrChips.state
+        // Dbr step 8d: text bar over the keyboard while the keyboard edits the synced chat.
+        val textoTeclado by TextoTeclado.estado.collectAsStateWithLifecycle()
+        val barraTexto = if (imeVisible) textoTeclado else null
+        // Dbr step 8e: the keyboard was asked for its own full-screen editor (very tall keyboard).
+        val pantallaCompletaDbr by TextoTeclado.pantallaCompleta.collectAsStateWithLifecycle()
         var frasesDbr by remember { mutableStateOf(cargarFrasesDbr()) }
         var editandoFrases by remember { mutableStateOf(false) }
         var tecladoAntesDeFrases by remember { mutableStateOf(false) }
@@ -821,23 +842,63 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                 }
             }
 
+            // Dbr step 8d: strip over the keyboard (text bar and/or chips), shared by its own
+            // layout and by the lift of the game.
+            val densidad = LocalDensity.current
+            val imeAlto = maxOf(imeInsets.getBottom(densidad), frameImeHeight)
+            val franjaDbr = DistribucionTeclado.franja(
+                libreDp = with(densidad) { (screenSize.height - imeAlto).coerceAtLeast(0).toDp().value },
+                barra = barraTexto != null,
+                chips = mostrarChips,
+                pantallaCompleta = pantallaCompletaDbr,
+            )
+            val modoDbr = franjaDbr.modo
+            // Dbr step 8e: almost no room over the keyboard, so the keyboard shows the text itself.
+            LaunchedEffect(modoDbr, barraTexto != null, pantallaCompletaDbr) {
+                if (barraTexto != null && !pantallaCompletaDbr && modoDbr == DistribucionTeclado.Modo.PANTALLA_COMPLETA) {
+                    // The first measure while the keyboard opens can be bogus (almost no room for an
+                    // instant). Only switch if it lasts; a new mode cancels this effect.
+                    delay(ESPERA_PANTALLA_COMPLETA_MS)
+                    TextoTeclado.pedirPantallaCompleta(true)
+                }
+            }
+            // Dbr step 8e: the keyboard ignored the full-screen request. Tell the player once.
+            LaunchedEffect(modoDbr == DistribucionTeclado.Modo.RESPALDO) {
+                if (modoDbr != DistribucionTeclado.Modo.RESPALDO || avisoTecladoAltoDbr) return@LaunchedEffect
+                delay(1500)
+                avisoTecladoAltoDbr = true
+                Toast.makeText(this@VMActivity, R.string.dbr_teclado_tapa_chat, Toast.LENGTH_LONG).show()
+            }
+            DisposableEffect(Unit) { onDispose { DesplazamientoJuego.px = 0 } }
+
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
                     .absoluteOffset {
                         val imeHeight = maxOf(imeInsets.getBottom(this@absoluteOffset), frameImeHeight)
-                        if (imeHeight <= 0) return@absoluteOffset IntOffset.Zero
+                        if (imeHeight <= 0 || modoDbr == DistribucionTeclado.Modo.PANTALLA_COMPLETA) {
+                            DesplazamientoJuego.px = 0
+                            return@absoluteOffset IntOffset.Zero
+                        }
                         // Dbr: field position, in order: TouchController (modern versions), DbrCore
                         // through the mobile channel (1.7.10), else assume the field sits at the
                         // bottom like the chat bar and lift the whole game above the keyboard.
                         val areaBottom = inputArea?.bottom
                             ?: canalArea?.let { ((it.y + it.alto) * screenSize.height).toInt() }
                             ?: screenSize.height
-                        val bottomDistance = screenSize.height - areaBottom
-                        // Dbr: the chip row sits on top of the keyboard, lift the field above it too.
-                        val chipsPx = if (mostrarChips) ALTO_FILA_CHIPS.roundToPx() else 0
-                        val bottomPadding = (imeHeight + chipsPx - bottomDistance).coerceAtLeast(0)
-                        IntOffset(0, -bottomPadding)
+                        val campoAlto = canalArea?.let { (it.alto * screenSize.height).toInt() } ?: 0
+                        // Dbr: the strip sits on top of the keyboard. With the text bar the game's
+                        // own field hides under it, so the chat history gets the room.
+                        val levantado = DistribucionTeclado.levantar(
+                            teclado = imeHeight,
+                            franja = franjaDbr.altoDp.dp.roundToPx(),
+                            alto = screenSize.height,
+                            campoAbajo = areaBottom,
+                            campoAlto = campoAlto,
+                            esconderCampo = barraTexto != null && inputArea == null,
+                        )
+                        DesplazamientoJuego.px = levantado
+                        IntOffset(0, -levantado)
                     },
                 factory = { context ->
                     if (AllSettings.useSurfaceView.getValue()) {
@@ -866,8 +927,11 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
 
             content()
 
-            if (mostrarChips) {
-                FilaChipsDbr(
+            if (mostrarChips || barraTexto != null) {
+                FranjaTecladoDbr(
+                    franja = franjaDbr,
+                    texto = barraTexto,
+                    mostrarChips = mostrarChips,
                     frases = frasesDbr,
                     onEditar = {
                         tecladoAntesDeFrases = vmViewModel.textInputMode == TextInputMode.ENABLE
@@ -877,7 +941,12 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener, SurfaceHolde
                         .align(Alignment.BottomStart)
                         .absoluteOffset {
                             val imeHeight = maxOf(imeInsets.getBottom(this@absoluteOffset), frameImeHeight)
-                            IntOffset(0, -imeHeight)
+                            // Dbr step 8e: never past the top of the screen.
+                            IntOffset(0, -DistribucionTeclado.subirFranja(
+                                teclado = imeHeight,
+                                franja = franjaDbr.altoDp.dp.roundToPx(),
+                                alto = screenSize.height,
+                            ))
                         }
                 )
             }

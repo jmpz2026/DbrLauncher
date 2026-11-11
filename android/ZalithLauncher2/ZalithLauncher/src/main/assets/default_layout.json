@@ -417,6 +417,42 @@
         },
         {
           "text": {
+            "default": "Cambiar",
+            "matchQueue": []
+          },
+          "uuid": "4d1e41082669",
+          "position": {
+            "x": 6501,
+            "y": 5750
+          },
+          "buttonSize": {
+            "type": "percentage",
+            "widthDp": 50,
+            "heightDp": 50,
+            "widthPercentage": 1272,
+            "heightPercentage": 1272,
+            "widthReference": "screen_height",
+            "heightReference": "screen_height"
+          },
+          "buttonStyle": "ff6681bef038",
+          "textAlignment": "Center",
+          "visibilityType": "in_game",
+          "clickEvents": [
+            {
+              "type": "launcher_event",
+              "key": "GLFW_MOUSE_BUTTON_MIDDLE"
+            }
+          ],
+          "isSwipple": false,
+          "isPenetrable": false,
+          "isToggleable": false,
+          "icon": "swap_horiz",
+          "dbrShowIf": [
+            "lock_on"
+          ]
+        },
+        {
+          "text": {
             "default": "Turbo",
             "matchQueue": []
           },

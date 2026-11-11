@@ -62,6 +62,13 @@ class TextoDbrView(context: Context) : View(context) {
     private val enter = Runnable { LWJGLCharSender.sendEnter() }
     private var conexion: Conexion? = null
 
+    /**
+     * Step 8e: the keyboard leaves almost no room for the Dbr text bar, so let the keyboard show
+     * its own full-screen editor (extract UI) with the text. Back to normal when the chat closes.
+     */
+    var pantallaCompleta = false
+        private set
+
     init {
         isFocusable = true
         isFocusableInTouchMode = true
@@ -71,8 +78,11 @@ class TextoDbrView(context: Context) : View(context) {
 
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection {
         outAttrs.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
-        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_EXTRACT_UI or
-                EditorInfo.IME_ACTION_SEND
+        outAttrs.imeOptions = if (pantallaCompleta) {
+            EditorInfo.IME_ACTION_SEND
+        } else {
+            EditorInfo.IME_FLAG_NO_FULLSCREEN or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_ACTION_SEND
+        }
         val e = sync.estado
         outAttrs.initialSelStart = e.selInicio
         outAttrs.initialSelEnd = e.selFin
@@ -85,18 +95,46 @@ class TextoDbrView(context: Context) : View(context) {
         when (sync.aplicarJuego(m, SystemClock.uptimeMillis())) {
             TextoSincronizado.Resultado.ABIERTO, TextoSincronizado.Resultado.TEXTO -> imm?.restartInput(this)
             TextoSincronizado.Resultado.SELECCION -> conexion?.avisarIme()
-            TextoSincronizado.Resultado.CERRADO -> principal.removeCallbacks(envio)
+            TextoSincronizado.Resultado.CERRADO -> {
+                principal.removeCallbacks(envio)
+                ponerPantallaCompleta(false)
+            }
             TextoSincronizado.Resultado.IGNORAR -> Unit
         }
+        publicar()
+    }
+
+    /** Switches the keyboard between its normal and its full-screen editor (step 8e). */
+    fun ponerPantallaCompleta(activa: Boolean) {
+        if (pantallaCompleta == activa) return
+        pantallaCompleta = activa
+        TextoTeclado.marcarPantallaCompleta(activa)
+        if (sync.abierto) imm?.restartInput(this)
     }
 
     fun cerrar() {
+        pantallaCompleta = false
+        TextoTeclado.marcarPantallaCompleta(false)
         principal.removeCallbacks(envio)
         conexion = null
+        TextoTeclado.soltar(this)
+    }
+
+    /** A tap on the Dbr text bar: cursor there, composition finished. */
+    fun moverCursor(indice: Int) {
+        if (!sync.abierto) return
+        val e = sync.estado.sinComposicion()
+        editar(EdicionTexto.seleccionar(e, indice, indice))
+        conexion?.avisarIme()
+    }
+
+    private fun publicar() {
+        TextoTeclado.publicar(this, if (sync.abierto) sync.estado else null)
     }
 
     private fun editar(nuevo: EstadoTexto) {
         if (!sync.editar(nuevo)) return
+        publicar()
         programarEnvio()
     }
 
@@ -341,5 +379,45 @@ fun DbrTextInputLayout(
     OnKeyboardClosed {
         keyboardController?.hide()
         onClose()
+    }
+}
+
+/**
+ * What the synced keyboard is editing, for the Dbr text bar over the keyboard (step 8d). Null when
+ * there is no synced chat (old DbrCore, setting off, chat closed). Main thread only.
+ */
+object TextoTeclado {
+    private val _estado = kotlinx.coroutines.flow.MutableStateFlow<EstadoTexto?>(null)
+    val estado: kotlinx.coroutines.flow.StateFlow<EstadoTexto?> = _estado
+
+    private var vista: java.lang.ref.WeakReference<TextoDbrView>? = null
+
+    internal fun publicar(v: TextoDbrView, e: EstadoTexto?) {
+        vista = java.lang.ref.WeakReference(v)
+        _estado.value = e
+    }
+
+    internal fun soltar(v: TextoDbrView) {
+        if (vista?.get() === v) {
+            vista = null
+            _estado.value = null
+        }
+    }
+
+    fun moverCursor(indice: Int) {
+        vista?.get()?.moverCursor(indice)
+    }
+
+    private val _pantallaCompleta = kotlinx.coroutines.flow.MutableStateFlow(false)
+    /** True while the keyboard was asked to show its own full-screen editor (step 8e). */
+    val pantallaCompleta: kotlinx.coroutines.flow.StateFlow<Boolean> = _pantallaCompleta
+
+    internal fun marcarPantallaCompleta(activa: Boolean) {
+        _pantallaCompleta.value = activa
+    }
+
+    /** Asks the active synced view to switch the keyboard to (or from) its full-screen editor. */
+    fun pedirPantallaCompleta(activa: Boolean) {
+        vista?.get()?.ponerPantallaCompleta(activa)
     }
 }
