@@ -60,6 +60,21 @@ object Protocolo {
     const val CAPACIDADES = CAP_AREA_TEXTO or CAP_ABRIR_URL or CAP_CHIPS or CAP_ESTADO or CAP_VIBRAR or
         CAP_REDUCIR or CAP_PANTALLA or CAP_NOTIFICAR or CAP_TEXTO or CAP_MANDO
 
+    /**
+     * Rate limit per incoming type (game -> launcher). A type missing here is always dropped,
+     * so a new incoming type has to be added on purpose.
+     */
+    val LIMITES_ENTRADA: Map<Int, LimiteRitmo.Limite> = mapOf(
+        HOLA to LimiteRitmo.Limite(capacidad = 2, porSegundo = 0.5),
+        AREA_TEXTO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
+        SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
+        ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
+        VIBRAR to LimiteRitmo.Limite(capacidad = 8, porSegundo = 8.0),
+        NOTIFICAR to LimiteRitmo.Limite(capacidad = 4, porSegundo = 1.0),
+        TEXTO_ESTADO to LimiteRitmo.Limite(capacidad = 25, porSegundo = 25.0),
+        ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
+    )
+
     /** TEXTO_*: longest text in UTF-16 units (the 1.7.10 chat limit) and in UTF-8 bytes. */
     const val MAX_TEXTO = 100
     const val MAX_TEXTO_BYTES = 400

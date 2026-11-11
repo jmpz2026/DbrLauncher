@@ -171,4 +171,138 @@ class CanalMovilTest {
         assertNull(Protocolo.insertar(7, "hola"))
         assertNotNull(Protocolo.insertar(Protocolo.MODO_SUGERENCIA, "ñandú"))
     }
+
+    // --- Abuse (paso 10): a hostile or buggy game must never crash or flood the launcher. ---
+
+    private val tiposEntrada = setOf(
+        Protocolo.HOLA, Protocolo.AREA_TEXTO, Protocolo.SUGERENCIAS, Protocolo.ESTADO,
+        Protocolo.VIBRAR, Protocolo.NOTIFICAR, Protocolo.TEXTO_ESTADO, Protocolo.ABRIR_URL,
+    )
+
+    @Test
+    fun abusoSoloTiposDeEntradaTienenLimite() {
+        assertEquals(tiposEntrada, Protocolo.LIMITES_ENTRADA.keys)
+    }
+
+    @Test
+    fun abusoTiposDesconocidosSeDescartan() {
+        val limite = LimiteRitmo(Protocolo.LIMITES_ENTRADA) { 0L }
+        for (tipo in -5..300) {
+            if (tipo in tiposEntrada) continue
+            assertFalse("tipo $tipo", limite.permitir(tipo))
+            assertNull("tipo $tipo", Protocolo.leer(tipo, byteArrayOf(1, 0, 0, 0, 3)))
+        }
+        // Launcher -> game types echoed back are not accepted either.
+        assertNull(Protocolo.leer(Protocolo.INSERTAR, Protocolo.insertar(Protocolo.MODO_ESCRIBIR, "/op yo")))
+    }
+
+    @Test
+    fun abusoPayloadDeDiezKbSeDescarta() {
+        val hola = ByteBuffer.allocate(10 * 1024).put(1).putInt(Protocolo.CAPACIDADES).array()
+        val url = byteArrayOf(1) + ("https://discord.gg/" + "a".repeat(10 * 1024)).toByteArray()
+        for (tipo in tiposEntrada) {
+            assertNull("tipo $tipo", Protocolo.leer(tipo, ByteArray(10 * 1024) { 1 }))
+            assertNull("tipo $tipo", Protocolo.leer(tipo, hola))
+            assertNull("tipo $tipo", Protocolo.leer(tipo, url))
+        }
+        // Exactly at the cap still parses; the URL gate then rejects what is too long.
+        val tope = byteArrayOf(1) + ("https://a.com/" + "x".repeat(Protocolo.MAX_PAYLOAD - 15)).toByteArray()
+        assertEquals(Protocolo.MAX_PAYLOAD, tope.size)
+        assertNotNull(Protocolo.leer(Protocolo.ABRIR_URL, tope))
+    }
+
+    @Test
+    fun abusoBasuraAleatoriaNoRevienta() {
+        val azar = java.util.Random(20261111L)
+        repeat(50_000) {
+            val tipo = if (azar.nextBoolean()) tiposEntrada.random(kotlin.random.Random(azar.nextLong()))
+            else azar.nextInt(256)
+            val datos = ByteArray(azar.nextInt(Protocolo.MAX_PAYLOAD + 64))
+            azar.nextBytes(datos)
+            if (datos.isNotEmpty() && azar.nextInt(4) != 0) datos[0] = Protocolo.VERSION.toByte()
+            if (datos.size > 1 && azar.nextBoolean()) datos[1] = azar.nextInt(16).toByte()
+            Protocolo.leer(tipo, datos) // must return a message or null, never throw
+            UrlSegura.validar(String(datos, Charsets.ISO_8859_1))
+        }
+    }
+
+    @Test
+    fun abusoMilMensajesPorSegundoEnCadaTipo() {
+        var ahora = 0L
+        val limite = LimiteRitmo(Protocolo.LIMITES_ENTRADA) { ahora }
+        var total = 0
+        for (i in 0 until 1000) {
+            ahora = i * 1_000_000L // 1000 per second, all types at once
+            for (tipo in tiposEntrada) if (limite.permitir(tipo)) total++
+        }
+        // At most the burst plus one second of refill per type.
+        val tope = Protocolo.LIMITES_ENTRADA.values.sumOf { it.capacidad + it.porSegundo }.toInt()
+        assertTrue("pasaron $total, tope $tope", total <= tope)
+        assertTrue(total < 200)
+    }
+
+    @Test
+    fun abusoUnaUrlCadaDosSegundos() {
+        var ahora = 0L
+        val limite = LimiteRitmo(Protocolo.LIMITES_ENTRADA) { ahora }
+        val pasan = (0 until 10_000).count { ahora = it * 1_000_000L; limite.permitir(Protocolo.ABRIR_URL) }
+        assertTrue("pasaron $pasan en 10 s", pasan <= 6)
+    }
+
+    @Test
+    fun abusoVibracionDeDiezSegundosSeRecorta() {
+        val diez = Patron.acotado(listOf(10_000L to 1f))!!
+        assertTrue(diez.duracion <= Topes.MAX_TOTAL_MS)
+        val json = """{"version":1,"generico":[[10000,1]],"eventos":{"ki.soltar":[[10000,1],[10000,1],[10000,1]]}}"""
+        val c = CatalogoVibracion.leer(json)!!
+        for (patron in listOf(c.patron("ki.soltar"), c.patron("ki.otro"))) {
+            assertTrue(patron.duracion <= Topes.MAX_TOTAL_MS)
+            for (amplitud in listOf(true, false)) {
+                val (tiempos, _) = ondaFinal(patron, 1f, 1f, amplitud)!!
+                assertTrue(tiempos.sum() <= Topes.MAX_TOTAL_MS)
+                assertTrue(tiempos.all { it <= Topes.MAX_SEGMENTO_MS })
+            }
+        }
+        // A thousand requests in one second start at most MAX_POR_SEGUNDO vibrations.
+        val ritmo = RitmoVibracion()
+        val inicios = (0 until 1000).count { ritmo.permitir(it.toLong(), Topes.MAX_TOTAL_MS, 1f) }
+        assertTrue(inicios <= Topes.MAX_POR_SEGUNDO)
+    }
+
+    @Test
+    fun abusoUrlsPeligrosas() {
+        listOf(
+            "JAVASCRIPT:alert(1)",
+            "  javascript:alert(1)",
+            "java\tscript:alert(1)",
+            "intent:#Intent;action=android.intent.action.DELETE;end",
+            "intent://x#Intent;scheme=http;package=evil;end",
+            "file:/data/data/com.movtery.zalithlauncher/shared_prefs/x.xml",
+            "FILE:///sdcard/x",
+            "//evil.com/x",
+            "market://details?id=evil",
+            "tel:123",
+            "sms:123",
+            "https://discord.gg@evil.com/",
+            "https://discord.gg%40evil.com@evil.com/",
+            "https://evil.com\\@discord.gg/",
+            "https://evil.com/\u0000",
+        ).forEach { assertNull(it, UrlSegura.validar(it)) }
+        // A right-to-left override in the path is percent-encoded: the dialog never shows it raw.
+        val rlo = UrlSegura.validar("https://evil.com/\u202Egg.drocsid")!!
+        assertEquals("evil.com", rlo.hostAscii)
+        assertTrue(rlo.url.all { it.code < 0x80 })
+        assertFalse(rlo.confiable)
+    }
+
+    @Test
+    fun abusoPunycodeNoSeHacePasarPorConfiable() {
+        val ascii = UrlSegura.validar("https://xn--dscord-6ve.gg/x")!!
+        assertEquals("xn--dscord-6ve.gg", ascii.hostAscii)
+        assertFalse(ascii.confiable)
+        val unicode = UrlSegura.validar("https://disc\u043Erd.gg/x")!! // Cyrillic "o"
+        assertTrue(unicode.hostAscii.startsWith("xn--"))
+        assertFalse(unicode.confiable)
+        assertFalse(UrlSegura.validar("https://discord.gg.xn--evil-abc.com/x")?.confiable ?: false)
+    }
 }

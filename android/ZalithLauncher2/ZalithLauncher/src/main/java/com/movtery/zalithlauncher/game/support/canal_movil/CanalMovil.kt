@@ -21,18 +21,7 @@ private const val TAG = "CanalMovil"
  * the only URL path goes through [ZLNativeInvoker.openLink], which validates and asks the user.
  */
 object CanalMovil {
-    private val limite = LimiteRitmo(
-        mapOf(
-            Protocolo.HOLA to LimiteRitmo.Limite(capacidad = 2, porSegundo = 0.5),
-            Protocolo.AREA_TEXTO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
-            Protocolo.SUGERENCIAS to LimiteRitmo.Limite(capacidad = 10, porSegundo = 10.0),
-            Protocolo.ESTADO to LimiteRitmo.Limite(capacidad = 20, porSegundo = 20.0),
-            Protocolo.VIBRAR to LimiteRitmo.Limite(capacidad = 8, porSegundo = 8.0),
-            Protocolo.NOTIFICAR to LimiteRitmo.Limite(capacidad = 4, porSegundo = 1.0),
-            Protocolo.TEXTO_ESTADO to LimiteRitmo.Limite(capacidad = 25, porSegundo = 25.0),
-            Protocolo.ABRIR_URL to LimiteRitmo.Limite(capacidad = 1, porSegundo = 0.5),
-        )
-    )
+    private val limite = LimiteRitmo(Protocolo.LIMITES_ENTRADA)
 
     private val avisados: MutableSet<String> = Collections.synchronizedSet(HashSet())
 

@@ -223,6 +223,11 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: 8e hecho, sin commit. Medido por adb: region tactil del teclado desde y=61 px (~20 dp libres). `DistribucionTeclado` con `Modo` (DOS_FILAS, UNA_FILA, COMPACTA, PANTALLA_COMPLETA, RESPALDO) y `subirFranja`; `TextoDbrView.ponerPantallaCompleta` (quita NO_FULLSCREEN/NO_EXTRACT_UI + restartInput, vuelve al cerrar el chat); barra compacta 12 sp; aviso `dbr_teclado_tapa_chat` una vez por sesion. Tests canal_movil OK (Distribucion 4/4), APK por adb. Falta prueba en telefono.
 - 2026-11-11: prueba 8e: la primera apertura del chat paso sola al editor a pantalla completa de SwiftKey; las siguientes, bien (una fila). Causa probable: medida falsa del teclado al abrirse. Fix: pedir pantalla completa solo si dura 400 ms (`ESPERA_PANTALLA_COMPLETA_MS` en `VMActivity`). APK por adb.
 - 2026-11-11: el usuario confirma en telefono que 8d y 8e funcionan (primera apertura incluida). **Pasos 8d y 8e cerrados.** Falta commit/push.
+- 2026-11-11: plan del paso 10 aprobado (seccion "Paso 10" al final): prueba de abuso del canal, `android-v31` (v30 ya existia), launcher PC por tag, DbrServerPack 5.9.0, despliegue por SFTP a Sparkedhost con inventario previo, retiro de DbrAntiCommand. Siguiente: parte 1 (ampliar `CanalMovilTest`).
+- 2026-11-11: paso 10 parte 1.1 hecha, sin commit: `CanalMovilTest` con 10 tests de abuso (25 en total, todos los `canal_movil` verdes). Limites de ritmo movidos de `CanalMovil` a `Protocolo.LIMITES_ENTRADA` para testearlos. Hallazgo: un RLO (U+202E) en la ruta de una URL pasa, pero sale codificado `%E2%80%AE` y el dialogo muestra `hostAscii`; no es fallo. Parte 1.2: mod `DbrServerPack/DbrAbusoCanal` (solo prueba, fuera del build raiz, sin commit) compilado y subido por adb a `versions/DBR/mods` del APK debug. Falta: el usuario corre `/dbrabuso` en el telefono.
+- 2026-11-11: el mod de prueba crasheaba el juego en el menu principal (`IllegalAccessError`: la clase `Abuso` con `@SubscribeEvent` no era `public`). Corregido, recompilado y subido de nuevo. Fallo del mod de prueba, no del launcher.
+- 2026-11-11: `/dbrabuso` corrido en el telefono (18:26). Fases 1–4 OK, sin crash ni cuelgue; URLs 1–5 rechazadas; juego vivo al terminar. Falta confirmacion del usuario: vibracion de la fase 5 y dialogos de las URLs 6–7.
+- 2026-11-11: el usuario confirma fase 5 y URLs 6–7. **Parte 1 del paso 10 cerrada**, sin bloqueantes. Jar de prueba quitado del telefono. Siguiente: parte 2 (push `android-zalith`, tag `android-v31`, tag del launcher PC).
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
@@ -880,3 +885,77 @@ caps) se copia leyendo `Protocolo.kt`, `CanalMovil.kt`, `glfw_shim.c` y las clas
 
 ### Siguiente
 Paso 10: prueba completa y release coordinado `android-v30`.
+
+## Paso 10 (aprobado 2026-11-11): prueba pendiente y release coordinado
+
+### Context
+Pasos 0–9 hechos (canal juego↔launcher, teclado, autocompletado, vibración, notificaciones, mando, lock-on, docs).
+Todo está en TESTEO y en DBR-ASSETS Experimental. Falta: probar lo pendiente y llevar a producción launcher
+Android, launcher PC, DbrServerPack (DbrCore y mods), DbrCorePlugin + plugins, modpack, y retirar DbrAntiCommand.
+Hallazgo: el tag `android-v30` ya existe (2026-11-09, fix de sync). El release usa `android-v31`.
+
+### Decisiones del usuario (2026-11-11)
+- Prueba: solo lo pendiente. Lock-on ya probado y OK. Bloque nuevo: abuso del canal. Equipos: teléfono actual + PC Windows.
+- Registro: checklist en `PLAN-canal-movil.md`. Bloquean el release solo crash, cuelgue o fallo de seguridad; lo visual va a pendientes.
+- Android: tag `android-v31`, update obligatorio (`mandatory: true`, como hoy), sin changelog. Push de `android-zalith` y luego tag. Sin merge a main.
+- Launcher PC (mando en Electron): tag `vX.Y.Z` el mismo día.
+- DbrServerPack versión **5.9.0**. Sale todo lo que está en TESTEO y no en producción (mods, plugins, yml, configs). No sobrescribir: añadir y modificar solo lo necesario.
+- Configs existentes: solo claves nuevas; valores que el plan exija cambiar se listan antes.
+- Respaldo: `.bak-20261111-canalmovil` (o fecha real) por archivo tocado.
+- Experimental: igualar a Full (con sus diferencias propias: Angelica, npcdbc-dbr).
+- Producción: Sparkedhost/Pterodactyl, SFTP (`_deploy/sftp.env`, `_deploy/sftp_subir.py`). Yo ejecuto con OK del usuario por paso.
+- Servidor: apagar antes de subir (usuario por panel), sin aviso a jugadores. Modpack y servidor a la vez. Si falla: rollback con `.bak` + revert en DBR-ASSETS.
+- `vibracion.json` en Full, Lite y Experimental. Layout oficial va dentro del APK (`ControlManager.kt:179`, `default_layout.json`); nada en DBR-ASSETS.
+- Comprobación del modpack: manifest firmado en R2 (`.sig` + sha1 de jars nuevos).
+- DbrAntiCommand: igual que TESTEO (jar a `.jar.bak-…-absorbido`, carpeta queda para la migración). Verificar cruzando listas por SFTP + prueba del usuario sin permisos. Tras verificar, borrar `plugins/DbrAntiCommand/` (con OK).
+- ProtocolLib: verificar por SFTP; si falta, preguntar antes de instalar.
+
+### Parte 1: prueba pendiente
+1. Ampliar `CanalMovilTest` (JVM): tipos desconocidos, payload 10 KB, 1000 msg/s, vibración de 10 s, URLs `file:`/`intent:`/`javascript:`/punycode.
+2. Mod de prueba solo debug (fuera del modpack) que manda esa basura por el canal en el teléfono (APK debug por adb). Esperado: todo se descarta, sin crash ni bloqueo.
+3. Checklist en `PLAN-canal-movil.md` con resultado por punto.
+
+#### Checklist parte 1
+- [x] JVM tipos desconocidos (-5..300 fuera de los 8 de entrada) y tipos del launcher devueltos: descartados.
+- [x] JVM payload 10 KB en los 8 tipos: descartado. Payload de 1024 B exactos: se lee.
+- [x] JVM 50 000 payloads aleatorios: ninguna excepción en `Protocolo.leer` ni `UrlSegura.validar`.
+- [x] JVM 1000 msg/s en los 8 tipos a la vez: pasan menos de 200 (ráfaga + 1 s de recarga). URL: como mucho 6 en 10 s.
+- [x] JVM vibración de 10 s (patrón y catálogo): recortada a 600 ms, segmentos de 250 ms como máximo, 6 inicios por segundo.
+- [x] JVM URLs `file:`, `intent:`, `javascript:` (mayúsculas, tab), `content:`, `market:`, `tel:`, `//host`, `user@`, NUL: rechazadas. Punycode y cirílico: `xn--`, no confiable.
+- [x] Teléfono `/dbrabuso` fase 1 (tipos inválidos, Java y nativo crudo): sin crash. Java rechazó los 6 fuera de 1..255; el nativo crudo los tiró sin aviso; el launcher descartó los 13 restantes.
+- [x] Teléfono fase 2 (10 KB, vacío, null por nativo crudo): sin crash. `dbrSend` aceptó 0 de 10 KB; vacíos descartados como mal formados.
+- [x] Teléfono fase 3 (6000 mensajes en ráfaga): 179 ms, sin cuelgue; el limitador descartó el exceso.
+- [x] Teléfono fase 4 (3000 aleatorios): 134 ms, sin crash.
+- [x] Teléfono fase 5 (vibración continua 10 s): pulsos cortos, para al terminar (confirmado por el usuario).
+- [x] Teléfono fase 6 (URLs): solo punycode (host `xn--`, sin verificado) y `https` de control abren diálogo (confirmado por el usuario).
+- [x] Log del launcher (`files/logs/log_*.log`, no logcat): un aviso por tipo, sin excepciones. Juego vivo después del FIN. Las URLs 1–5 se rechazan en `ZLNativeInvoker` (`link refused`).
+
+### Parte 2: launchers
+1. Árbol limpio, tests JVM verdes, `compileDebugKotlin` OK, push `android-zalith`.
+2. `git tag android-v31 && git push origin android-v31`; esperar CI; `git pull --ff-only` (bot commitea `android/version.json`).
+3. Launcher PC: tag `vX.Y.Z` siguiente en el repo PC (CI `release.yml`).
+
+### Parte 3–5: servidor + modpack (inventario y despliegue)
+1. Inventario solo lectura: listar `mods/`, `plugins/`, `config/` de producción por SFTP vs TESTEO/local. Salida: tabla agregar / reemplazar / claves nuevas / retirar. ProtocolLib presente o no. OK del usuario.
+2. Build: DbrServerPack 5.9.0 (`gradlew build`), DbrCorePlugin y los 7 plugins de la auditoría (`mvn package`); dbr-test quick + medium.
+3. DBR-ASSETS: jars nuevos en Full, `lite/`, `experimental/`; quitar los viejos por nombre; `config/dbrcore/vibracion.json` en las 3; `actualizar.bat`; commit (skill `dbr-git`), sin push aún.
+4. Usuario apaga el servidor por panel. Respaldo `.bak` por archivo vía SFTP. Subir jars y configs (claves nuevas). DbrAntiCommand jar a `.jar.bak-…-absorbido`.
+5. Push DBR-ASSETS; esperar Action; verificar `m/manifest*.json` + `.sig` del Worker y sha1 de jars nuevos.
+6. Usuario enciende. Revisar log de arranque (migración, `corelib.comandos`, sin errores). Falla: rollback.
+
+### Parte 6: DbrAntiCommand
+1. Cruzar por SFTP `allowed/blocked` del config viejo contra el migrado de DbrCorePlugin.
+2. Usuario con cuenta sin permisos: comando bloqueado no sale en popup ni Tab y no se ejecuta.
+3. Con OK: borrar `plugins/DbrAntiCommand/` (queda el `.bak` del jar).
+
+### Cierre
+- Bitácora y plan cerrado en `PLAN-canal-movil.md`; `CLAUDE.md` apunta a lo siguiente.
+- Memorias: `dbr-assets-repo`, `dbrlauncher-android-project` (build 31, DbrServerPack 5.9.0, DbrAntiCommand retirado).
+- Plan nuevo de pendientes: fallos visuales no bloqueantes + retoque L31 (glifos).
+
+### Verificación
+- Tests JVM del launcher y de DbrCore/DbrCorePlugin verdes; CI de `android-v31` y `vX.Y.Z` verdes con Release publicado.
+- Manifest firmado válido en R2; log de producción sin errores; listas de comandos iguales; prueba sin permisos OK.
+
+### Al aprobar
+Copiar este plan como sección "Paso 10" en `PLAN-canal-movil.md` con línea de bitácora; empezar por Parte 1.
