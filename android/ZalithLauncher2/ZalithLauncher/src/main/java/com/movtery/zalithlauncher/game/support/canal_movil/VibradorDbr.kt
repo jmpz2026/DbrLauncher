@@ -1,6 +1,9 @@
 package com.movtery.zalithlauncher.game.support.canal_movil
 
+import android.media.AudioAttributes
+import android.os.Build
 import android.os.SystemClock
+import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import com.movtery.zalithlauncher.context.GlobalContext
@@ -24,6 +27,9 @@ object VibradorDbr {
     @Volatile
     private var catalogo: CatalogoVibracion = CatalogoVibracion.PORDEFECTO
     private val ritmo = RitmoVibracion()
+    /** First vibrations of a game go to the log (diagnosis on real phones). */
+    @Volatile
+    private var registrados = 0
 
     private val vibrador: Vibrator? by lazy {
         runCatching { GlobalContext.getSystemService(Vibrator::class.java) }.getOrNull()
@@ -33,6 +39,7 @@ object VibradorDbr {
     /** Loads the modpack catalog for a new game. Falls back to the built-in one. */
     fun cargar(gameDir: File?) {
         ritmo.reiniciar()
+        registrados = 0
         val archivo = gameDir?.let { File(it, ARCHIVO) }
         val leido = runCatching {
             archivo?.takeIf { it.isFile && it.length() in 1..MAX_BYTES }?.readText()
@@ -50,30 +57,37 @@ object VibradorDbr {
         val v = vibrador ?: return
         val patron = catalogo.patron(id)
         if (!ritmo.permitir(SystemClock.uptimeMillis(), patron.duracion, patron.maxFuerza * fuerza)) return
-        runCatching {
-            val efecto = if (v.hasAmplitudeControl()) {
-                VibrationEffect.createWaveform(patron.tiempos, amplitudes(patron, fuerza, intensidad), -1)
-            } else {
-                // No amplitude control: on/off only, pauses stay pauses.
-                val amps = IntArray(patron.fuerzas.size) { i ->
-                    if (patron.fuerzas[i] > 0f) VibrationEffect.DEFAULT_AMPLITUDE else 0
-                }
-                VibrationEffect.createWaveform(patron.tiempos, amps, -1)
-            }
-            v.vibrate(efecto)
-        }.onFailure { Logger.error(TAG, "vibrate failed", it) }
+        if (registrados < 30) {
+            registrados++
+            Logger.info(TAG, "vibrate $id fuerza=$fuerza amplitud=${v.hasAmplitudeControl()}")
+        }
+        tocar(v, patron, fuerza, intensidad)
     }
 
     /** Settings preview: plays [id] with the current intensity, ignoring the category switch. */
     fun probar(id: String) {
         ritmo.reiniciar()
         val v = vibrador ?: return
-        val patron = catalogo.patron(id)
         val intensidad = AllSettings.dbrVibracionIntensidad.getValue() / 100f
         if (intensidad <= 0f) return
+        tocar(v, catalogo.patron(id), 1f, intensidad)
+    }
+
+    /**
+     * Plays as a game vibration (media usage), not as touch feedback: some ROMs (Honor) mute or
+     * shorten touch vibrations.
+     */
+    private fun tocar(v: Vibrator, patron: Patron, fuerza: Float, intensidad: Float) {
+        val (tiempos, amps) = ondaFinal(patron, fuerza, intensidad, v.hasAmplitudeControl()) ?: return
         runCatching {
-            v.vibrate(VibrationEffect.createWaveform(patron.tiempos, amplitudes(patron, 1f, intensidad), -1))
-        }
+            val efecto = VibrationEffect.createWaveform(tiempos, amps, -1)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                v.vibrate(efecto, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_MEDIA))
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(efecto, AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build())
+            }
+        }.onFailure { Logger.error(TAG, "vibrate failed", it) }
     }
 
     private fun categoriaActiva(c: CategoriaVibracion): Boolean = when (c) {

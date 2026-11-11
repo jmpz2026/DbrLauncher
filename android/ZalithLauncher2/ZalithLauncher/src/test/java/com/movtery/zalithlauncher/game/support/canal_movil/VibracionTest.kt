@@ -93,4 +93,23 @@ class VibracionTest {
         assertArrayEquals(intArrayOf(153, 0, 76), amplitudes(p, 1f, 0.6f))
         assertEquals(1, amplitudes(p, 0.001f, 0.01f)[0])
     }
+
+    @Test
+    fun ondaSinAmplitudAlargaYOmiteDebiles() {
+        val p = Patron.de(20L to 1f, 30L to 0f, 20L to 0.05f)
+        val (t, a) = ondaFinal(p, 1f, 0.6f, conAmplitud = false)!!
+        assertArrayEquals(longArrayOf(MIN_PULSO_SIN_AMPLITUD_MS), t) // weak pulse and trailing pause dropped
+        assertArrayEquals(intArrayOf(255), a)
+        val (t2, a2) = ondaFinal(Patron.de(200L to 1f), 1f, 1f, conAmplitud = false)!!
+        assertEquals(Topes.MAX_SEGMENTO_MS, t2[0])
+        assertEquals(255, a2[0])
+    }
+
+    @Test
+    fun ondaConAmplitudPulsoMinimo() {
+        val (t, a) = ondaFinal(Patron.de(10L to 1f), 1f, 1f, conAmplitud = true)!!
+        assertEquals(MIN_PULSO_MS, t[0])
+        assertEquals(255, a[0])
+        assertNull(ondaFinal(Patron.de(10L to 1f), 1f, 0f, conAmplitud = false))
+    }
 }

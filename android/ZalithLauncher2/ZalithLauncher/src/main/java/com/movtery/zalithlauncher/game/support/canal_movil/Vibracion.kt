@@ -92,19 +92,21 @@ class CatalogoVibracion(private val patrones: Map<String, Patron>, val generico:
         /** Built in, same as the modpack file. Used when the file is missing or invalid. */
         val PORDEFECTO = CatalogoVibracion(
             mapOf(
-                "combate.golpear" to Patron.de(20L to 0.45f),
-                "combate.dano" to Patron.de(45L to 0.8f),
-                "ki.soltar" to Patron.de(35L to 0.7f, 30L to 0f, 60L to 0.5f),
-                "ki.transformar" to Patron.de(80L to 0.6f, 40L to 0f, 120L to 0.9f),
-                "ki.choque" to Patron.de(90L to 1f),
-                "mundo.romper" to Patron.de(15L to 0.35f),
-                "mundo.caida" to Patron.de(70L to 0.8f),
-                "avisos.privado" to Patron.de(30L to 0.6f, 60L to 0f, 30L to 0.6f),
-                "avisos.mencion" to Patron.de(25L to 0.5f, 50L to 0f, 25L to 0.5f),
-                "avisos.nivel" to Patron.de(40L to 0.5f, 50L to 0f, 40L to 0.6f, 50L to 0f, 60L to 0.8f),
-                "avisos.premio" to Patron.de(50L to 0.6f, 40L to 0f, 50L to 0.8f, 40L to 0f, 100L to 1f),
+                "combate.golpear" to Patron.de(35L to 0.5f),
+                "combate.dano" to Patron.de(60L to 0.85f),
+                "ki.soltar" to Patron.de(40L to 0.7f, 40L to 0f, 70L to 0.5f),
+                "ki.transformar" to Patron.de(80L to 0.6f, 40L to 0f, 140L to 0.9f),
+                "ki.choque" to Patron.de(150L to 1f),
+                "ki.choque_perfecto" to Patron.de(40L to 1f),
+                "ki.choque_fin" to Patron.de(80L to 0.8f, 50L to 0f, 120L to 1f),
+                "mundo.romper" to Patron.de(30L to 0.4f),
+                "mundo.caida" to Patron.de(80L to 0.8f),
+                "avisos.privado" to Patron.de(40L to 0.6f, 70L to 0f, 40L to 0.6f),
+                "avisos.mencion" to Patron.de(35L to 0.5f, 60L to 0f, 35L to 0.5f),
+                "avisos.nivel" to Patron.de(40L to 0.5f, 50L to 0f, 40L to 0.6f, 50L to 0f, 70L to 0.8f),
+                "avisos.premio" to Patron.de(50L to 0.6f, 40L to 0f, 50L to 0.8f, 40L to 0f, 120L to 1f),
             ),
-            Patron.de(30L to 0.5f),
+            Patron.de(40L to 0.5f),
         )
 
         /**
@@ -183,4 +185,52 @@ fun amplitudes(patron: Patron, fuerza: Float, intensidad: Float): IntArray {
         val f = patron.fuerzas[i]
         if (f <= 0f) 0 else (f * escala * 255f).toInt().coerceIn(1, 255)
     }
+}
+
+/** Shortest pulse a phone motor reliably makes felt: shorter ones are lengthened. */
+const val MIN_PULSO_MS = 30L
+/** Without amplitude control the strength becomes duration, never under this. */
+const val MIN_PULSO_SIN_AMPLITUD_MS = 45L
+
+/**
+ * Timings and amplitudes ready for VibrationEffect.createWaveform. With amplitude control:
+ * [amplitudes] and pulses of at least [MIN_PULSO_MS]. Without it (on/off motors, e.g. Honor):
+ * full power, the strength lengthens or shortens each pulse, at least [MIN_PULSO_SIN_AMPLITUD_MS];
+ * a pulse weaker than 10% is left out. The total stays under [Topes.MAX_TOTAL_MS]. Null when
+ * nothing is left to play.
+ */
+fun ondaFinal(patron: Patron, fuerza: Float, intensidad: Float, conAmplitud: Boolean): Pair<LongArray, IntArray>? {
+    val escala = fuerza.coerceIn(0f, 1f) * intensidad.coerceIn(0f, 1f)
+    val amps = amplitudes(patron, fuerza, intensidad)
+    val tiempos = ArrayList<Long>()
+    val salida = ArrayList<Int>()
+    var total = 0L
+    for (i in patron.tiempos.indices) {
+        val f = patron.fuerzas[i]
+        var ms = patron.tiempos[i]
+        var amp = 0
+        if (f > 0f) {
+            if (conAmplitud) {
+                ms = maxOf(ms, MIN_PULSO_MS)
+                amp = amps[i]
+            } else {
+                val e = f * escala
+                if (e >= 0.1f) {
+                    ms = maxOf(MIN_PULSO_SIN_AMPLITUD_MS, (ms * (0.5f + e)).toLong())
+                    amp = 255
+                }
+            }
+        }
+        ms = ms.coerceAtMost(Topes.MAX_SEGMENTO_MS).coerceAtMost(Topes.MAX_TOTAL_MS - total)
+        if (ms <= 0L) break
+        tiempos.add(ms)
+        salida.add(amp)
+        total += ms
+    }
+    while (salida.isNotEmpty() && salida.last() == 0) {
+        salida.removeAt(salida.lastIndex)
+        tiempos.removeAt(tiempos.lastIndex)
+    }
+    if (salida.isEmpty()) return null
+    return tiempos.toLongArray() to salida.toIntArray()
 }
