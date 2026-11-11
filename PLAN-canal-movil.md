@@ -585,6 +585,8 @@ Modelo a copiar: `core.combate.GuardiaVida` (DbrCore) + `corelib.combate.Guardia
 - Ninguna de los pasos 5 y 6: 5a, 5b, 6a, 6b y 6c probados por el usuario (2026-11-11).
 - 8d/8e: probados por el usuario (2026-11-11).
 
+- 2026-11-11: commit y push de 8p, 8c y 8b en todos los repos. Desplegado: DbrServerPack-5.8.0.jar (14:23) y los plugins Core, Arena, TPersonal, Batallas, Staff y Talentos en TESTEO (backups .bak-20261111-mando; TESTEO estaba apagado, no se reinicio) y el pack en DBR-ASSETS experimental (989f3db). Capturas de /dbrmando en 3 idiomas en curso para la critica.
+
 ## Siguiente paso
 
-8d/8e: cerrados (probados en telefono 2026-11-11), sin commit: falta commit/push cuando el usuario lo pida. 8p y 8c: codigo hecho, sin commit; falta dbr-test (PvP en spawn/WorldGuard, arena, sala; lock-on, cambiar, rechazos, aviso al fijado, DbrAntiCheat) y prueba en telefono. En curso aqui: 8b (mando): 8b.0-8b.6 y 8b.7a hechos sin commit ni prueba; 8b.7b y 8b.7c hechos: codigo de 8b completo, falta probar en PC y telefono. Lote L31-mando: vuelta 1 importada, retoque pedido (`L31-retoque-prompt.md`). Despues 9 (docs), 10 (release).
+8d/8e: cerrados y subidos. 8p y 8c: subidos y desplegados (TESTEO + experimental); falta dbr-test (PvP en spawn/WorldGuard, arena, sala; lock-on, cambiar, rechazos, aviso al fijado, DbrAntiCheat) y prueba en telefono. En curso aqui: 8b (mando): codigo de 8b completo, subido y desplegado; falta critica de capturas de /dbrmando y probar en PC y telefono. Lote L31-mando: vuelta 1 importada, retoque pedido (`L31-retoque-prompt.md`). Despues 9 (docs), 10 (release).
