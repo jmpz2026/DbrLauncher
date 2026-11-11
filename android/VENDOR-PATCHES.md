@@ -194,3 +194,11 @@ arranque buscando TouchController, que no existe para 1.7.10. Es tiempo perdido 
 
 - `game/launch/LaunchGame.kt`: `checkEnableTouchProxy` sale enseguida si `minecraftVersion` es `1.7.10`.
   Para otras versiones sigue igual que en ZL2.
+
+## 14) Texto de la notificación del servicio del juego (2026-11-11)
+**Motivo:** el servicio en primer plano que mantiene vivo el juego minimizado mostraba
+"JVM Keep-Alive Service" en inglés y sin explicación; los jugadores no entendían qué era.
+
+- `game/launch/GameService.kt`: título y texto propios (`dbr_servicio_juego_titulo`/`_texto`, es/en/pt).
+- `notification/NotificationChannelData.kt`: el canal `game.service` se llama `dbr_servicio_juego_canal`.
+  El string `notification_jvm_running_name` de ZL2 queda sin uso; no se borra para no tocar sus traducciones.
