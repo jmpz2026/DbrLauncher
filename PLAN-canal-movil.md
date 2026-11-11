@@ -171,6 +171,8 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 
 - 2026-11-11: causa de la fila de chips: en el telefono `core.movil apagado`. El `dbr-lwjgl2-bridge.jar` de assets era viejo (sin `DBR_CANAL_VERSION`/`dbrSend`/`dbrPoll`): nadie corria `:LWJGL2Bridge:jar` y `version` no cambiaba, asi que el telefono no re-extraia. Arreglo: `mergeAssets` depende de `:LWJGL2Bridge:jar`, jar reproducible y `version` = hash del componente. APK debug reinstalado por adb inalambrico. El canal nunca funciono en telefono: AREA_TEXTO, links y chips quedan por probar de nuevo.
 
+- 2026-11-11: DbrCorePlugin a54aa84 desplegado en TESTEO (respaldo `.bak-20261111-skript`) y empujado; launcher fd8ff9d empujado. Falta probar en telefono: fila de chips/frases, campo de texto sobre el teclado y links.
+
 ## Siguiente paso
 
 Paso 4 queda pendiente solo de pruebas: en el servidor de pruebas, que la config migrada de DbrAntiCommand bloquee lo mismo; en el telefono, chips y frases (escribir sin enviar). Luego paso 5: D + E (`core.dbc`, estados, `VisibilityType` ampliado, editor, layout oficial, catalogo de vibracion).
