@@ -136,6 +136,12 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcore/rendimiento.cfg"
     },
     {
+      "path": "config/dbrcore/vibracion.json",
+      "sha1": "8124a924a7bb02f9e933ff4ba072223e1839a630",
+      "size": 1104,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/config/dbrcore/vibracion.json"
+    },
+    {
       "path": "config/dbroptimizer/video.cfg",
       "sha1": "0a917a993f554ec9f8e308cd98589dd77f1bc026",
       "size": 1075,
@@ -445,10 +451,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "3f7f7ab6412600de50592007ba225c84e47f3a0a",
-      "size": 38007061,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-5.8.0.jar"
+      "path": "mods/DbrServerPack-5.9.0.jar",
+      "sha1": "3e53108241a1210b4e4a63a8cd1036147384872e",
+      "size": 41505644,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DbrServerPack-5.9.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
@@ -567,5 +573,9 @@
       "once": true,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/android/optionsof.txt"
     }
+  ],
+  "mirrors": [
+    "https://dbr-assets.dbrlauncher.workers.dev/f/",
+    "https://github.com/jmpz2026/DbrLauncher/releases/download/assets-files/"
   ]
 }

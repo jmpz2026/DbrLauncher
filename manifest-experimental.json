@@ -445,10 +445,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.8.0.jar",
-      "sha1": "763a7c27417d43d255695a4453faecc5f0b695d1",
-      "size": 41505647,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.8.0.jar"
+      "path": "mods/DbrServerPack-5.9.0.jar",
+      "sha1": "3e53108241a1210b4e4a63a8cd1036147384872e",
+      "size": 41505644,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.9.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
