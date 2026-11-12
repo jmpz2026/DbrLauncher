@@ -229,6 +229,10 @@ Estado actual (según la investigación): `JRMCoreCliTicH.lockOn` es solo del cl
 - 2026-11-11: `/dbrabuso` corrido en el telefono (18:26). Fases 1–4 OK, sin crash ni cuelgue; URLs 1–5 rechazadas; juego vivo al terminar. Falta confirmacion del usuario: vibracion de la fase 5 y dialogos de las URLs 6–7.
 - 2026-11-11: el usuario confirma fase 5 y URLs 6–7. **Parte 1 del paso 10 cerrada**, sin bloqueantes. Jar de prueba quitado del telefono. Siguiente: parte 2 (push `android-zalith`, tag `android-v31`, tag del launcher PC).
 - 2026-11-11: **parte 2 hecha.** Launcher PC `v1.0.38` publicado (exe, blockmap, AppImage, deb, latest*.yml). `android-v31`: el primer CI fallo (`generateReleaseLintVitalReportModel` lee `src/main/assets` donde escribe `:LWJGL2Bridge:jar` sin dependencia, efecto de fd8ff9d); arreglo 2f733f8 (las tareas lint dependen del jar), tag movido, CI verde, APK publicado y `version.json` build 31 (3343814). 8 tests JVM heredados de ZL2 fallan desde la base (rutas `F:\Download`, `VersionCompareTest`); no bloquean. Siguiente: parte 3 (inventario de produccion por SFTP, solo lectura).
+- 2026-11-11: inventario de produccion hecho (seccion "Inventario de produccion"). Espera decisiones del usuario: plugins de otros trabajos y permisos de la auditoria.
+- 2026-11-11: decisiones del usuario: entran tambien Arena, Batallas, Invasion, TPersonal y Talentos (desde `main`); este despliegue absorbe `_deploy/2026-11-11-raciales-semisaiyan` (Talentos + DbrRebirthPlugin `521e5fa`), probando antes en TESTEO; Dojos fuera; los permisos de la auditoria los da el usuario antes de encender.
+- 2026-11-11: builds hechos (pack 5.9.0 con bump en 42 archivos, 17 plugins con `mvn clean install`). La otra sesion (`limpieza-codigo-muerto-rebirth`) ya no estaba activa: se reviso por sha1 cada carpeta `_deploy` del 08 al 11 contra prod (todo subido salvo Semi-Saiyan) y cada repo de plugin contra su jar de prod. Se suman Tutorial `59afb7a`, Forja `d8c78f0`, Sellos `099158f` y CombatTag `2dce9a1`. Carpeta `_deploy/2026-11-11-canal-movil` (LEEME, manifiesto, subir.py, NOTA-UPDATE 1487 caracteres, ANUNCIO); `verificar` OK. Semi-Saiyan marcada como absorbida. TESTEO sigue corriendo: falta instalar y probar ahi antes de prod.
+- 2026-11-11: el usuario confirma TESTEO probado, apaga produccion y hace copia. Punto Rebirth: prod ya no tenia los 4 `jrmcabonus` en `reset-extra-commands`; el cambio sin commit solo alineaba el default (commit 29d5cfd, sin recompilar). Commits y push de todo (DbrServerPack 7142ac13 `chore: version 5.9.0`, CorePlugin, Talentos, Rebirth). **Produccion subida** con `_deploy/2026-11-11-canal-movil/subir.py`: 19 jars sha1 OK, DbrAntiCommand -> `.jar.bak-20261111-absorbido`, 4 configs de Talentos; backup en `_backup-prod/`. **DBR-ASSETS** 0471244: DbrServerPack 5.9.0 (`3e53108241a1`, igual al del servidor) en Full, Lite y Experimental + `config/dbrcore/vibracion.json` en Full y Lite. Permisos de la auditoria: los da el usuario. Siguiente: verificar R2, encender y revisar consola (parte 3.6), luego parte 6 (DbrAntiCommand).
 
 ## Paso 7 (J) detallado (aprobado 2026-11-11)
 
@@ -943,6 +947,20 @@ Hallazgo: el tag `android-v30` ya existe (2026-11-09, fix de sync). El release u
 4. Usuario apaga el servidor por panel. Respaldo `.bak` por archivo vía SFTP. Subir jars y configs (claves nuevas). DbrAntiCommand jar a `.jar.bak-…-absorbido`.
 5. Push DBR-ASSETS; esperar Action; verificar `m/manifest*.json` + `.sig` del Worker y sha1 de jars nuevos.
 6. Usuario enciende. Revisar log de arranque (migración, `corelib.comandos`, sin errores). Falla: rollback.
+
+#### Inventario de produccion (2026-11-11, solo lectura por SFTP)
+Comparado con TESTEO por nombre, tamano y fecha. Detalle crudo en el job (no en el repo).
+- **Reemplazar (canal movil, mas nuevos en TESTEO):** `mods/DbrServerPack-5.8.0.jar` -> `DbrServerPack-5.9.0.jar`; `plugins/DbrCorePlugin-1.0.0.jar`; los 7 de la auditoria: `DbrStaffPlugin`, `DbrBendicionPlugin`, `DbrLogrosPlugin`, `DbrPlugin`, `DbrPoderPlugin`, `DbrBattlePass`, `DbrQuestionPlugin`.
+- **Mas nuevos en TESTEO pero de otros trabajos (decide el usuario):** `DbrArenaPlugin`, `DbrBatallasPlugin`, `DbrInvasionPlugin`, `DbrTPersonalPlugin`, `DbrTalentosPlugin`; `DbrDojosPlugin` (solo en TESTEO).
+- **Mas nuevos en produccion (no tocar):** 29 jars, entre ellos `DbrCombatPlugin`, `DbrRebirthPlugin`, `DbrGacha`, `DbrAldeasPlugin`, `DbrMiningPlugin`, `shiboosters`.
+- **Solo en produccion (se quedan):** `DbrBallClickerPlugin`, `DbrSellosPlugin`, `DiscordSRV`, `RPGitems-reloaded-3.5.81-dbr1` (en TESTEO se llama `RPGitems-reloaded.jar`).
+- **Retirar:** `plugins/DbrAntiCommand-1.0.0.jar` -> `.jar.bak-20261111-absorbido`.
+- **Configs:** `DbrCorePlugin/config.yml` y `comandos.yml`: 0 claves nuevas en TESTEO. `filtro-comandos.yml` lo crea `FiltroComandos` en el primer arranque copiando `plugins/DbrAntiCommand/config.yml`. `config/dbrcore/` no existe en el servidor (la vibracion va solo en el modpack). Las diferencias de `config/*.cfg` (dbrki, jinryuu*, dbrtierra, dbranticheat) son de otros trabajos: no se tocan.
+- **ProtocolLib:** presente (`ProtocolLib.jar`).
+- **Permisos antes de desplegar (auditoria):** `dbrbendicion.admin` y `dbrlogros.admin` a quien hoy tiene `Admin`; `dbrpoder.dar` a quien usa /darpoder (o `permiso-admin-legado`).
+- **Revision de repos (pedido del usuario):** los 6 tienen codigo posterior al jar de produccion. Arena `ddb526f`, Batallas `939f57d`, TPersonal `b40d2c6`, Talentos `a66f3eb` y Staff `fdb2af9` usan el servicio PvP unificado de DbrCorePlugin `cf42bdf` (todos 14:20, en TESTEO desde 14:26). Invasion `0e035be` (notificacion Android). Dojos nunca estuvo en produccion (ultimo codigo 10-18).
+- **Choque con otro despliegue:** `_deploy/2026-11-11-raciales-semisaiyan` (sin subir, espera OK) lleva Talentos (cherry-pick sin `a66f3eb`) + DbrRebirthPlugin `521e5fa`. Talentos `main` (16b8a2c) tiene los tres commits; `c9420cf` y `16b8a2c` (17:55, 18:23) no estan en el jar de TESTEO.
+- `DbrCorePlugin` `main` va 1 commit adelante de origin (2c93231, docs) y trae `cf42bdf` (PvpMod) de otro trabajo.
 
 ### Parte 6: DbrAntiCommand
 1. Cruzar por SFTP `allowed/blocked` del config viejo contra el migrado de DbrCorePlugin.
