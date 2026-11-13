@@ -89,3 +89,5 @@ Copiar este plan a `DBR-ASSETS/PLAN-mirror-robusto.md` y crear `DBR-ASSETS/CLAUD
   - las partes de actualizar.bat corren en cmd, y el archivo pasó a CRLF.
   - Cambio sobre el plan: no se usa `fetch-depth: 0` (el repo pesa unos 363 MB). Un paso aparte trae solo `github.event.before` con depth 1.
   - Siguiente paso: commit y push a `assets` (pendiente del OK). Después, ver que la Action pase los 4 pasos y que R2 sirva la 5.9.1.
+- 2026-11-13: commit 1853a60 pusheado. La Action pasó los 4 pasos: validación OK, parches contra 5c90c66 y R2 con DbrServerPack 5.9.1 experimental y manifests nuevos. Pendiente: que los _deploy futuros usen poner-jar.
+- 2026-11-13: regla documentada en DbrServerPack/docs/claude/publicar-modpack.md e indexada en su CLAUDE.md, para que los _deploy futuros usen poner-jar. Plan cerrado.
