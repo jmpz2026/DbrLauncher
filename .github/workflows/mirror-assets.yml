@@ -18,20 +18,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # parches delta: compara con los jars del commit anterior
+          fetch-depth: 2 # HEAD~1: base de los parches en un run manual
+
+      # Base de los parches delta: lo que había en la rama antes del push (github.event.before).
+      # En un push de varios commits no es HEAD~1. Solo ese commit, no todo el historial de jars.
+      # Si no se puede traer (rama nueva, run manual, force push), el script usa HEAD~1.
+      - name: Traer el commit base de los parches
+        if: ${{ github.event_name == 'push' }}
+        run: git fetch --no-tags --depth=1 origin ${{ github.event.before }} || echo "sin commit base, se usa HEAD~1"
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # Corta antes de tocar el release o R2 si un manifest está roto (JSON, sha1, size, archivo).
+      - name: Validar los manifests
+        id: check
+        run: node tools/check-manifests.mjs
+
       - name: Subir los archivos que falten y borrar los huérfanos
         run: node .github/scripts/mirror-assets.mjs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_SHA: ${{ github.event.before }}
 
       # Mirror principal fuera de GitHub: bucket R2 servido por el Worker `dbr-assets` (worker/).
       # Sin los secrets R2 el script avisa y sale con 0; el mirror del release sigue igual.
+      # Corre aunque falle el paso del release: R2 es la fuente principal del launcher y sube los
+      # archivos desde el checkout, así que solo pierde los parches que no se hayan hecho. No corre
+      # si los manifests no pasaron la validación.
       - name: Copiar el modpack a Cloudflare R2
+        if: ${{ !cancelled() && steps.check.outcome == 'success' }}
         run: node .github/scripts/mirror-r2.mjs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -24,8 +24,12 @@ const BRANCH_PREFIX = /^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/ass
 
 const gh = (...args) => execFileSync('gh', args, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'inherit'] })
 
-/** Archivos de los manifests: [{ path, sha1, rel }], con rel = ruta dentro de la rama. */
-function manifestFiles(read) {
+/**
+ * Archivos de los manifests: [{ path, sha1, rel }], con rel = ruta dentro de la rama.
+ * `lenient`: un manifest que no parsea se avisa y se salta en vez de cortar el run. Solo para
+ * los del commit base: si uno quedó roto, el commit que lo arregla tiene que poder publicarse.
+ */
+function manifestFiles(read, lenient = false) {
   const out = []
   for (const name of MANIFESTS) {
     let text
@@ -34,7 +38,14 @@ function manifestFiles(read) {
     } catch {
       continue
     }
-    const m = JSON.parse(text)
+    let m
+    try {
+      m = JSON.parse(text)
+    } catch (e) {
+      if (!lenient) throw new Error(`${name} no es JSON válido: ${e.message}`)
+      console.warn(`  ${name} del commit base no es JSON válido, sin parches desde él: ${e.message}`)
+      continue
+    }
     for (const f of [...(m.files ?? []), ...(m.androidFiles ?? [])]) {
       if (!f.sha1 || !f.path || !BRANCH_PREFIX.test(f.url)) continue
       const rel = f.url.replace(BRANCH_PREFIX, '').split('/').map(decodeURIComponent).join('/')
@@ -95,9 +106,26 @@ for (const [sha1, rel] of wanted) {
   uploaded++
 }
 
-// Parches de los jars grandes contra su versión del commit anterior (necesita fetch-depth: 2).
+// Parches de los jars grandes contra su versión del commit base. La base es lo que había en la
+// rama antes del push (BASE_SHA = github.event.before): si el push trae varios commits, el parche
+// sale contra lo que tienen los jugadores y no contra el penúltimo commit. Sin BASE_SHA (run
+// manual, rama nueva) o si no está en el clon, se usa HEAD~1. El workflow trae ese commit aparte.
 const git = (...args) => execFileSync('git', args, { maxBuffer: 512 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] })
-const previous = manifestFiles((name) => git('show', `HEAD~1:${name}`).toString('utf-8'))
+function patchBase() {
+  const env = (process.env.BASE_SHA ?? '').trim()
+  if (/^[0-9a-f]{40}$/.test(env) && !/^0+$/.test(env)) {
+    try {
+      git('cat-file', '-e', `${env}^{commit}`)
+      return env
+    } catch {
+      console.warn(`  BASE_SHA ${env} no está en el clon, se usa HEAD~1`)
+    }
+  }
+  return 'HEAD~1'
+}
+const BASE = patchBase()
+console.log(`Parches contra ${BASE}`)
+const previous = manifestFiles((name) => git('show', `${BASE}:${name}`).toString('utf-8'), true)
 const keepPatches = new Set()
 let patched = 0
 for (const f of current) {
@@ -105,7 +133,7 @@ for (const f of current) {
   const newBuf = readFileSync(f.rel)
   if (newBuf.length < PATCH_MIN_SIZE || sha1Of(newBuf) !== f.sha1) continue
   const key = modKey(f.path)
-  const olds = new Map() // sha1 viejo -> ruta en HEAD~1
+  const olds = new Map() // sha1 viejo -> ruta en el commit base
   for (const o of previous) if (o.sha1 !== f.sha1 && modKey(o.path) === key) olds.set(o.sha1, o.rel)
   for (const [oldSha, oldRel] of olds) {
     const name = `${oldSha}-${f.sha1}.dbrpatch`
@@ -115,9 +143,9 @@ for (const f of current) {
     if (existing.has(name)) continue
     let oldBuf
     try {
-      oldBuf = git('show', `HEAD~1:${oldRel}`)
+      oldBuf = git('show', `${BASE}:${oldRel}`)
     } catch {
-      // No está en el commit anterior con esa ruta: la copia del release (aún no podada).
+      // No está en el commit base con esa ruta: la copia del release (aún no podada).
       if (!existing.has(oldSha)) continue
       gh('release', 'download', TAG, '-p', oldSha, '-D', tmp, '--clobber')
       oldBuf = readFileSync(join(tmp, oldSha))

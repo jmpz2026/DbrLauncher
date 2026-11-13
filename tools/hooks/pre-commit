@@ -1,0 +1,18 @@
+#!/bin/sh
+# Bloquea el commit si deja un manifest roto (JSON, sha1, size o archivo que falta).
+# Se activa con: git config core.hooksPath tools/hooks   (actualizar.bat lo hace solo).
+# Solo corre si el commit toca un manifest o algo que los manifests listan.
+# Valida la carpeta de trabajo, no el índice: commitea todo lo que cambiaste del modpack junto.
+# Saltarlo en una emergencia: git commit --no-verify
+
+if git diff --cached --name-only | grep -qE '^(manifest[^/]*\.json|mods/|config/|resourcepacks/|lite/|experimental/|android/)'; then
+  node tools/check-manifests.mjs || {
+    echo "Commit cancelado: arregla los manifests (o regeneralos con actualizar.bat)."
+    exit 1
+  }
+fi
+
+# core.hooksPath tapa .git/hooks: si hay otro pre-commit ahí (p. ej. el de gitleaks), se corre igual.
+if [ -x .git/hooks/pre-commit ]; then
+  .git/hooks/pre-commit || exit $?
+fi
