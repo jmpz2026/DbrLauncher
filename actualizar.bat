@@ -51,7 +51,7 @@ if errorlevel 1 goto :error
 echo.
 echo [3/6] Generando manifest LITE...
 if exist "%~dp0lite\mods\*.jar" (
-  node "%GEN%" --dir "%~dp0lite" --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks --out "%~dp0manifest-lite.json"
+  node "%GEN%" --dir "%~dp0lite" --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks,shaderpacks --out "%~dp0manifest-lite.json"
   if errorlevel 1 goto :error
 ) else (
   echo   ^(lite\mods vacio: se omite el manifest lite hasta que metas los .jar^)
