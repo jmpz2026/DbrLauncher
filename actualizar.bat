@@ -45,7 +45,7 @@ if errorlevel 1 goto :error
 
 echo.
 echo [2/6] Generando manifest FULL...
-node "%GEN%" --dir "%~dp0." --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks --out "%~dp0manifest.json"
+node "%GEN%" --dir "%~dp0." --base https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/ --version %VERSION% --forge %FORGE% --include mods,config,resourcepacks,shaderpacks --out "%~dp0manifest.json"
 if errorlevel 1 goto :error
 
 echo.
@@ -84,7 +84,7 @@ echo.
 echo [5/6] Registrando cambios en git...
 rem Solo lo que es del modpack: un archivo suelto en la raiz (notas, planes, pruebas) no se sube.
 rem Si cambias tools\, .github\ o worker\, commitealo a mano.
-git add -A -- manifest.json manifest-lite.json manifest-experimental.json forge-1.7.10.json news.json .dbr-once mods config resourcepacks lite experimental android options.txt optionsof.txt optionsshaders.txt CREDITOS.txt LICENCIAS
+git add -A -- manifest.json manifest-lite.json manifest-experimental.json forge-1.7.10.json news.json .dbr-once mods config resourcepacks shaderpacks lite experimental android options.txt optionsof.txt optionsshaders.txt CREDITOS.txt LICENCIAS
 if errorlevel 1 goto :error
 git diff --cached --quiet
 if errorlevel 1 (
