@@ -433,10 +433,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CoreTweaks-1.7.10-0.3.3.2.jar"
     },
     {
-      "path": "mods/CustomNPC-Plus-5.6.2.jar",
-      "sha1": "37923752716de46e3a7c2de89f2e92f1ede85a47",
-      "size": 25110824,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CustomNPC-Plus-5.6.2.jar"
+      "path": "mods/CustomNPC-Plus-6.0.0.jar",
+      "sha1": "d14a77be903ba962e97231103f8464257a8d1ea2",
+      "size": 25120855,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/CustomNPC-Plus-6.0.0.jar"
     },
     {
       "path": "mods/DbrFrutas.jar",
@@ -445,10 +445,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrFrutas.jar"
     },
     {
-      "path": "mods/DbrServerPack-5.9.1.jar",
-      "sha1": "7490ff42cb61a98403f8df26b5395421ab17e9d0",
-      "size": 41804067,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-5.9.1.jar"
+      "path": "mods/DbrServerPack-6.0.0.jar",
+      "sha1": "f766e346f23be1911ad1d9973c9d34771398c435",
+      "size": 48118460,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-6.0.0.jar"
     },
     {
       "path": "mods/dbsparking-1.0.jar",
