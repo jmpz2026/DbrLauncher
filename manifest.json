@@ -536,6 +536,12 @@
       "sha1": "235025f93ccbf9621f1764cbcd9f932df7a8da78",
       "size": 4335133,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/resourcepacks/DbrTexture%20v6.zip"
+    },
+    {
+      "path": "shaderpacks/Dbr Shaders.zip",
+      "sha1": "f1427cfd2f88350c06443d59c781ef9e364cf4ae",
+      "size": 18094,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/shaderpacks/Dbr%20Shaders.zip"
     }
   ],
   "androidFiles": [
