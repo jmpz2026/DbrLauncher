@@ -424,7 +424,7 @@
       "path": "mods/+unimixins-all-1.7.10-0.1.23.jar",
       "sha1": "758ddc3f969d22f85da74fc8b1680d9ea822d8be",
       "size": 5786196,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/%2Bunimixins-all-1.7.10-0.1.23.jar"
+      "url": "https://github.com/LegacyModdingMC/UniMixins/releases/download/0.1.23/+unimixins-all-1.7.10-0.1.23.jar"
     },
     {
       "path": "mods/bspkrsCore-6.16.1.jar",
@@ -436,7 +436,7 @@
       "path": "mods/CoreTweaks-1.7.10-0.3.3.2.jar",
       "sha1": "e7751986fec3ca3ce871ebde56ad9672032946f2",
       "size": 2196921,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/CoreTweaks-1.7.10-0.3.3.2.jar"
+      "url": "https://github.com/makamys/CoreTweaks/releases/download/0.3.3.2/CoreTweaks-1.7.10-0.3.3.2.jar"
     },
     {
       "path": "mods/CustomNPC-Plus-6.0.0.jar",
@@ -466,7 +466,7 @@
       "path": "mods/DragonBlockC-v1.4.85.jar",
       "sha1": "4d5d2ae7016be49c0d47aa9e54adada8fc3f27ab",
       "size": 15187123,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/DragonBlockC-v1.4.85.jar"
+      "url": "https://edge.forgecdn.net/files/4523/119/DragonBlockC-v1.4.85.jar"
     },
     {
       "path": "mods/EtFuturumDbr-1.0.0.jar",
@@ -478,25 +478,25 @@
       "path": "mods/JBRA-Client-v1.6.52.jar",
       "sha1": "be242f62ad2768e205402adc6dc6db9214716a6d",
       "size": 129587,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JBRA-Client-v1.6.52.jar"
+      "url": "https://edge.forgecdn.net/files/4505/635/JBRA-Client-v1.6.52.jar"
     },
     {
       "path": "mods/JFamilyC-v1.2.18.jar",
       "sha1": "a9f1d12767d1b168c0e1397346f73649741be249",
       "size": 146745,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JFamilyC-v1.2.18.jar"
+      "url": "https://edge.forgecdn.net/files/4176/6/JFamilyC-v1.2.18.jar"
     },
     {
       "path": "mods/JRMCore-v1.3.51.jar",
       "sha1": "b0d22df0da95a0456b3b79da3b0e8673a1cafcfb",
       "size": 2560555,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JRMCore-v1.3.51.jar"
+      "url": "https://edge.forgecdn.net/files/4523/117/JRMCore-v1.3.51.jar"
     },
     {
       "path": "mods/JYearsC-v1.2.5.jar",
       "sha1": "7e5eefc9d5c14a3f1c2c3310d60c56809a7ec7a6",
       "size": 61192,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/lite/mods/JYearsC-v1.2.5.jar"
+      "url": "https://edge.forgecdn.net/files/3363/798/JYearsC-v1.2.5.jar"
     },
     {
       "path": "mods/NBArmors-1.0.0.jar",

@@ -1,0 +1,26 @@
+name: Verificar origenes oficiales
+
+# DBR-77: cada mod de terceros de origenes-oficiales.json se baja de su url oficial y debe
+# tener el mismo sha1 y size que espera el launcher. Corre en cada PR y push a assets.
+on:
+  pull_request:
+    branches: [assets]
+    paths: ['origenes-oficiales.json', 'manifest*.json', 'tools/aplicar-origenes.mjs']
+  push:
+    branches: [assets]
+    paths: ['origenes-oficiales.json']
+  workflow_dispatch: {}
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Manifests al dia y urls oficiales con el sha1 esperado
+        run: |
+          node tools/aplicar-origenes.mjs --verificar
+          git diff --exit-code -- 'manifest*.json' || { echo "::error::Los manifests no reflejan origenes-oficiales.json: corre node tools/aplicar-origenes.mjs"; exit 1; }
+          node tools/check-manifests.mjs
