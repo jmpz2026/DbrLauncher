@@ -68,6 +68,12 @@ if exist "%~dp0experimental\mods\*.jar" (
   echo   ^(experimental\mods vacio: se omite el manifest experimental^)
 )
 
+echo.
+echo [3c/6] Mods de terceros desde su origen oficial (origenes-oficiales.json)...
+rem Los jars de terceros no se suben a esta rama: el launcher los baja de CurseForge o GitHub.
+node tools\aplicar-origenes.mjs
+if errorlevel 1 goto :error
+
 rem Aviso: los archivos de siembra (.dbr-once) son la config del jugador. Si salen 0,
 rem es que falta el .dbr-once o que el generador es viejo: el manifest quedaria sin ellos
 rem y la sync pisaria la configuracion grafica de todo el mundo en cada Jugar.
