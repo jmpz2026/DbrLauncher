@@ -446,8 +446,8 @@
     },
     {
       "path": "mods/DbrServerPack-6.2.0.jar",
-      "sha1": "a8a5d0aa929a018b4fdfd67ae6a3da88f66856d8",
-      "size": 62989678,
+      "sha1": "64dde3eab43bde7efdd61d7c6f3675fe692d2a4b",
+      "size": 62992353,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/DbrServerPack-6.2.0.jar"
     },
     {
@@ -506,8 +506,8 @@
     },
     {
       "path": "mods/npcdbc-5.4.0.jar",
-      "sha1": "2ec3e8e032a7f7ca0ecb144c80291bd2c8e96e80",
-      "size": 4391374,
+      "sha1": "9ca9587b647e070ecad37e618df3bb1627152ed0",
+      "size": 4393425,
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-5.4.0.jar"
     },
     {
