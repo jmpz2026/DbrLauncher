@@ -505,10 +505,10 @@
       "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/ninjinentities-1.2.7.4.jar"
     },
     {
-      "path": "mods/npcdbc-5.4.0.jar",
-      "sha1": "447c7e07baa0e3d1a03322f6a493b241e3fd5641",
-      "size": 4395085,
-      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-5.4.0.jar"
+      "path": "mods/npcdbc-6.2.0.jar",
+      "sha1": "9d6301c0cfb25b7d37ab4b90b1abf6ee19cfe347",
+      "size": 4395084,
+      "url": "https://raw.githubusercontent.com/jmpz2026/DbrLauncher/assets/experimental/mods/npcdbc-6.2.0.jar"
     },
     {
       "path": "options.txt",
